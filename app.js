@@ -3,6 +3,7 @@ let beaches = [];
 
 const regionSelect = document.getElementById("regionSelect");
 const beachSelect = document.getElementById("beachSelect");
+const beachDetailSelect = document.getElementById("sectionSelect");
 
 async function loadData() {
 
@@ -16,6 +17,10 @@ async function loadData() {
 
     regionSelect.addEventListener("change", () => {
         populateBeachComplexes(regionSelect.value);
+    });
+
+    beachSelect.addEventListener("change", () => {
+        populateBeaches(beachSelect.value);
     });
 
 }
@@ -58,6 +63,38 @@ function populateBeachComplexes(region) {
         option.textContent = complex.name;
 
         beachSelect.appendChild(option);
+
+    });
+
+    if (complexes.length > 0)
+        populateBeaches(complexes[0].id);
+
+}
+
+function populateBeaches(beachComplexId) {
+
+    beachDetailSelect.innerHTML = "";
+
+    const complex =
+        beachComplexes.find(c => c.id === beachComplexId);
+
+    if (!complex)
+        return;
+
+    complex.beaches.forEach(beachId => {
+
+        const beach =
+            beaches.find(b => b.id === beachId);
+
+        if (!beach)
+            return;
+
+        const option = document.createElement("option");
+
+        option.value = beach.id;
+        option.textContent = beach.name;
+
+        beachDetailSelect.appendChild(option);
 
     });
 
