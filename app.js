@@ -25,7 +25,11 @@ async function loadBeaches() {
 function showBeach() {
     const select = document.getElementById("beachSelect");
 
+    alert("Selected value = " + select.value);
+
     const beach = beaches.find(b => b.id === select.value);
+
+    alert(JSON.stringify(beach));
 
     document.getElementById("latitude").textContent = beach.latitude;
     document.getElementById("longitude").textContent = beach.longitude;
