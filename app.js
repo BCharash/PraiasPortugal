@@ -67,6 +67,8 @@ function selectBeach(id) {
 
 function displayBeach() {
 
+    console.log(selectedBeach);
+
     document.getElementById("region").textContent = selectedBeach.region;
     document.getElementById("municipality").textContent = selectedBeach.municipality;
     document.getElementById("district").textContent = selectedBeach.district;
