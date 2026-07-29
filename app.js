@@ -5,6 +5,12 @@ const regionSelect = document.getElementById("regionSelect");
 const beachSelect = document.getElementById("beachSelect");
 const beachDetailSelect = document.getElementById("sectionSelect");
 
+const regionSpan = document.getElementById("region");
+const municipalitySpan = document.getElementById("municipality");
+const districtSpan = document.getElementById("district");
+const latitudeSpan = document.getElementById("latitude");
+const longitudeSpan = document.getElementById("longitude");
+
 async function loadData() {
 
     const complexResponse = await fetch("data/beach-complexes.json");
@@ -21,6 +27,10 @@ async function loadData() {
 
     beachSelect.addEventListener("change", () => {
         populateBeaches(beachSelect.value);
+    });
+
+    beachDetailSelect.addEventListener("change", () => {
+        displayBeach(beachDetailSelect.value);
     });
 
 }
@@ -97,6 +107,25 @@ function populateBeaches(beachComplexId) {
         beachDetailSelect.appendChild(option);
 
     });
+
+    if (complex.beaches.length > 0)
+        displayBeach(complex.beaches[0]);
+
+}
+
+function displayBeach(beachId) {
+
+    const beach =
+        beaches.find(b => b.id === beachId);
+
+    if (!beach)
+        return;
+
+    regionSpan.textContent = beach.region;
+    municipalitySpan.textContent = beach.municipality;
+    districtSpan.textContent = beach.district;
+    latitudeSpan.textContent = beach.latitude;
+    longitudeSpan.textContent = beach.longitude;
 
 }
 
