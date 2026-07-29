@@ -6,7 +6,7 @@
 
 Introduce the concept of a **Beach Complex** as a first-class domain object.
 
-A Beach Complex is a continuous stretch of coastline that can normally be traversed on foot without crossing a significant natural or artificial barrier.
+A Beach Complex is a continuous stretch of coastline that can ordinarily be traversed on foot without crossing a significant natural or human-made barrier.
 
 Beach Complexes are a conceptual abstraction defined by **Praias de Portugal**. They are not official Portuguese administrative entities.
 
@@ -59,9 +59,7 @@ The domain model now distinguishes between two different concepts:
 
 To support this separation, the application stores the concepts independently.
 
-`beach-complexes.json` defines Beach Complexes and the Beaches that belong to each complex.
-
-`beaches.json` stores information about individual Beaches.
+Beach Complexes and Beaches are stored as separate entity sets linked by explicit relationships. The current implementation represents these using separate data files, but the separation is an architectural property rather than an implementation detail.
 
 This architecture separates relationships from entities, reduces duplication, and allows Beaches to evolve independently of Beach Complexes.
 
@@ -80,6 +78,49 @@ This was rejected because environmental information such as weather, tides, and 
 Embedding complete Beach objects inside Beach Complexes was considered.
 
 This was rejected because Beaches are independent real-world entities. Storing them independently avoids duplication, allows them to be referenced by multiple datasets, and cleanly separates entities from relationships.
+
+## Status
+
+Accepted
+
+
+# DJ002 — Domain Entities are Normalized
+
+**Date:** 2026-07-29
+
+## Decision
+
+Represent each domain concept as an independent entity with its own identity.
+
+Beach Complexes and Beaches are stored independently and connected through explicit relationships rather than by embedding one inside the other.
+
+## Motivation
+
+Beach Complexes and Beaches represent fundamentally different concepts.
+
+A Beach Complex describes a continuous geographic feature of the coastline, while a Beach represents an individual named public beach with its own facilities, services, and operational characteristics.
+
+Treating these as independent entities avoids duplication, preserves the identity of each concept, and allows them to evolve independently as the application grows.
+
+The architecture also follows the principle that entities should be modeled independently from the relationships that connect them.
+
+## Consequences
+
+Each Beach has a unique identity independent of its Beach Complex.
+
+Relationships between Beach Complexes and Beaches are represented explicitly rather than by nesting complete Beach objects.
+
+This allows future datasets—such as photographs, accessibility information, Blue Flag status, webcams, historical information, environmental monitoring, and user-generated content—to reference Beaches directly without duplicating data.
+
+The storage mechanism may change over time, but the normalized domain model remains unchanged.
+
+## Alternatives Considered
+
+### Nested Beach objects
+
+Embedding complete Beach objects inside Beach Complexes was considered.
+
+This approach was rejected because it couples the lifecycle of Beaches to their parent Beach Complex, increases duplication, and makes future relationships with other datasets more difficult.
 
 ## Status
 
