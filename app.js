@@ -1,6 +1,8 @@
+let beaches = [];
+
 async function loadBeaches() {
     const response = await fetch("data/beaches.json");
-    const beaches = await response.json();
+    beaches = await response.json();
 
     const select = document.getElementById("beachSelect");
 
@@ -12,6 +14,21 @@ async function loadBeaches() {
         option.textContent = beach.name;
         select.appendChild(option);
     });
+
+    // Display the first beach immediately
+    showBeach();
+
+    // Update when the selection changes
+    select.addEventListener("change", showBeach);
+}
+
+function showBeach() {
+    const select = document.getElementById("beachSelect");
+
+    const beach = beaches.find(b => b.id === select.value);
+
+    document.getElementById("latitude").textContent = beach.latitude;
+    document.getElementById("longitude").textContent = beach.longitude;
 }
 
 loadBeaches();
