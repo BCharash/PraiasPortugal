@@ -1,10 +1,13 @@
 let beaches = [];
 let selectedBeach = null;
+let selectedSection = null;
 
 const regionSelect = document.getElementById("regionSelect");
 const beachSelect = document.getElementById("beachSelect");
+const sectionSelect = document.getElementById("sectionSelect");
 
 async function loadBeaches() {
+
     const response = await fetch("data/beaches.json");
     beaches = await response.json();
 
@@ -17,6 +20,11 @@ async function loadBeaches() {
     beachSelect.addEventListener("change", () => {
         selectBeach(beachSelect.value);
     });
+
+    sectionSelect.addEventListener("change", () => {
+        selectSection(sectionSelect.value);
+    });
+
 }
 
 function populateRegions() {
@@ -26,13 +34,17 @@ function populateRegions() {
     regionSelect.innerHTML = "";
 
     regions.forEach(region => {
+
         const option = document.createElement("option");
         option.value = region;
         option.textContent = region;
+
         regionSelect.appendChild(option);
+
     });
 
     populateBeaches(regions[0]);
+
 }
 
 function populateBeaches(region) {
@@ -44,7 +56,6 @@ function populateBeaches(region) {
     filtered.forEach(beach => {
 
         const option = document.createElement("option");
-
         option.value = beach.id;
         option.textContent = beach.name;
 
@@ -61,19 +72,52 @@ function selectBeach(id) {
 
     selectedBeach = beaches.find(b => b.id === id);
 
+    populateSections();
+
+}
+
+function populateSections() {
+
+    sectionSelect.innerHTML = "";
+
+    selectedBeach.sections.forEach(section => {
+
+        const option = document.createElement("option");
+
+        option.value = section.id;
+        option.textContent = section.name;
+
+        sectionSelect.appendChild(option);
+
+    });
+
+    const defaultSection =
+        selectedBeach.sections.find(s => s.isDefault) ??
+        selectedBeach.sections[0];
+
+    selectSection(defaultSection.id);
+
+}
+
+function selectSection(id) {
+
+    selectedSection = selectedBeach.sections.find(s => s.id === id);
+
     displayBeach();
 
 }
 
 function displayBeach() {
 
-    console.log(selectedBeach);
-
     document.getElementById("region").textContent = selectedBeach.region;
     document.getElementById("municipality").textContent = selectedBeach.municipality;
     document.getElementById("district").textContent = selectedBeach.district;
-    document.getElementById("latitude").textContent = selectedBeach.latitude;
-    document.getElementById("longitude").textContent = selectedBeach.longitude;
+
+    document.getElementById("latitude").textContent =
+        selectedSection.latitude ?? "";
+
+    document.getElementById("longitude").textContent =
+        selectedSection.longitude ?? "";
 
 }
 
