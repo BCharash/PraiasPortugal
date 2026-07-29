@@ -58,7 +58,7 @@ A Municipality contains one or more Beach Complexes.
 
 # Beach Complex
 
-A Beach Complex represents the natural beach area that visitors commonly recognise as a single destination.
+A Beach Complex is a continuous stretch of beach that can normally be traversed on foot without crossing a significant natural or artificial barrier. A Beach Complex is a geographic abstraction defined by Praias de Portugal and may contain one or more named Beaches (Beach Sections).
 
 Examples:
 
