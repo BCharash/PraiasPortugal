@@ -5,25 +5,60 @@
     "region": "Oeste",
     "municipality": "Torres Vedras",
     "district": "Lisboa",
-    "latitude": 39.1687,
-    "longitude": -9.3705
+
+    "sections": [
+      {
+        "id": "north",
+        "name": "Norte",
+        "latitude": 39.1687,
+        "longitude": -9.3705
+      },
+      {
+        "id": "south",
+        "name": "Sul",
+        "latitude": 39.1675,
+        "longitude": -9.3694
+      }
+    ]
   },
+
   {
     "id": "porto-novo",
     "name": "Praia de Porto Novo",
     "region": "Oeste",
     "municipality": "Torres Vedras",
     "district": "Lisboa",
-    "latitude": 39.1776,
-    "longitude": -9.3570
+
+    "sections": [
+      {
+        "id": "main",
+        "name": "Main",
+        "latitude": 39.1776,
+        "longitude": -9.3570
+      }
+    ]
   },
+
   {
-    "id": "santa-cruz-centro",
-    "name": "Praia de Santa Cruz",
+    "id": "santa-cruz",
+    "name": "Santa Cruz",
     "region": "Oeste",
     "municipality": "Torres Vedras",
     "district": "Lisboa",
-    "latitude": 39.1395,
-    "longitude": -9.3793
+
+    "sections": [
+      {
+        "id": "fisica",
+        "name": "Praia da Física"
+      },
+      {
+        "id": "centro",
+        "name": "Praia do Centro"
+      },
+      {
+        "id": "formosa",
+        "name": "Praia Formosa"
+      }
+    ]
   }
 ]
