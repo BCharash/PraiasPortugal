@@ -5,11 +5,11 @@
     "region": "Oeste",
     "municipality": "Torres Vedras",
     "district": "Lisboa",
-
     "sections": [
       {
         "id": "north",
         "name": "Norte",
+        "isDefault": true,
         "latitude": 39.1687,
         "longitude": -9.3705
       },
@@ -21,35 +21,33 @@
       }
     ]
   },
-
   {
     "id": "porto-novo",
     "name": "Praia de Porto Novo",
     "region": "Oeste",
     "municipality": "Torres Vedras",
     "district": "Lisboa",
-
     "sections": [
       {
-        "id": "main",
-        "name": "Main",
+        "id": "default",
+        "name": "Entire Beach",
+        "isDefault": true,
         "latitude": 39.1776,
         "longitude": -9.3570
       }
     ]
   },
-
   {
     "id": "santa-cruz",
     "name": "Santa Cruz",
     "region": "Oeste",
     "municipality": "Torres Vedras",
     "district": "Lisboa",
-
     "sections": [
       {
         "id": "fisica",
-        "name": "Praia da Física"
+        "name": "Praia da Física",
+        "isDefault": true
       },
       {
         "id": "centro",
