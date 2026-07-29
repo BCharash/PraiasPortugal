@@ -1,62 +1,50 @@
 [
   {
-    "id": "santa-rita",
-    "name": "Praia de Santa Rita",
+    "id": "praia-de-santa-rita-norte",
+    "name": "Praia de Santa Rita Norte",
     "region": "Oeste",
     "municipality": "Torres Vedras",
     "district": "Lisboa",
-    "sections": [
-      {
-        "id": "north",
-        "name": "Norte",
-        "isDefault": true,
-        "latitude": 39.1687,
-        "longitude": -9.3705
-      },
-      {
-        "id": "south",
-        "name": "Sul",
-        "latitude": 39.1675,
-        "longitude": -9.3694
-      }
-    ]
+    "latitude": 39.1687,
+    "longitude": -9.3705
   },
   {
-    "id": "porto-novo",
+    "id": "praia-de-santa-rita-sul",
+    "name": "Praia de Santa Rita Sul",
+    "region": "Oeste",
+    "municipality": "Torres Vedras",
+    "district": "Lisboa",
+    "latitude": 39.1675,
+    "longitude": -9.3694
+  },
+  {
+    "id": "praia-de-porto-novo",
     "name": "Praia de Porto Novo",
     "region": "Oeste",
     "municipality": "Torres Vedras",
     "district": "Lisboa",
-    "sections": [
-      {
-        "id": "default",
-        "name": "Entire Beach",
-        "isDefault": true,
-        "latitude": 39.1776,
-        "longitude": -9.3570
-      }
-    ]
+    "latitude": 39.1776,
+    "longitude": -9.3570
   },
   {
-    "id": "santa-cruz",
-    "name": "Santa Cruz",
+    "id": "praia-da-fisica",
+    "name": "Praia da Física",
     "region": "Oeste",
     "municipality": "Torres Vedras",
-    "district": "Lisboa",
-    "sections": [
-      {
-        "id": "fisica",
-        "name": "Praia da Física",
-        "isDefault": true
-      },
-      {
-        "id": "centro",
-        "name": "Praia do Centro"
-      },
-      {
-        "id": "formosa",
-        "name": "Praia Formosa"
-      }
-    ]
+    "district": "Lisboa"
+  },
+  {
+    "id": "praia-do-centro",
+    "name": "Praia do Centro",
+    "region": "Oeste",
+    "municipality": "Torres Vedras",
+    "district": "Lisboa"
+  },
+  {
+    "id": "praia-formosa",
+    "name": "Praia Formosa",
+    "region": "Oeste",
+    "municipality": "Torres Vedras",
+    "district": "Lisboa"
   }
 ]
