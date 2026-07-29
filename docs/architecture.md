@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document describes the architectural organization of Praias Portugal.
+This document describes the architectural organization of **Praias Portugal**.
 
 The architecture is intended to be simple, modular, and scalable. It separates domain concepts from application logic and external services, allowing the application to evolve without major structural changes.
 
@@ -20,6 +20,34 @@ The architecture follows these principles:
 - External services are isolated behind service modules.
 - Each module has a single responsibility.
 - The application should remain understandable as it grows.
+
+---
+
+# Architectural Overview
+
+Everything in the application revolves around a single **Beach Complex**.
+
+```
+Beach Complex
+      │
+      ├── Weather
+      ├── Marine Forecast
+      ├── Tides
+      ├── Water Quality
+      ├── Beach Sections
+      │      ├── Facilities
+      │      ├── Accessibility
+      │      └── Points of Interest
+      └── Media
+```
+
+The Beach Complex is the primary object selected by the user.
+
+Most information—such as weather, marine forecasts, tides, and water quality—belongs to the Beach Complex because it generally applies across the entire beach area.
+
+Information that differs within a beach, such as facilities, restaurants, parking, accessibility, or webcams, belongs to individual Beach Sections.
+
+This separation avoids duplication while accurately modelling large beaches that contain multiple named or managed areas.
 
 ---
 
@@ -54,7 +82,7 @@ Responsibilities:
 - Display settings
 - Handle user interaction
 
-The UI should contain as little business logic as possible.
+The User Interface should contain as little business logic as possible.
 
 ---
 
@@ -69,7 +97,7 @@ Responsibilities:
 - State management
 - Selecting the active Beach Complex
 - Coordinating services
-- Updating the UI
+- Updating the User Interface
 
 ---
 
@@ -118,7 +146,7 @@ Examples include:
 - OpenStreetMap
 - Browser Geolocation API
 
-The rest of the application should not depend directly on provider-specific formats.
+The rest of the application should not depend directly upon provider-specific formats.
 
 ---
 
