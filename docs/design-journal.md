@@ -125,3 +125,131 @@ This approach was rejected because it couples the lifecycle of Beaches to their 
 ## Status
 
 Accepted
+
+# DJ003 — Dashboard Becomes the Primary User Interface
+
+**Date:** 2026-07-30
+
+## Decision
+
+The Dashboard becomes the primary entry point to the application.
+
+Rather than navigating through lists of beaches before viewing information, users should normally arrive immediately at a dashboard showing the current conditions for a beach.
+
+The dashboard is designed to answer the question:
+
+> "Should I go to this beach today?"
+
+Navigation, search, and exploration become secondary activities.
+
+## Motivation
+
+Most users repeatedly visit the same beach or a small number of nearby beaches.
+
+Opening directly to a useful dashboard minimizes interaction and allows the application to communicate meaningful information within a few seconds.
+
+The application should optimize for immediate access to useful information rather than requiring navigation before displaying data.
+
+Startup behaviour will eventually become configurable through user preferences.
+
+Possible startup modes include:
+
+- Last visited beach
+- Home beach
+- Beach selector
+- Current location
+
+## Dashboard Architecture
+
+The Dashboard is composed of independent widgets.
+
+Examples include:
+
+- Beach Summary
+- Alerts
+- Weather
+- Forecast
+- Charts
+
+Each widget has a single responsibility.
+
+Widgets do not communicate directly with one another. They receive updates from the application through well-defined interfaces.
+
+For example:
+
+```
+displayBeach()
+    ├── updateDashboardBeachName()
+    ├── updateWeatherWidget()
+    ├── updateForecastWidget()
+    ├── updateChartsWidget()
+    └── updateAlertWidget()
+```
+
+This minimizes coupling between modules and allows widgets to evolve independently.
+
+## Widget Design
+
+The dashboard is composed of reusable widgets rather than a single monolithic page.
+
+Metric displays such as:
+
+- Air Temperature
+- Sea Temperature
+- Wind
+- Surf Swell
+- Tide
+- UV Index
+
+share a common visual structure.
+
+These should eventually be implemented as reusable Metric Widgets populated with different data rather than as independent implementations.
+
+This promotes consistency while minimizing duplicated code.
+
+## User Experience Principles
+
+The Dashboard should:
+
+- Display useful information immediately.
+- Minimize taps and navigation.
+- Avoid unnecessary scrolling.
+- Present high information density without appearing cluttered.
+- Work equally well on mobile devices and desktop browsers.
+- Present environmental conditions before detailed exploration.
+- Allow progressive disclosure through interactive elements such as charts and tooltips.
+
+## Consequences
+
+The existing selection interface becomes an implementation detail rather than the primary user experience.
+
+Information currently displayed elsewhere in the application will gradually migrate into Dashboard widgets until the dashboard becomes the principal interface.
+
+Navigation views such as:
+
+- Beach Selector
+- Explorer
+- Preferences
+- About
+
+become secondary views.
+
+## Alternatives Considered
+
+### Beach Selection as the primary interface
+
+Opening directly to the Beach Selector was considered.
+
+This was rejected because most users repeatedly visit the same beaches. Requiring navigation before displaying useful information introduces unnecessary interaction.
+
+### Dashboard as a single monolithic page
+
+Building the dashboard as one large page without internal widget boundaries was considered.
+
+This was rejected because it tightly couples unrelated functionality, increases maintenance complexity, and makes future enhancements more difficult.
+
+A widget-based architecture allows each portion of the dashboard to evolve independently while maintaining a consistent user experience.
+
+## Status
+
+Accepted
