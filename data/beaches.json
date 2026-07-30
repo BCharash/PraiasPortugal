@@ -31,20 +31,26 @@
     "name": "Praia da Física",
     "region": "Oeste",
     "municipality": "Torres Vedras",
-    "district": "Lisboa"
+    "district": "Lisboa",
+    "latitude": 39.1485,
+    "longitude": -9.3790
   },
   {
     "id": "praia-do-centro",
     "name": "Praia do Centro",
     "region": "Oeste",
     "municipality": "Torres Vedras",
-    "district": "Lisboa"
+    "district": "Lisboa",
+    "latitude": 39.1494,
+    "longitude": -9.3782
   },
   {
     "id": "praia-formosa",
     "name": "Praia Formosa",
     "region": "Oeste",
     "municipality": "Torres Vedras",
-    "district": "Lisboa"
+    "district": "Lisboa",
+    "latitude": 39.1510,
+    "longitude": -9.3773
   }
 ]
