@@ -70,3 +70,25 @@ function getBeachComplexes(region) {
     );
 
 }
+
+/*
+ * Return the beaches belonging to a beach complex.
+ *
+ * Parameters:
+ *     beachComplexId - The beach complex to search.
+ *
+ * Returns:
+ *     An array of beach objects.
+ */
+function getBeaches(beachComplexId) {
+
+    const complex = findBeachComplex(beachComplexId);
+
+    if (!complex)
+        return [];
+
+    return complex.beaches
+        .map(beachId => findBeach(beachId))
+        .filter(beach => beach !== undefined);
+
+}
