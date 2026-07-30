@@ -1,3 +1,7 @@
+//--------------------------------------------------
+// Application Data
+//--------------------------------------------------
+
 let beachComplexes = [];
 let beaches = [];
 
@@ -10,6 +14,11 @@ const municipalitySpan = document.getElementById("municipality");
 const districtSpan = document.getElementById("district");
 const latitudeSpan = document.getElementById("latitude");
 const longitudeSpan = document.getElementById("longitude");
+
+
+//--------------------------------------------------
+// Application Startup
+//--------------------------------------------------
 
 async function loadData() {
 
@@ -34,6 +43,11 @@ async function loadData() {
     });
 
 }
+
+
+//--------------------------------------------------
+// Browse
+//--------------------------------------------------
 
 function populateRegions() {
 
@@ -113,6 +127,11 @@ function populateBeaches(beachComplexId) {
 
 }
 
+
+//--------------------------------------------------
+// Beach Display
+//--------------------------------------------------
+
 function displayBeach(beachId) {
 
     const beach =
@@ -124,9 +143,14 @@ function displayBeach(beachId) {
     regionSpan.textContent = beach.region;
     municipalitySpan.textContent = beach.municipality;
     districtSpan.textContent = beach.district;
-    latitudeSpan.textContent = beach.latitude;
-    longitudeSpan.textContent = beach.longitude;
+    latitudeSpan.textContent = beach.latitude ?? "";
+    longitudeSpan.textContent = beach.longitude ?? "";
 
 }
+
+
+//--------------------------------------------------
+// Application Entry Point
+//--------------------------------------------------
 
 loadData();
