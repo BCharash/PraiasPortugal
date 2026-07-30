@@ -51,8 +51,7 @@ function addOption(select, value, text) {
  */
 function populateRegions() {
 
-    const regions =
-        [...new Set(beachComplexes.map(c => c.region))].sort();
+    const regions = getRegions();
 
     regionSelect.innerHTML = "";
 
