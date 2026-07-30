@@ -65,3 +65,20 @@ function updateDashboardBeachName(beachName) {
     beach.textContent = beachName;
 
 }
+
+/*
+ * Update the selected beach shown in the dashboard.
+ *
+ * Parameters:
+ *     beachName - Name of the selected beach.
+ */
+function updateDashboardBeachName(beachName) {
+
+    const element = document.getElementById("dashboardBeachName");
+
+    if (!element)
+        return;
+
+    element.textContent = beachName;
+
+}
