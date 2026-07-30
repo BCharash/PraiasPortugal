@@ -44,6 +44,21 @@ async function loadData() {
 
 }
 
+//--------------------------------------------------
+// Domain Lookup
+//--------------------------------------------------
+
+function findBeach(id) {
+
+    return beaches.find(beach => beach.id === id);
+
+}
+
+function findBeachComplex(id) {
+
+    return beachComplexes.find(complex => complex.id === id);
+
+}
 
 //--------------------------------------------------
 // Beach Display
