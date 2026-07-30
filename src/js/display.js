@@ -2,6 +2,14 @@
 // Beach Display
 //--------------------------------------------------
 
+/*
+ * Display the information for the selected beach.
+ *
+ * Parameters:
+ *     beachId - The unique identifier of the beach to display.
+ */
+
+
 function displayBeach(beachId) {
 
     const beach = findBeach(beachId);
