@@ -68,4 +68,6 @@ function displayBeach(beachId) {
     setText(latitudeSpan, beach.latitude);
     setText(longitudeSpan, beach.longitude);
 
+    updateDashboardBeachName(beach.name);
+
 }
