@@ -37,6 +37,11 @@ function findBeachComplex(id) {
 
 }
 
+
+//--------------------------------------------------
+// Data Queries
+//--------------------------------------------------
+
 /*
  * Return a sorted list of all regions.
  *
