@@ -48,16 +48,14 @@ function populateBeaches(beachComplexId) {
 
     beachSelect.innerHTML = "";
 
-    const complex =
-        beachComplexes.find(c => c.id === beachComplexId);
+    const complex = findBeachComplex(beachComplexId);
 
     if (!complex)
         return;
 
     complex.beaches.forEach(beachId => {
 
-        const beach =
-            beaches.find(b => b.id === beachId);
+        const beach = findBeach(beachId);
 
         if (!beach)
             return;
