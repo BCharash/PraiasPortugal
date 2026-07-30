@@ -60,14 +60,31 @@ function findBeachComplex(id) {
 
 }
 
+
+//--------------------------------------------------
+// Domain Lookup
+//--------------------------------------------------
+
+function findBeach(id) {
+
+    return beaches.find(beach => beach.id === id);
+
+}
+
+function findBeachComplex(id) {
+
+    return beachComplexes.find(complex => complex.id === id);
+
+}
+
+
 //--------------------------------------------------
 // Beach Display
 //--------------------------------------------------
 
 function displayBeach(beachId) {
 
-    const beach =
-        beaches.find(b => b.id === beachId);
+    const beach = findBeach(beachId);
 
     if (!beach)
         return;
