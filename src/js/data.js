@@ -36,3 +36,15 @@ function findBeachComplex(id) {
     return beachComplexes.find(complex => complex.id === id);
 
 }
+
+/*
+ * Return a sorted list of all regions.
+ *
+ * Returns:
+ *     An array containing the unique region names.
+ */
+function getRegions() {
+
+    return [...new Set(beachComplexes.map(c => c.region))].sort();
+
+}
