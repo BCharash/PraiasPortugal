@@ -1,3 +1,54 @@
+/*
+ * --------------------------------------------------
+ * browse.js
+ * --------------------------------------------------
+ *
+ * Purpose:
+ *     Populate the drop-down lists that allow the
+ *     user to browse beaches.
+ *
+ * Responsibilities:
+ *     - Populate the Region list.
+ *     - Populate the Beach Complex list.
+ *     - Populate the Beach list.
+ *
+ * This module should not:
+ *     - Load data.
+ *     - Display beach information.
+ *     - Start the application.
+ */
+
+//--------------------------------------------------
+// Browse Helpers
+//--------------------------------------------------
+
+/*
+ * Add an option to a select control.
+ *
+ * Parameters:
+ *     select - The select element to update.
+ *     value  - The option value.
+ *     text   - The text displayed to the user.
+ */
+function addOption(select, value, text) {
+
+    const option = document.createElement("option");
+
+    option.value = value;
+    option.textContent = text;
+
+    select.appendChild(option);
+
+}
+
+
+//--------------------------------------------------
+// Region Browsing
+//--------------------------------------------------
+
+/*
+ * Populate the Region drop-down list.
+ */
 function populateRegions() {
 
     const regions =
@@ -7,12 +58,7 @@ function populateRegions() {
 
     regions.forEach(region => {
 
-        const option = document.createElement("option");
-
-        option.value = region;
-        option.textContent = region;
-
-        regionSelect.appendChild(option);
+        addOption(regionSelect, region, region);
 
     });
 
@@ -21,6 +67,18 @@ function populateRegions() {
 
 }
 
+
+//--------------------------------------------------
+// Beach Complex Browsing
+//--------------------------------------------------
+
+/*
+ * Populate the Beach Complex drop-down list for
+ * the selected region.
+ *
+ * Parameters:
+ *     region - The selected region.
+ */
 function populateBeachComplexes(region) {
 
     beachComplexSelect.innerHTML = "";
@@ -30,12 +88,11 @@ function populateBeachComplexes(region) {
 
     complexes.forEach(complex => {
 
-        const option = document.createElement("option");
-
-        option.value = complex.id;
-        option.textContent = complex.name;
-
-        beachComplexSelect.appendChild(option);
+        addOption(
+            beachComplexSelect,
+            complex.id,
+            complex.name
+        );
 
     });
 
@@ -44,6 +101,18 @@ function populateBeachComplexes(region) {
 
 }
 
+
+//--------------------------------------------------
+// Beach Browsing
+//--------------------------------------------------
+
+/*
+ * Populate the Beach drop-down list for the
+ * selected beach complex.
+ *
+ * Parameters:
+ *     beachComplexId - The selected beach complex.
+ */
 function populateBeaches(beachComplexId) {
 
     beachSelect.innerHTML = "";
@@ -60,12 +129,11 @@ function populateBeaches(beachComplexId) {
         if (!beach)
             return;
 
-        const option = document.createElement("option");
-
-        option.value = beach.id;
-        option.textContent = beach.name;
-
-        beachSelect.appendChild(option);
+        addOption(
+            beachSelect,
+            beach.id,
+            beach.name
+        );
 
     });
 
