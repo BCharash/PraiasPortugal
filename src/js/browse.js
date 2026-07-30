@@ -82,8 +82,7 @@ function populateBeachComplexes(region) {
 
     beachComplexSelect.innerHTML = "";
 
-    const complexes =
-        beachComplexes.filter(c => c.region === region);
+    const complexes = getBeachComplexes(region);
 
     complexes.forEach(complex => {
 
