@@ -115,17 +115,9 @@ function populateBeaches(beachComplexId) {
 
     beachSelect.innerHTML = "";
 
-    const complex = findBeachComplex(beachComplexId);
+    const beaches = getBeaches(beachComplexId);
 
-    if (!complex)
-        return;
-
-    complex.beaches.forEach(beachId => {
-
-        const beach = findBeach(beachId);
-
-        if (!beach)
-            return;
+    beaches.forEach(beach => {
 
         addOption(
             beachSelect,
@@ -135,7 +127,7 @@ function populateBeaches(beachComplexId) {
 
     });
 
-    if (complex.beaches.length > 0)
-        displayBeach(complex.beaches[0]);
+    if (beaches.length > 0)
+        displayBeach(beaches[0].id);
 
 }
