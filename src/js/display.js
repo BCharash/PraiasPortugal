@@ -1,5 +1,31 @@
+/*
+ * --------------------------------------------------
+ * display.js
+ * --------------------------------------------------
+ *
+ * Purpose:
+ *     Display information in the user interface.
+ *
+ * Responsibilities:
+ *     - Display information about the selected beach.
+ *
+ * This module should not:
+ *     - Load data.
+ *     - Search for data.
+ *     - Respond to user input.
+ *
+ * Future display functions (examples):
+ *     - displayBeach()
+ *     - displayWeather()
+ *     - displayTides()
+ *     - displayFacilities()
+ *     - displayAccessibility()
+ *     - displayParking()
+ *     - displayPhotos()
+ */
+
 //--------------------------------------------------
-// Beach Display
+// Display Helpers
 //--------------------------------------------------
 
 /*
@@ -9,7 +35,8 @@
  *     element - The HTML element to update.
  *     value   - The value to display.
  *
- * If the value is null or undefined, an empty string is displayed.
+ * If the value is null or undefined, an empty string
+ * is displayed instead.
  */
 function setText(element, value) {
 
@@ -18,11 +45,15 @@ function setText(element, value) {
 }
 
 
+//--------------------------------------------------
+// Beach Display
+//--------------------------------------------------
+
 /*
  * Display the information for the selected beach.
  *
  * Parameters:
- *     beachId - The unique identifier of the beach to display.
+ *     beachId - The unique identifier of the beach.
  */
 function displayBeach(beachId) {
 
