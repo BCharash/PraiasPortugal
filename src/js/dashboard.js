@@ -56,3 +56,12 @@ function initializeDashboard() {
 
     
 }
+
+
+function updateDashboardBeachName(beachName) {
+
+    const beach = document.getElementById("dashboardBeachName");
+
+    beach.textContent = beachName;
+
+}
