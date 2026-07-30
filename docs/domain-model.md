@@ -84,31 +84,21 @@ A Beach Complex contains one or more Beach Sections.
 
 ---
 
-# Beach Section
+# Beach
 
-A Beach Section represents an individually managed or commonly recognised portion of a Beach Complex.
+A Beach represents an individual named public beach.
 
-Examples:
+Examples include:
 
-```text
-Praia de Santa Rita
+- Praia da Física
+- Praia do Centro
+- Praia Formosa
+- Praia de Santa Rita Norte
+- Praia de Santa Rita Sul
 
-    • Norte
-    • Sul
-```
+A Beach belongs to exactly one Beach Complex.
 
-```text
-Santa Cruz
-
-    • Praia da Física
-    • Praia do Centro
-    • Praia Formosa
-    • Praia Azul
-    • Praia do Pisão
-    • Praia da Vigia
-```
-
-Each Beach Section may have different visitor facilities and services.
+Each Beach may have different visitor facilities, services, and operational characteristics.
 
 Typical information includes:
 
@@ -125,8 +115,7 @@ Typical information includes:
 - Webcams
 - Photos
 
-A Beach Section contains zero or more Points of Interest.
-
+A Beach contains zero or more Points of Interest.
 ---
 
 # Point of Interest
