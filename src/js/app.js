@@ -21,6 +21,8 @@ async function initializeApplication() {
 
     await initializeData();
 
+    initializeDashboard();  
+
     populateRegions();
 
     regionSelect.addEventListener("change", () => {
