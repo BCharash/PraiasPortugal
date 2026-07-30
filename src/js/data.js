@@ -53,3 +53,20 @@ function getRegions() {
     return [...new Set(beachComplexes.map(c => c.region))].sort();
 
 }
+
+/*
+ * Return the beach complexes in a region.
+ *
+ * Parameters:
+ *     region - The region to search.
+ *
+ * Returns:
+ *     An array of beach complexes.
+ */
+function getBeachComplexes(region) {
+
+    return beachComplexes.filter(
+        complex => complex.region === region
+    );
+
+}
