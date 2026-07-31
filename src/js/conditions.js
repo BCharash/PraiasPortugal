@@ -62,10 +62,8 @@ function updateConditions(dashboardData) {
     //--------------------------------------------------
 
     if (weather) {
-        
-//debug console.log
 
-        console.log(weather);
+
 
         airTempElement.textContent      = formatAirTemperature(weather);
         airFeelsLikeElement.textContent = formatFeelsLike(weather);
