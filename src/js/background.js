@@ -12,8 +12,10 @@ function updateBackground(condition) {
         "background-night"
     ];
 
+    // Remove any existing background theme
     document.body.classList.remove(...backgroundClasses);
 
+    // Apply the requested theme
     document.body.classList.add(`background-${condition}`);
 
 }
