@@ -1,60 +1,88 @@
 /*
  * --------------------------------------------------
- * marineService.js
+ * marineFormatter.js
  * --------------------------------------------------
  *
  * Purpose:
- *     Retrieve current marine conditions from the
- *     Open-Meteo Marine API.
+ *     Format marine conditions for display.
  *
  * Responsibilities:
- *     - Request marine data.
- *     - Extract the current conditions.
- *     - Return a clean JavaScript object.
+ *     - Format sea temperature.
+ *     - Format surf conditions.
+ *     - Convert wave direction to compass text.
  */
 
 //--------------------------------------------------
-// Marine Conditions
+// Public Formatters
 //--------------------------------------------------
 
 /*
- * Retrieve the current marine conditions.
- *
- * Parameters:
- *     beach - Beach object containing latitude and longitude.
- *
- * Returns:
- *     Current marine conditions.
+ * Format the sea surface temperature.
  */
-async function getCurrentMarineConditions(beach) {
+function formatSeaTemperature(marine) {
 
-    const url =
-        `https://marine-api.open-meteo.com/v1/marine` +
-        `?latitude=${beach.latitude}` +
-        `&longitude=${beach.longitude}` +
-        `&current=` +
-        `sea_surface_temperature,` +
-        `wave_height,` +
-        `wave_direction,` +
-        `wave_period`;
+    if (!marine || marine.seaTemperature == null)
+        return "--";
 
-    const response = await fetch(url);
+    return `${marine.seaTemperature.toFixed(1)}°C`;
 
-    if (!response.ok)
-        throw new Error("Unable to retrieve marine conditions.");
+}
 
-    const data = await response.json();
 
-    const current = data.current;
+/*
+ * Format the surf conditions.
+ */
+function formatSurf(marine) {
 
-    return {
+    if (!marine || marine.waveHeight == null)
+        return "--";
 
-        seaTemperature: current.sea_surface_temperature,
+    let text = `${marine.waveHeight.toFixed(1)} m`;
 
-        waveHeight: current.wave_height,
-        waveDirection: current.wave_direction,
-        wavePeriod: current.wave_period
+    if (marine.wavePeriod != null)
+        text += ` @ ${Math.round(marine.wavePeriod)} s`;
 
-    };
+    return text;
+
+}
+
+
+/*
+ * Format the wave direction.
+ */
+function formatWaveDirection(marine) {
+
+    if (!marine || marine.waveDirection == null)
+        return "--";
+
+    const direction = getCompassDirection(marine.waveDirection);
+
+    return `${direction} ${Math.round(marine.waveDirection)}°`;
+
+}
+
+
+//--------------------------------------------------
+// Private Helpers
+//--------------------------------------------------
+
+function getCompassDirection(degrees) {
+
+    const directions = [
+
+        "N",
+        "NE",
+        "E",
+        "SE",
+        "S",
+        "SW",
+        "W",
+        "NW"
+
+    ];
+
+    const index = Math.round(degrees / 45) % 8;
+
+    return directions[index];
 
 }
