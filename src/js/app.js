@@ -32,7 +32,7 @@ async function initializeApplication() {
     // weather conditions.
 
     updateBackground("sunny");
-    console.log("Reached initializeApplication");
+    //console.log("Reached initializeApplication");
     
     populateRegions();
 
