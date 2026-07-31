@@ -7,3 +7,27 @@ select {
     padding: 6px;
     font-size: 16px;
 }
+
+/* ==========================================================
+   Dashboard Background Themes
+   ========================================================== */
+
+.background-sunny {
+    background: linear-gradient(to bottom, #87CEEB, #EAF8FF);
+}
+
+.background-cloudy {
+    background: linear-gradient(to bottom, #AAB7C4, #E3E7EB);
+}
+
+.background-rain {
+    background: linear-gradient(to bottom, #5F6F86, #AEB9C6);
+}
+
+.background-storm {
+    background: linear-gradient(to bottom, #2C3E50, #566573);
+}
+
+.background-night {
+    background: linear-gradient(to bottom, #0B1D3A, #1C3D6E);
+}
