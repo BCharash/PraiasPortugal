@@ -22,6 +22,7 @@ async function getCurrentWeather(beach) {
         `wind_direction_10m,` +
         `wind_gusts_10m,` +
         `weather_code,` +
+        `uv_index,` +
         `is_day`;
 
     const response = await fetch(url);
@@ -43,6 +44,8 @@ async function getCurrentWeather(beach) {
                                  data.current.weather_code,
                                  data.current.is_day === 1
                              ),
+
+        uvIndex:             data.current.uv_index,
 
         isDay:               data.current.is_day === 1
 
