@@ -60,6 +60,17 @@ async function displayBeach(beachId) {
     const weather = await getCurrentWeather(beach);
 
     //--------------------------------------------------
+    // Dashboard Data
+    //--------------------------------------------------
+
+    const dashboardData = {
+
+        beach,
+        weather
+
+    };
+
+    //--------------------------------------------------
     // Beach Information
     //--------------------------------------------------
 
@@ -73,6 +84,6 @@ async function displayBeach(beachId) {
     // Dashboard
     //--------------------------------------------------
 
-    updateDashboard(beach, weather);
+    updateDashboard(dashboardData);
 
 }
