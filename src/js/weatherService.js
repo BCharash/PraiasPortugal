@@ -24,7 +24,10 @@ async function getCurrentWeather(beach) {
         `wind_gusts_10m,` +
         `weather_code,` +
         `uv_index,` +
-        `is_day`;
+        `is_day` +
+        `&daily=` +
+        `temperature_2m_max,` +
+        `temperature_2m_min`;
 
     const response = await fetch(url);
 
@@ -35,6 +38,9 @@ async function getCurrentWeather(beach) {
         airTemperature:      data.current.temperature_2m,
         apparentTemperature: data.current.apparent_temperature,
         relativeHumidity:    data.current.relative_humidity_2m,
+
+        highTemperature:     data.daily.temperature_2m_max[0],
+        lowTemperature:      data.daily.temperature_2m_min[0],
 
         windSpeed:           data.current.wind_speed_10m,
         windDirection:       data.current.wind_direction_10m,
