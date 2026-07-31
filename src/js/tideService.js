@@ -13,7 +13,7 @@
  *     - Find the next low tide.
  */
 
-const HYDROGRAPHIC_ZERO_OFFSET = 2.0;
+const HYDROGRAPHIC_ZERO_OFFSET = 2.08;
 
 
 //--------------------------------------------------
