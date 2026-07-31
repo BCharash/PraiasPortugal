@@ -36,8 +36,7 @@ select {
    Dashboard Metric Secondary Values
    ========================================================== */
 
-#dashboardAirFeelsLike,
-#dashboardAirHighLow {
+.metric-secondary    {
 
     font-size: 0.85em;
     color: #555;

@@ -8,6 +8,7 @@
 //--------------------------------------------------
 
 let airTempElement;
+let airHumidityElement;
 let airFeelsLikeElement;
 let airHighLowElement;
 
@@ -25,6 +26,7 @@ let uvElement;
 function initializeConditions() {
 
     airTempElement      = document.getElementById("dashboardAirTemp");
+    airHumidityElement  = document.getElementById("dashboardAirHumidity");
     airFeelsLikeElement = document.getElementById("dashboardAirFeelsLike");
     airHighLowElement   = document.getElementById("dashboardAirHighLow");
 
@@ -35,6 +37,7 @@ function initializeConditions() {
     uvElement      = document.getElementById("dashboardUV");
 
     airTempElement.textContent      = "--";
+    airHumidityElement.textContent  = "--";
     airFeelsLikeElement.textContent = "--";
     airHighLowElement.textContent   = "--";
 
@@ -63,9 +66,8 @@ function updateConditions(dashboardData) {
 
     if (weather) {
 
-
-
         airTempElement.textContent      = formatAirTemperature(weather);
+        airHumidityElement.textContent  = formatHumidity(weather);
         airFeelsLikeElement.textContent = formatFeelsLike(weather);
         airHighLowElement.textContent   = formatHighLow(weather);
 
