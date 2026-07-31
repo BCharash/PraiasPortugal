@@ -11,12 +11,17 @@
 
 function formatAirTemperature(weather) {
 
-    let text = `${weather.airTemperature.toFixed(0)}°C`;
+    return `${weather.airTemperature.toFixed(0)}°C`;
 
-    if (weather.relativeHumidity != null)
-        text += ` • RH ${Math.round(weather.relativeHumidity)}%`;
+}
 
-    return text;
+
+function formatHumidity(weather) {
+
+    if (weather.relativeHumidity == null)
+        return "--";
+
+    return `RH ${Math.round(weather.relativeHumidity)}%`;
 
 }
 
