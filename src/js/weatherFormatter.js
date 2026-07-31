@@ -28,6 +28,13 @@ function formatFeelsLike(weather) {
 }
 
 
+function formatHighLow(weather) {
+
+    return `H ${Math.round(weather.highTemperature)}°  L ${Math.round(weather.lowTemperature)}°`;
+
+}
+
+
 function formatConditions(weather) {
 
     return weather.description;
