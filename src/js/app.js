@@ -1,41 +1,26 @@
 //--------------------------------------------------
-// Application Startup
+// User Interface
 //--------------------------------------------------
 
-async function initializeApplication() {
+populateRegions();
 
-    await initializeData();
+regionSelect.addEventListener("change", () => {
+    populateBeachComplexes(regionSelect.value);
+});
 
-    initializeDashboard();
+beachComplexSelect.addEventListener("change", () => {
+    populateBeaches(beachComplexSelect.value);
+});
 
-    //--------------------------------------------------
-    // Dashboard
-    //--------------------------------------------------
-
-    // Set the initial dashboard background theme.
-    // This will eventually be determined by the current
-    // weather conditions.
-
-    //******* updateBackground("sunny");
-    console.log("Reached initializeApplication");
-
-    
-    //--------------------------------------------------
-    // User Interface
-    //--------------------------------------------------
-
-    populateRegions();
-
-    regionSelect.addEventListener("change", () => {
-        populateBeachComplexes(regionSelect.value);
-    });
-
-    beachComplexSelect.addEventListener("change", () => {
-        populateBeaches(beachComplexSelect.value);
-    });
-
-    beachSelect.addEventListener("change", () => {
-        displayBeach(beachSelect.value);
-    });
+beachSelect.addEventListener("change", () => {
+    displayBeach(beachSelect.value);
+});
 
 }
+
+
+//--------------------------------------------------
+// Application Entry Point
+//--------------------------------------------------
+
+initializeApplication();
