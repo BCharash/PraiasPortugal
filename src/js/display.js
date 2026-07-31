@@ -66,6 +66,12 @@ async function displayBeach(beachId) {
     const marine = await getCurrentMarineConditions(beach);
 
     //--------------------------------------------------
+    // Tide Information
+    //--------------------------------------------------
+
+    const tide = getTideInformation(marine);
+
+    //--------------------------------------------------
     // Dashboard Data
     //--------------------------------------------------
 
@@ -73,7 +79,8 @@ async function displayBeach(beachId) {
 
         beach,
         weather,
-        marine
+        marine,
+        tide
 
     };
 
