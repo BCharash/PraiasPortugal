@@ -1,22 +1,19 @@
-//
-// background.js
-//
-// Controls the visual background of the application.
-//
+//--------------------------------------------------
+// Background
+//--------------------------------------------------
 
-const BACKGROUND_CLASSES = [
-    "background-sunny",
-    "background-cloudy",
-    "background-rain",
-    "background-storm",
-    "background-night"
-];
+function updateBackground(condition) {
 
-export function updateBackground(condition) {
+    const backgroundClasses = [
+        "background-sunny",
+        "background-cloudy",
+        "background-rain",
+        "background-storm",
+        "background-night"
+    ];
 
-    // Remove any existing background theme
-    document.body.classList.remove(...BACKGROUND_CLASSES);
+    document.body.classList.remove(...backgroundClasses);
 
-    // Apply the new theme
     document.body.classList.add(`background-${condition}`);
+
 }
