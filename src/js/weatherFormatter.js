@@ -1,87 +1,111 @@
-/*
- * --------------------------------------------------
- * tideFormatter.js
- * --------------------------------------------------
- *
- * Purpose:
- *     Format tide information for display.
- *
- * Responsibilities:
- *     - Format the current tide height.
- *     - Format the tide trend.
- *     - Format the next high tide.
- *     - Format the next low tide.
- */
-
 //--------------------------------------------------
-// Public Formatters
+// Weather Formatter
+//
+// Formats weather information for display.
 //--------------------------------------------------
 
-/*
- * Format the current tide height.
- */
-function formatCurrentTideHeight(tide) {
 
-    if (!tide || tide.currentHeight == null)
-        return "--";
+//--------------------------------------------------
+// Public Functions
+//--------------------------------------------------
 
-    return `${tide.currentHeight.toFixed(1)} m`;
+function formatAirTemperature(weather) {
 
-}
-
-
-/*
- * Format the tide trend.
- */
-function formatTideTrend(tide) {
-
-    if (!tide)
-        return "--";
-
-    return tide.isRising ? "↑ Rising" : "↓ Falling";
+    return `${weather.airTemperature.toFixed(0)}°C`;
 
 }
 
 
-/*
- * Format the next high tide.
- */
-function formatNextHighTide(tide) {
+function formatFeelsLike(weather) {
 
-    if (!tide || !tide.nextHigh)
-        return "--";
-
-    return `↑ ${formatTime(tide.nextHigh.time)} (${tide.nextHigh.height.toFixed(1)} m)`;
+    return `Feels like ${weather.apparentTemperature.toFixed(0)}°C`;
 
 }
 
 
-/*
- * Format the next low tide.
- */
-function formatNextLowTide(tide) {
+function formatConditions(weather) {
 
-    if (!tide || !tide.nextLow)
-        return "--";
+    return weather.description;
 
-    return `↓ ${formatTime(tide.nextLow.time)} (${tide.nextLow.height.toFixed(1)} m)`;
+}
+
+
+function formatWind(weather) {
+
+    return `${getWindArrow(weather.windDirection)} ` +
+           `${getCompassDirection(weather.windDirection)} ` +
+           `${weather.windDirection}° ` +
+           `${weather.windSpeed.toFixed(0)} km/h`;
+
+}
+
+
+function formatWindGusts(weather) {
+
+    return `${weather.windGusts.toFixed(0)} km/h`;
 
 }
 
 
 //--------------------------------------------------
-// Private Helpers
+// Private Functions
 //--------------------------------------------------
 
-function formatTime(isoTime) {
+function getCompassDirection(degrees) {
 
-    const date = new Date(isoTime);
+    const directions = [
 
-    return date.toLocaleTimeString([], {
+        "N",
+        "NNE",
+        "NE",
+        "ENE",
+        "E",
+        "ESE",
+        "SE",
+        "SSE",
+        "S",
+        "SSW",
+        "SW",
+        "WSW",
+        "W",
+        "WNW",
+        "NW",
+        "NNW"
 
-        hour: "2-digit",
-        minute: "2-digit"
+    ];
 
-    });
+    const index = Math.round(degrees / 22.5) % 16;
+
+    return directions[index];
+
+}
+
+
+function getWindArrow(degrees) {
+
+    const arrows = [
+
+        "↑",
+        "↗",
+        "↗",
+        "↗",
+        "→",
+        "↘",
+        "↘",
+        "↘",
+        "↓",
+        "↙",
+        "↙",
+        "↙",
+        "←",
+        "↖",
+        "↖",
+        "↖"
+
+    ];
+
+    const index = Math.round(degrees / 22.5) % 16;
+
+    return arrows[index];
 
 }
