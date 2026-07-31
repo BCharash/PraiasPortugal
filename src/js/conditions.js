@@ -4,17 +4,36 @@
 
 
 //--------------------------------------------------
+// Private Variables
+//--------------------------------------------------
+
+let airTempElement;
+let seaTempElement;
+let windElement;
+let surfElement;
+let tideElement;
+let uvElement;
+
+
+//--------------------------------------------------
 // Initialization
 //--------------------------------------------------
 
 function initializeConditions() {
 
-    document.getElementById("dashboardAirTemp").textContent = "--";
-    document.getElementById("dashboardSeaTemp").textContent = "--";
-    document.getElementById("dashboardWind").textContent    = "--";
-    document.getElementById("dashboardSurf").textContent    = "--";
-    document.getElementById("dashboardTide").textContent    = "--";
-    document.getElementById("dashboardUV").textContent      = "--";
+    airTempElement = document.getElementById("dashboardAirTemp");
+    seaTempElement = document.getElementById("dashboardSeaTemp");
+    windElement    = document.getElementById("dashboardWind");
+    surfElement    = document.getElementById("dashboardSurf");
+    tideElement    = document.getElementById("dashboardTide");
+    uvElement      = document.getElementById("dashboardUV");
+
+    airTempElement.textContent = "--";
+    seaTempElement.textContent = "--";
+    windElement.textContent    = "--";
+    surfElement.textContent    = "--";
+    tideElement.textContent    = "--";
+    uvElement.textContent      = "--";
 
 }
 
@@ -28,11 +47,9 @@ function updateConditions(weather) {
     if (!weather)
         return;
 
-    document.getElementById("dashboardAirTemp").textContent =
-        formatAirTemperature(weather);
+    airTempElement.textContent = formatAirTemperature(weather);
 
-    document.getElementById("dashboardWind").textContent =
-        formatWind(weather);
+    windElement.textContent = formatWind(weather);
 
 }
 
