@@ -8,6 +8,9 @@
 //--------------------------------------------------
 
 let airTempElement;
+let airFeelsLikeElement;
+let airHighLowElement;
+
 let seaTempElement;
 let windElement;
 let surfElement;
@@ -21,14 +24,20 @@ let uvElement;
 
 function initializeConditions() {
 
-    airTempElement = document.getElementById("dashboardAirTemp");
+    airTempElement      = document.getElementById("dashboardAirTemp");
+    airFeelsLikeElement = document.getElementById("dashboardAirFeelsLike");
+    airHighLowElement   = document.getElementById("dashboardAirHighLow");
+
     seaTempElement = document.getElementById("dashboardSeaTemp");
     windElement    = document.getElementById("dashboardWind");
     surfElement    = document.getElementById("dashboardSurf");
     tideElement    = document.getElementById("dashboardTide");
     uvElement      = document.getElementById("dashboardUV");
 
-    airTempElement.textContent = "--";
+    airTempElement.textContent      = "--";
+    airFeelsLikeElement.textContent = "--";
+    airHighLowElement.textContent   = "--";
+
     seaTempElement.textContent = "--";
     windElement.textContent    = "--";
     surfElement.textContent    = "--";
@@ -54,7 +63,9 @@ function updateConditions(dashboardData) {
 
     if (weather) {
 
-        airTempElement.textContent = formatAirTemperature(weather);
+        airTempElement.textContent      = formatAirTemperature(weather);
+        airFeelsLikeElement.textContent = formatFeelsLike(weather);
+        airHighLowElement.textContent   = formatHighLow(weather);
 
         windElement.textContent = formatWind(weather);
 
