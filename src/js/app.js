@@ -23,6 +23,17 @@ async function initializeApplication() {
 
     initializeDashboard();  
 
+    //--------------------------------------------------
+    // Dashboard
+    //--------------------------------------------------
+
+    // Set the initial dashboard background theme.
+    // This will eventually be determined by the current
+    // weather conditions.
+
+    updateBackground("sunny");
+    console.log("Reached initializeApplication");
+    
     populateRegions();
 
     regionSelect.addEventListener("change", () => {
