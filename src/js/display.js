@@ -53,20 +53,26 @@ async function displayBeach(beachId) {
     if (!beach)
         return;
 
-    setText(regionSpan, beach.region);
-    setText(municipalitySpan, beach.municipality);
-    setText(districtSpan, beach.district);
-    setText(latitudeSpan, beach.latitude);
-    setText(longitudeSpan, beach.longitude);
-
-    updateDashboard(beach);
-
     //--------------------------------------------------
     // Current Weather
     //--------------------------------------------------
 
     const weather = await getCurrentWeather(beach);
 
-    console.log(weather);
+    //--------------------------------------------------
+    // Beach Information
+    //--------------------------------------------------
+
+    setText(regionSpan, beach.region);
+    setText(municipalitySpan, beach.municipality);
+    setText(districtSpan, beach.district);
+    setText(latitudeSpan, beach.latitude);
+    setText(longitudeSpan, beach.longitude);
+
+    //--------------------------------------------------
+    // Dashboard
+    //--------------------------------------------------
+
+    updateDashboard(beach, weather);
 
 }
