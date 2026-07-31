@@ -2,13 +2,26 @@
 <html lang="en">
 
 <head>
+
+    <!-- ==========================================================
+         Document Metadata
+    =========================================================== -->
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Praias de Portugal</title>
+
+    <!-- Application Styles -->
     <link rel="stylesheet" href="src/css/styles.css">
+
 </head>
 
 <body>
+
+    <!-- ==========================================================
+         Dashboard
+    =========================================================== -->
 
     <h1>Praias de Portugal</h1>
 
@@ -16,44 +29,62 @@
 
         <h2>Dashboard</h2>
 
+        <!-- Selected Beach Widget -->
+
         <div id="beachHeaderWidget" class="dashboard-widget">
+
             <h3>Selected Beach</h3>
+
             <p id="dashboardBeachName">No beach selected</p>
+
         </div>
+
+        <!-- Alerts Widget -->
 
         <div id="alertsWidget" class="dashboard-widget">
+
             <h3>Alerts</h3>
+
             <p id="dashboardAlerts">No active alerts</p>
-      
+
         </div>
 
+        <!-- Current Conditions Widget -->
+
         <div id="conditionsWidget" class="dashboard-widget">
+
             <h3>Current Conditions</h3>
 
             <table>
 
                 <tr>
+
                     <td>🌡 Air</td>
-                    <td>--</td>
+                    <td id="dashboardAirTemp">--</td>
 
                     <td>🌊 Sea</td>
-                    <td>--</td>
+                    <td id="dashboardSeaTemp">--</td>
+
                 </tr>
 
                 <tr>
+
                     <td>🌬 Wind</td>
-                    <td>--</td>
+                    <td id="dashboardWind">--</td>
 
                     <td>🏄 Surf</td>
-                    <td>--</td>
+                    <td id="dashboardSurf">--</td>
+
                 </tr>
 
                 <tr>
+
                     <td>🌙 Tide</td>
-                    <td>--</td>
+                    <td id="dashboardTide">--</td>
 
                     <td>☀ UV</td>
-                    <td>--</td>
+                    <td id="dashboardUV">--</td>
+
                 </tr>
 
             </table>
@@ -64,42 +95,70 @@
 
     <hr>
 
+    <!-- ==========================================================
+         Beach Selection
+    =========================================================== -->
+
     <div>
+
         <label for="regionSelect"><strong>Region:</strong></label><br>
+
         <select id="regionSelect"></select>
+
     </div>
 
     <br>
 
     <div>
+
         <label for="beachComplexSelect"><strong>Beach Complex:</strong></label><br>
+
         <select id="beachComplexSelect"></select>
+
     </div>
 
     <br>
 
     <div>
+
         <label for="beachSelect"><strong>Beach:</strong></label><br>
+
         <select id="beachSelect"></select>
+
     </div>
 
     <hr>
 
+    <!-- ==========================================================
+         Beach Information
+    =========================================================== -->
+
     <h2>Selected Beach</h2>
 
     <p><strong>Region:</strong> <span id="region"></span></p>
+
     <p><strong>Municipality:</strong> <span id="municipality"></span></p>
+
     <p><strong>District:</strong> <span id="district"></span></p>
+
     <p><strong>Latitude:</strong> <span id="latitude"></span></p>
+
     <p><strong>Longitude:</strong> <span id="longitude"></span></p>
+
+    <!-- ==========================================================
+         JavaScript Modules
+    =========================================================== -->
 
     <script src="src/js/data.js"></script>
     <script src="src/js/browse.js"></script>
     <script src="src/js/display.js"></script>
+
     <script src="src/js/beachHeader.js"></script>
     <script src="src/js/alerts.js"></script>
     <script src="src/js/conditions.js"></script>
+
     <script src="src/js/dashboard.js"></script>
+
     <script src="src/js/background.js"></script>
     <script src="src/js/app.js"></script>
 
