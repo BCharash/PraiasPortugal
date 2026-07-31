@@ -15,8 +15,11 @@ async function initializeApplication() {
     // Set the initial dashboard background theme.
     // This will eventually be determined by the current
     // weather conditions.
-    updateBackground("sunny");
 
+    //******* updateBackground("sunny");
+    console.log("Reached initializeApplication");
+
+    
     //--------------------------------------------------
     // User Interface
     //--------------------------------------------------
