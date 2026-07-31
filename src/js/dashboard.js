@@ -1,8 +1,19 @@
 /*
+ * --------------------------------------------------
  * dashboard.js
+ * --------------------------------------------------
  *
- * Coordinates the Dashboard.
+ * Purpose:
+ *     Coordinate the dashboard widgets.
+ *
+ * Responsibilities:
+ *     - Initialize dashboard widgets.
+ *     - Update dashboard widgets.
  */
+
+//--------------------------------------------------
+// Initialization
+//--------------------------------------------------
 
 function initializeDashboard() {
 
@@ -12,10 +23,15 @@ function initializeDashboard() {
 
 }
 
-function updateDashboard(beach) {
+
+//--------------------------------------------------
+// Updates
+//--------------------------------------------------
+
+function updateDashboard(beach, weather) {
 
     updateBeachHeader(beach);
     updateAlerts(beach);
-    updateConditions(beach);
+    updateConditions(weather);
 
 }
