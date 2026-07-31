@@ -253,3 +253,88 @@ A widget-based architecture allows each portion of the dashboard to evolve indep
 ## Status
 
 Accepted
+
+# DJ004 — Dashboard Metrics Support Composite Environmental Metrics
+
+**Date:** 2026-07-31
+
+## Decision
+
+Dashboard metrics may display multiple related values rather than a single measurement.
+
+Each metric presents one primary value together with zero or more secondary values that provide additional context for interpreting the measurement.
+
+Examples include:
+
+- Air
+  - Current Temperature
+  - Relative Humidity
+  - Feels Like Temperature
+  - Daily High / Low
+
+- Wind
+  - Current Speed
+  - Gust Speed
+  - Direction
+
+- UV
+  - Current UV Index
+  - Daily Maximum UV Index
+
+- Tide
+  - Current Height
+  - Rising / Falling
+  - Next High or Low Tide
+
+The primary value should remain immediately recognizable while secondary values provide additional information without requiring navigation to another screen.
+
+## Motivation
+
+Users make decisions based on environmental conditions rather than isolated measurements.
+
+A single value often lacks sufficient context.
+
+For example, air temperature is better interpreted when accompanied by relative humidity, apparent temperature, and the expected daily temperature range.
+
+Displaying related information together increases information density while reducing navigation and supporting the Dashboard's goal of answering the question:
+
+> "Should I go to this beach today?"
+
+## Consequences
+
+Dashboard widgets become capable of presenting multiple related measurements within a single logical metric.
+
+Formatters remain responsible for formatting individual measurements rather than constructing complete dashboard layouts.
+
+Widgets are responsible for presenting those formatted values.
+
+This separation preserves modularity while allowing widgets to evolve independently.
+
+Future metric enhancements can be added without changing the overall dashboard architecture.
+
+Examples include:
+
+- Wind Gusts
+- Maximum UV Index
+- Sunrise and Sunset
+- Water Quality Indicators
+- Swell Components
+- Tide Predictions
+
+## Alternatives Considered
+
+### Single Value Metrics
+
+Displaying only one value for each metric was considered.
+
+This approach was rejected because it omits contextual information that users routinely consider when making beach decisions and would require additional navigation to obtain related data.
+
+### Concatenated Text Strings
+
+Combining all related information into a single formatted string was considered.
+
+This approach was rejected because it mixes presentation with formatting, reduces flexibility, and complicates future enhancements such as user-selectable units and responsive layouts.
+
+## Status
+
+Accepted
