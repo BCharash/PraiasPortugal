@@ -7,11 +7,13 @@
 function initializeDashboard() {
 
     initializeBeachHeader();
+    initializeAlerts();
 
 }
 
 function updateDashboard(beach) {
 
     updateBeachHeader(beach);
+    updateAlerts(beach);
 
 }
