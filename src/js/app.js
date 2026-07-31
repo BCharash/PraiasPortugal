@@ -2,21 +2,44 @@
 // User Interface
 //--------------------------------------------------
 
-populateRegions();
+const regionSelect = document.getElementById("regionSelect");
+const beachComplexSelect = document.getElementById("beachComplexSelect");
+const beachSelect = document.getElementById("beachSelect");
 
-regionSelect.addEventListener("change", () => {
-    populateBeachComplexes(regionSelect.value);
-});
+const regionSpan = document.getElementById("region");
+const municipalitySpan = document.getElementById("municipality");
+const districtSpan = document.getElementById("district");
+const latitudeSpan = document.getElementById("latitude");
+const longitudeSpan = document.getElementById("longitude");
 
-beachComplexSelect.addEventListener("change", () => {
-    populateBeaches(beachComplexSelect.value);
-});
 
-beachSelect.addEventListener("change", () => {
-    displayBeach(beachSelect.value);
-});
+//--------------------------------------------------
+// Application Startup
+//--------------------------------------------------
+
+async function initializeApplication() {
+
+    await initializeData();
+
+    initializeDashboard();  
+
+    populateRegions();
+
+    regionSelect.addEventListener("change", () => {
+        populateBeachComplexes(regionSelect.value);
+    });
+
+    beachComplexSelect.addEventListener("change", () => {
+        populateBeaches(beachComplexSelect.value);
+    });
+
+    beachSelect.addEventListener("change", () => {
+        displayBeach(beachSelect.value);
+    });
 
 }
+
+
 
 
 //--------------------------------------------------
