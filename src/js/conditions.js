@@ -46,6 +46,7 @@ function updateConditions(dashboardData) {
 
     const weather = dashboardData.weather;
     const marine  = dashboardData.marine;
+    const tide    = dashboardData.tide;
 
     //--------------------------------------------------
     // Weather
@@ -68,6 +69,17 @@ function updateConditions(dashboardData) {
         seaTempElement.textContent = formatSeaTemperature(marine);
 
         surfElement.textContent = formatSurf(marine);
+
+    }
+
+    //--------------------------------------------------
+    // Tide
+    //--------------------------------------------------
+
+    if (tide) {
+
+        tideElement.textContent =
+            `${formatCurrentTideHeight(tide)} ${formatTideTrend(tide)}`;
 
     }
 
