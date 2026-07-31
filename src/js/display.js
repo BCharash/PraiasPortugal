@@ -65,13 +65,6 @@ async function displayBeach(beachId) {
 
     const marine = await getCurrentMarineConditions(beach);
 
-    // debugging
-    console.log("Marine:", marine);
-
-const tide = getTideInformation(marine);
-
-console.log("Tide:", tide);
-
     //--------------------------------------------------
     // Tide Information
     //--------------------------------------------------
