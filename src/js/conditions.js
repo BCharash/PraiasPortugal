@@ -42,7 +42,9 @@ function initializeConditions() {
 // Updates
 //--------------------------------------------------
 
-function updateConditions(weather) {
+function updateConditions(dashboardData) {
+
+    const weather = dashboardData.weather;
 
     if (!weather)
         return;
