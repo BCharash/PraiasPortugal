@@ -58,6 +58,8 @@ function updateConditions(dashboardData) {
 
         windElement.textContent = formatWind(weather);
 
+        uvElement.textContent = formatUV(weather);
+
     }
 
     //--------------------------------------------------
