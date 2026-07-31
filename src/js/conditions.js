@@ -45,13 +45,31 @@ function initializeConditions() {
 function updateConditions(dashboardData) {
 
     const weather = dashboardData.weather;
+    const marine  = dashboardData.marine;
 
-    if (!weather)
-        return;
+    //--------------------------------------------------
+    // Weather
+    //--------------------------------------------------
 
-    airTempElement.textContent = formatAirTemperature(weather);
+    if (weather) {
 
-    windElement.textContent = formatWind(weather);
+        airTempElement.textContent = formatAirTemperature(weather);
+
+        windElement.textContent = formatWind(weather);
+
+    }
+
+    //--------------------------------------------------
+    // Marine
+    //--------------------------------------------------
+
+    if (marine) {
+
+        seaTempElement.textContent = formatSeaTemperature(marine);
+
+        surfElement.textContent = formatSurf(marine);
+
+    }
 
 }
 
