@@ -23,10 +23,16 @@ function initializeConditions() {
 // Updates
 //--------------------------------------------------
 
-function updateConditions(beach) {
+function updateConditions(weather) {
 
-    // Placeholder until weather and ocean data
-    // become available.
+    if (!weather)
+        return;
+
+    document.getElementById("dashboardAirTemp").textContent =
+        `${Math.round(weather.airTemperature)}°C`;
+
+    document.getElementById("dashboardWind").textContent =
+        `${Math.round(weather.windSpeed)} km/h`;
 
 }
 
