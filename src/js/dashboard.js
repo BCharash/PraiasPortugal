@@ -28,10 +28,10 @@ function initializeDashboard() {
 // Updates
 //--------------------------------------------------
 
-function updateDashboard(beach, weather) {
+function updateDashboard(dashboardData) {
 
-    updateBeachHeader(beach);
-    updateAlerts(beach);
-    updateConditions(weather);
+    updateBeachHeader(dashboardData.beach);
+    updateAlerts(dashboardData.beach);
+    updateConditions(dashboardData.weather);
 
 }
