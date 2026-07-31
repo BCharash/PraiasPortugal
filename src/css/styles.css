@@ -31,3 +31,15 @@ select {
 .background-night {
     background: linear-gradient(to bottom, #0B1D3A, #1C3D6E);
 }
+
+/* ==========================================================
+   Dashboard Metric Secondary Values
+   ========================================================== */
+
+#dashboardAirFeelsLike,
+#dashboardAirHighLow {
+
+    font-size: 0.85em;
+    color: #555;
+
+}
