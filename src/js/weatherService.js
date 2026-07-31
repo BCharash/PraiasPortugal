@@ -24,11 +24,16 @@ async function getCurrentWeather(beach) {
         `weather_code,` +
         `is_day`;
 
-    const response = await fetch(url);
+ const response = await fetch(url);
 
-    const data = await response.json();
+console.log("Response Status:", response.status);
 
-    console.log("Weather Service:", data);
+const text = await response.text();
+
+console.log("Raw Response:");
+console.log(text);
+
+const data = JSON.parse(text);
 
     return {
 
