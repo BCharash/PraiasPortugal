@@ -18,6 +18,7 @@ async function getCurrentWeather(beach) {
         `&current=` +
         `temperature_2m,` +
         `apparent_temperature,` +
+        `relative_humidity_2m,` +
         `wind_speed_10m,` +
         `wind_direction_10m,` +
         `wind_gusts_10m,` +
@@ -33,6 +34,7 @@ async function getCurrentWeather(beach) {
 
         airTemperature:      data.current.temperature_2m,
         apparentTemperature: data.current.apparent_temperature,
+        relativeHumidity:    data.current.relative_humidity_2m,
 
         windSpeed:           data.current.wind_speed_10m,
         windDirection:       data.current.wind_direction_10m,
