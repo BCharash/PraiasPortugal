@@ -9,7 +9,7 @@
  * Responsibilities:
  *     - Format sea temperature.
  *     - Format surf conditions.
- *     - Convert wave direction to compass text.
+ *     - Convert wave direction to text.
  */
 
 //--------------------------------------------------
@@ -34,15 +34,16 @@ function formatSeaTemperature(marine) {
  */
 function formatSurf(marine) {
 
-    if (!marine || marine.waveHeight == null)
+    if (!marine ||
+        marine.waveHeight == null ||
+        marine.waveDirection == null ||
+        marine.wavePeriod == null)
         return "--";
 
-    let text = `${marine.waveHeight.toFixed(1)} m`;
+    const arrow = getDirectionArrow(marine.waveDirection);
+    const direction = getCompassDirection(marine.waveDirection);
 
-    if (marine.wavePeriod != null)
-        text += ` @ ${Math.round(marine.wavePeriod)} s`;
-
-    return text;
+    return `${marine.waveHeight.toFixed(1)} m ${arrow} ${direction} @ ${Math.round(marine.wavePeriod)} s`;
 
 }
 
@@ -55,9 +56,10 @@ function formatWaveDirection(marine) {
     if (!marine || marine.waveDirection == null)
         return "--";
 
+    const arrow = getDirectionArrow(marine.waveDirection);
     const direction = getCompassDirection(marine.waveDirection);
 
-    return `${direction} ${Math.round(marine.waveDirection)}°`;
+    return `${arrow} ${direction} ${Math.round(marine.waveDirection)}°`;
 
 }
 
@@ -84,5 +86,27 @@ function getCompassDirection(degrees) {
     const index = Math.round(degrees / 45) % 8;
 
     return directions[index];
+
+}
+
+
+function getDirectionArrow(degrees) {
+
+    const arrows = [
+
+        "↑",
+        "↗",
+        "→",
+        "↘",
+        "↓",
+        "↙",
+        "←",
+        "↖"
+
+    ];
+
+    const index = Math.round(degrees / 45) % 8;
+
+    return arrows[index];
 
 }
