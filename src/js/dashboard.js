@@ -31,7 +31,9 @@ function initializeDashboard() {
 function updateDashboard(dashboardData) {
 
     updateBeachHeader(dashboardData.beach);
+
     updateAlerts(dashboardData.beach);
-    updateConditions(dashboardData.weather);
+
+    updateConditions(dashboardData);
 
 }
