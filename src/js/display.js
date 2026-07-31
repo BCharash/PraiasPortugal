@@ -12,16 +12,7 @@
  * This module should not:
  *     - Load data.
  *     - Search for data.
- *     - Respond to user input.
- *
- * Future display functions (examples):
- *     - displayBeach()
- *     - displayWeather()
- *     - displayTides()
- *     - displayFacilities()
- *     - displayAccessibility()
- *     - displayParking()
- *     - displayPhotos()
+ *     - Start the application.
  */
 
 //--------------------------------------------------
@@ -55,7 +46,7 @@ function setText(element, value) {
  * Parameters:
  *     beachId - The unique identifier of the beach.
  */
-function displayBeach(beachId) {
+async function displayBeach(beachId) {
 
     const beach = findBeach(beachId);
 
@@ -69,5 +60,13 @@ function displayBeach(beachId) {
     setText(longitudeSpan, beach.longitude);
 
     updateDashboard(beach);
+
+    //--------------------------------------------------
+    // Current Weather
+    //--------------------------------------------------
+
+    const weather = await getCurrentWeather(beach);
+
+    console.log(weather);
 
 }
