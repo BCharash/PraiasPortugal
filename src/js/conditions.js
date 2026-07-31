@@ -29,10 +29,10 @@ function updateConditions(weather) {
         return;
 
     document.getElementById("dashboardAirTemp").textContent =
-        `${Math.round(weather.airTemperature)}°C`;
+        formatAirTemperature(weather);
 
     document.getElementById("dashboardWind").textContent =
-        `${Math.round(weather.windSpeed)} km/h`;
+        formatWind(weather);
 
 }
 
