@@ -2,7 +2,7 @@
 // Weather Formatter
 //
 // Formats weather information for display.
-// Uses application unit settings.
+// Uses application unit settings and language.
 //--------------------------------------------------
 
 
@@ -28,7 +28,8 @@ function formatHumidity(weather) {
     if (!weather || weather.relativeHumidity == null)
         return "--";
 
-    return `RH ${Math.round(weather.relativeHumidity)}%`;
+    return `${translate("relativeHumidity")} ` +
+           `${Math.round(weather.relativeHumidity)}%`;
 
 }
 
@@ -41,7 +42,8 @@ function formatFeelsLike(weather) {
     const temperature =
         convertTemperature(weather.apparentTemperature);
 
-    return `Feels like ${temperature.toFixed(0)}${getTemperatureSymbol()}`;
+    return `${translate("feelsLike")} ` +
+           `${temperature.toFixed(0)}${getTemperatureSymbol()}`;
 
 }
 
@@ -59,8 +61,8 @@ function formatHighLow(weather) {
     const low =
         convertTemperature(weather.lowTemperature);
 
-    return `H ${Math.round(high)}${getTemperatureSymbol()}  ` +
-           `L ${Math.round(low)}${getTemperatureSymbol()}`;
+    return `${translate("highShort")} ${Math.round(high)}${getTemperatureSymbol()}  ` +
+           `${translate("lowShort")} ${Math.round(low)}${getTemperatureSymbol()}`;
 
 }
 
@@ -70,7 +72,10 @@ function formatConditions(weather) {
     if (!weather)
         return "--";
 
-    return weather.description;
+    return getTranslatedWeatherDescription(
+        weather.weatherCode,
+        weather.description
+    );
 
 }
 
@@ -87,7 +92,7 @@ function formatWind(weather) {
 
     return `${getWindArrow(weather.windDirection)} ` +
            `${getCompassDirection(weather.windDirection)} ` +
-           `${weather.windDirection}° ` +
+           `${Math.round(weather.windDirection)}° ` +
            `${speed.toFixed(0)} ${getWindSpeedSymbol()}`;
 
 }
@@ -106,9 +111,10 @@ function formatWindGusts(weather) {
 }
 
 
-/*
- * Format the UV Index.
- */
+//--------------------------------------------------
+// UV Index
+//--------------------------------------------------
+
 function formatUV(weather) {
 
     if (!weather || weather.uvIndex == null)
@@ -118,18 +124,83 @@ function formatUV(weather) {
         Math.round(weather.uvIndex);
 
     if (uv <= 2)
-        return `${uv} Low`;
+        return `${uv} ${translate("uvLow")}`;
 
     if (uv <= 5)
-        return `${uv} Moderate`;
+        return `${uv} ${translate("uvModerate")}`;
 
     if (uv <= 7)
-        return `${uv} High`;
+        return `${uv} ${translate("uvHigh")}`;
 
     if (uv <= 10)
-        return `${uv} Very High`;
+        return `${uv} ${translate("uvVeryHigh")}`;
 
-    return `${uv} Extreme`;
+    return `${uv} ${translate("uvExtreme")}`;
+
+}
+
+
+//==================================================
+// Weather Description Translation
+//==================================================
+
+function getTranslatedWeatherDescription(
+    weatherCode,
+    fallbackDescription
+) {
+
+    if (weatherCode == null)
+        return fallbackDescription || "--";
+
+    switch (weatherCode) {
+
+        case 0:
+            return translate("weatherClearSky");
+
+        case 1:
+            return translate("weatherMainlyClear");
+
+        case 2:
+            return translate("weatherPartlyCloudy");
+
+        case 3:
+            return translate("weatherOvercast");
+
+        case 45:
+        case 48:
+            return translate("weatherFog");
+
+        case 51:
+        case 53:
+        case 55:
+            return translate("weatherDrizzle");
+
+        case 61:
+        case 63:
+        case 65:
+            return translate("weatherRain");
+
+        case 71:
+        case 73:
+        case 75:
+            return translate("weatherSnow");
+
+        case 80:
+        case 81:
+        case 82:
+            return translate("weatherRainShowers");
+
+        case 95:
+            return translate("weatherThunderstorm");
+
+        case 96:
+        case 99:
+            return translate("weatherThunderstormHail");
+
+        default:
+            return fallbackDescription || "--";
+
+    }
 
 }
 
