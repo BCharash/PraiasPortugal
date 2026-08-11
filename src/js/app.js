@@ -1470,6 +1470,13 @@ async function initializeApplication() {
     //--------------------------------------------------
 
     populateRegions();
+    
+
+    //--------------------------------------------------
+    // Populate Favorites
+    //--------------------------------------------------
+
+    populateFavoriteBeachOptions();
 
 
     //--------------------------------------------------
@@ -1477,7 +1484,7 @@ async function initializeApplication() {
     //--------------------------------------------------
 
     await restoreSavedBeach();
-    
+
 
     //--------------------------------------------------
     // Clear Favorite Selection
