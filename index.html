@@ -1,144 +1,251 @@
 <!DOCTYPE html>
 <html lang="en">
 
+
 <head>
+
 
     <!-- ==========================================================
          Document Metadata
     =========================================================== -->
 
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+
     <title>Praias de Portugal</title>
+
 
     <!-- Application Styles -->
     <link rel="stylesheet" href="src/css/styles.css">
 
+
 </head>
 
+
 <body>
+
 
     <!-- ==========================================================
          Dashboard
     =========================================================== -->
 
+
     <h1>Praias de Portugal</h1>
+
 
     <div id="dashboard">
 
+
         <h2>Dashboard</h2>
+
 
         <!-- Selected Beach Widget -->
 
+
         <div id="beachHeaderWidget" class="dashboard-widget">
+
 
             <h3>Selected Beach</h3>
 
+
             <p id="dashboardBeachName">No beach selected</p>
 
+
         </div>
+
 
         <!-- Alerts Widget -->
 
+
         <div id="alertsWidget" class="dashboard-widget">
+
 
             <h3>Alerts</h3>
 
+
             <p id="dashboardAlerts">No active alerts</p>
 
+
         </div>
+
 
         <!-- Current Conditions Widget -->
 
+
         <div id="conditionsWidget" class="dashboard-widget">
+
 
             <h3>Current Conditions</h3>
 
+
             <table>
 
+
+                <!-- Air / Sea -->
+
+
                 <tr>
+
 
                     <td>🌡 Air</td>
+
                     <td>
+
                         <div id="dashboardAirTemp">--</div>
-                        <div id="dashboardAirHumidity" class="metric-secondary">--</div>
-                        <div id="dashboardAirFeelsLike" class="metric-secondary">--</div>
-                        <div id="dashboardAirHighLow" class="metric-secondary">--</div>
+
+                        <div id="dashboardAirHumidity"
+                             class="metric-secondary">
+                            --
+                        </div>
+
+                        <div id="dashboardAirFeelsLike"
+                             class="metric-secondary">
+                            --
+                        </div>
+
+                        <div id="dashboardAirHighLow"
+                             class="metric-secondary">
+                            --
+                        </div>
+
                     </td>
 
+
                     <td>🌊 Sea</td>
+
                     <td id="dashboardSeaTemp">--</td>
 
+
                 </tr>
 
+
+                <!-- Wind / Surf -->
+
+
                 <tr>
+
 
                     <td>🌬 Wind</td>
+
                     <td id="dashboardWind">--</td>
 
+
                     <td>🏄 Surf</td>
+
                     <td id="dashboardSurf">--</td>
 
+
                 </tr>
+
+
+                <!-- Swell / Tide -->
+
 
                 <tr>
 
+
+                    <td>🌊 Swell</td>
+
+                    <td id="dashboardSwell">--</td>
+
+
                     <td>🌙 Tide</td>
+
                     <td id="dashboardTide">--</td>
 
-                    <td>☀ UV</td>
-                    <td id="dashboardUV">--</td>
 
                 </tr>
+
+
+                <!-- UV -->
+
+
+                <tr>
+
+
+                    <td>☀ UV</td>
+
+                    <td id="dashboardUV">--</td>
+
+                    <td></td>
+
+                    <td></td>
+
+
+                </tr>
+
 
             </table>
 
+
         </div>
+
 
     </div>
 
+
     <hr>
+
 
     <!-- ==========================================================
          Beach Selection
     =========================================================== -->
 
+
     <div>
+
 
         <label for="regionSelect"><strong>Region:</strong></label><br>
 
+
         <select id="regionSelect"></select>
+
 
     </div>
 
+
     <br>
 
+
     <div>
+
 
         <label for="beachComplexSelect"><strong>Beach Complex:</strong></label><br>
 
+
         <select id="beachComplexSelect"></select>
 
+
     </div>
+
 
     <br>
 
+
     <div>
+
 
         <label for="beachSelect"><strong>Beach:</strong></label><br>
 
+
         <select id="beachSelect"></select>
+
 
     </div>
 
+
     <hr>
+
 
     <!-- ==========================================================
          Beach Information
     =========================================================== -->
 
+
     <h2>Selected Beach</h2>
+
 
     <p><strong>Region:</strong> <span id="region"></span></p>
 
@@ -150,38 +257,52 @@
 
     <p><strong>Longitude:</strong> <span id="longitude"></span></p>
 
+
     <!-- ==========================================================
          JavaScript Modules
     =========================================================== -->
 
+
     <!-- Data -->
-<script src="src/js/data.js"></script>
 
-<!-- Services -->
-<script src="src/js/weatherService.js"></script>
-<script src="src/js/marineService.js"></script>
-<script src="src/js/tideService.js"></script>
-
-<!-- Formatters -->
-<script src="src/js/weatherFormatter.js"></script>
-<script src="src/js/marineFormatter.js"></script>
-<script src="src/js/tideFormatter.js"></script>
+    <script src="src/js/data.js"></script>
 
 
+    <!-- Services -->
 
-<!-- Browser -->
-<script src="src/js/browse.js"></script>
-<script src="src/js/display.js"></script>
+    <script src="src/js/weatherService.js"></script>
+    <script src="src/js/marineService.js"></script>
+    <script src="src/js/tideService.js"></script>
 
-<!-- Dashboard -->
-<script src="src/js/beachHeader.js"></script>
-<script src="src/js/alerts.js"></script>
-<script src="src/js/conditions.js"></script>
-<script src="src/js/dashboard.js"></script>
 
-<!-- Application -->
-<script src="src/js/background.js"></script>
-<script src="src/js/app.js"></script>
+    <!-- Formatters -->
+
+    <script src="src/js/weatherFormatter.js"></script>
+    <script src="src/js/marineFormatter.js"></script>
+    <script src="src/js/tideFormatter.js"></script>
+
+
+    <!-- Browser -->
+
+    <script src="src/js/browse.js"></script>
+    <script src="src/js/display.js"></script>
+
+
+    <!-- Dashboard -->
+
+    <script src="src/js/beachHeader.js"></script>
+    <script src="src/js/alerts.js"></script>
+    <script src="src/js/conditions.js"></script>
+    <script src="src/js/dashboard.js"></script>
+
+
+    <!-- Application -->
+
+    <script src="src/js/background.js"></script>
+    <script src="src/js/app.js"></script>
+
+
 </body>
+
 
 </html>
