@@ -1,34 +1,41 @@
 /*
- * --------------------------------------------------
- * display.js
- * --------------------------------------------------
- *
- * Purpose:
- *     Display information in the user interface.
- *
- * Responsibilities:
- *     - Display information about the selected beach.
- *
- * This module should not:
- *     - Load data.
- *     - Search for data.
- *     - Start the application.
- */
+--------------------------------------------------
+display.js
+--------------------------------------------------
+
+Purpose:
+
+    Display information in the user interface.
+
+Responsibilities:
+
+    - Display information about the selected beach.
+
+This module should not:
+
+    - Load data.
+    - Search for data.
+    - Start the application.
+
+*/
 
 //--------------------------------------------------
 // Display Helpers
 //--------------------------------------------------
 
 /*
- * Display text in an HTML element.
- *
- * Parameters:
- *     element - The HTML element to update.
- *     value   - The value to display.
- *
- * If the value is null or undefined, an empty string
- * is displayed instead.
- */
+Display text in an HTML element.
+
+Parameters:
+
+    element - The HTML element to update.
+
+    value   - The value to display.
+
+If the value is null or undefined, an empty string
+is displayed instead.
+*/
+
 function setText(element, value) {
 
     element.textContent = value ?? "";
@@ -41,35 +48,46 @@ function setText(element, value) {
 //--------------------------------------------------
 
 /*
- * Display the information for the selected beach.
- *
- * Parameters:
- *     beachId - The unique identifier of the beach.
- */
+Display the information for the selected beach.
+
+Parameters:
+
+    beachId - The unique identifier of the beach.
+
+*/
+
 async function displayBeach(beachId) {
 
-    const beach = findBeach(beachId);
+    const beach =
+        findBeach(beachId);
 
     if (!beach)
         return;
+
 
     //--------------------------------------------------
     // Current Weather
     //--------------------------------------------------
 
-    const weather = await getCurrentWeather(beach);
+    const weather =
+        await getCurrentWeather(beach);
+
 
     //--------------------------------------------------
     // Current Marine Conditions
     //--------------------------------------------------
 
-    const marine = await getCurrentMarineConditions(beach);
+    const marine =
+        await getCurrentMarineConditions(beach);
+
 
     //--------------------------------------------------
     // Tide Information
     //--------------------------------------------------
 
-    const tide = getTideInformation(marine);
+    const tide =
+        getTideInformation(marine);
+
 
     //--------------------------------------------------
     // Dashboard Data
@@ -84,20 +102,60 @@ async function displayBeach(beachId) {
 
     };
 
+
     //--------------------------------------------------
     // Beach Information
     //--------------------------------------------------
 
-    setText(regionSpan, beach.region);
-    setText(municipalitySpan, beach.municipality);
-    setText(districtSpan, beach.district);
-    setText(latitudeSpan, beach.latitude);
-    setText(longitudeSpan, beach.longitude);
+    setText(
+        regionSpan,
+        beach.region
+    );
+
+    setText(
+        municipalitySpan,
+        beach.municipality
+    );
+
+    setText(
+        districtSpan,
+        beach.district
+    );
+
+    setText(
+        latitudeSpan,
+        beach.latitude
+    );
+
+    setText(
+        longitudeSpan,
+        beach.longitude
+    );
+
+
+    //--------------------------------------------------
+    // View on Map
+    //--------------------------------------------------
+
+    const viewOnMapLink =
+        document.getElementById(
+            "viewOnMapLink"
+        );
+
+    if (viewOnMapLink) {
+
+        viewOnMapLink.href =
+            `https://www.google.com/maps/search/?api=1&query=${beach.latitude},${beach.longitude}`;
+
+    }
+
 
     //--------------------------------------------------
     // Dashboard
     //--------------------------------------------------
 
-    updateDashboard(dashboardData);
+    updateDashboard(
+        dashboardData
+    );
 
 }
