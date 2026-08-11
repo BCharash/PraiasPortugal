@@ -1238,8 +1238,113 @@ async function restoreSavedBeach() {
 
 function populateStartupBeachOptions() {
 
-    // function contents here
+    
+    //--------------------------------------------------
+    // Keep the current setting
+    //--------------------------------------------------
 
+    const currentValue =
+        appState.settings.startupBeach;
+
+
+    //--------------------------------------------------
+    // Keep "Last selected beach"
+    // Remove existing favorite options
+    //--------------------------------------------------
+
+    while (
+        startupBeachSelect.options.length > 1
+    ) {
+
+        startupBeachSelect.remove(
+            startupBeachSelect.options.length - 1
+        );
+
+    }
+
+
+    //--------------------------------------------------
+    // Add each favorite
+    //--------------------------------------------------
+
+    appState.favorites.forEach(
+        favoriteId => {
+
+            const favoriteIdString =
+                String(favoriteId);
+
+            let favoriteBeach = null;
+
+
+            //--------------------------------------------------
+            // Search all regions and complexes
+            //--------------------------------------------------
+
+            for (const region of getRegions()) {
+
+                const complexes =
+                    getBeachComplexes(region);
+
+                for (const complex of complexes) {
+
+                    const beaches =
+                        getBeaches(complex.id);
+
+                    const beach =
+                        beaches.find(
+                            item =>
+                                String(item.id) ===
+                                favoriteIdString
+                        );
+
+                    if (beach) {
+
+                        favoriteBeach =
+                            beach;
+
+                        break;
+
+                    }
+
+                }
+
+                if (favoriteBeach)
+                    break;
+
+            }
+
+
+            //--------------------------------------------------
+            // Add favorite if found
+            //--------------------------------------------------
+
+            if (favoriteBeach) {
+
+                const option =
+                    document.createElement("option");
+
+                option.value =
+                    favoriteIdString;
+
+                option.textContent =
+                    favoriteBeach.name;
+
+                startupBeachSelect.appendChild(
+                    option
+                );
+
+            }
+
+        }
+    );
+
+
+    //--------------------------------------------------
+    // Restore current setting
+    //--------------------------------------------------
+
+    startupBeachSelect.value =
+        currentValue;
 }
 
 
@@ -1491,7 +1596,7 @@ async function initializeApplication() {
 
     populateFavoriteBeachOptions();
  
-    
+
     //--------------------------------------------------
     // Populate Startup Beach Options
     //--------------------------------------------------
