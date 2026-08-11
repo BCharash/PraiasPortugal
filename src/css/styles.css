@@ -1062,3 +1062,14 @@ hr {
     }
 
 }
+
+/*--------------------------------------------------
+  View on Map Link
+--------------------------------------------------*/
+
+#viewOnMapLink {
+    color: #48cae4;
+    font-weight: 600;
+    text-decoration: underline;
+}
+
