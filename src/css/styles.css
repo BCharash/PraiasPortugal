@@ -1,44 +1,690 @@
-body {
-    font-family: Arial, sans-serif;
-    margin: 40px;
+/* ==========================================================
+   Praias de Portugal
+   Application Styles
+   ========================================================== */
+
+
+/* ==========================================================
+   Global
+   ========================================================== */
+
+* {
+    box-sizing: border-box;
 }
 
-select {
-    padding: 6px;
-    font-size: 16px;
+body {
+
+    margin: 0;
+    padding: 24px;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    background:
+        #0b1530;
+
+    color:
+        #f4f7fb;
+
+    line-height: 1.4;
+
 }
+
+
+/* ==========================================================
+   Main Application
+   ========================================================== */
+
+body > h1 {
+
+    max-width: 1000px;
+
+    margin:
+        0 auto 2px auto;
+
+    color:
+        #35c7e8;
+
+    font-size:
+        26px;
+
+    font-weight:
+        700;
+
+}
+
+
+body > h1 + #dashboard {
+
+    max-width:
+        1000px;
+
+    margin:
+        0 auto;
+
+}
+
+
+/* ==========================================================
+   Dashboard
+   ========================================================== */
+
+#dashboard {
+
+    width:
+        100%;
+
+}
+
+
+#dashboard > h2 {
+
+    margin:
+        0 0 14px 0;
+
+    padding-bottom:
+        10px;
+
+    border-bottom:
+        1px solid #30405f;
+
+    color:
+        #ffffff;
+
+    font-size:
+        18px;
+
+}
+
+
+/* ==========================================================
+   Dashboard Widgets
+   ========================================================== */
+
+.dashboard-widget {
+
+    margin-bottom:
+        14px;
+
+    padding:
+        16px;
+
+    background:
+        #1b2747;
+
+    border:
+        1px solid #30405f;
+
+    border-radius:
+        12px;
+
+    box-shadow:
+        0 4px 12px rgba(0, 0, 0, 0.18);
+
+}
+
+
+.dashboard-widget h3 {
+
+    margin:
+        0 0 10px 0;
+
+    color:
+        #ffffff;
+
+    font-size:
+        15px;
+
+    font-weight:
+        600;
+
+}
+
+
+/* ==========================================================
+   Selected Beach
+   ========================================================== */
+
+#beachHeaderWidget {
+
+    padding:
+        14px 18px;
+
+}
+
+
+#dashboardBeachName {
+
+    margin:
+        0;
+
+    color:
+        #35c7e8;
+
+    font-size:
+        20px;
+
+    font-weight:
+        700;
+
+}
+
+
+/* ==========================================================
+   Alerts
+   ========================================================== */
+
+#alertsWidget p {
+
+    margin:
+        0;
+
+    color:
+        #b8c7dd;
+
+}
+
+
+/* ==========================================================
+   Current Conditions
+   ========================================================== */
+
+#conditionsWidget {
+
+    overflow:
+        hidden;
+
+}
+
+
+#conditionsWidget table {
+
+    width:
+        100%;
+
+    border-collapse:
+        separate;
+
+    border-spacing:
+        10px;
+
+    margin:
+        -10px;
+
+    width:
+        calc(100% + 20px);
+
+}
+
+
+#conditionsWidget td {
+
+    padding:
+        13px 14px;
+
+    vertical-align:
+        top;
+
+}
+
+
+/* ==========================================================
+   Condition Labels
+   ========================================================== */
+
+#conditionsWidget td:nth-child(1),
+#conditionsWidget td:nth-child(3) {
+
+    width:
+        12%;
+
+    color:
+        #8fa4c4;
+
+    font-size:
+        12px;
+
+    font-weight:
+        700;
+
+    text-transform:
+        uppercase;
+
+    white-space:
+        nowrap;
+
+}
+
+
+/* ==========================================================
+   Condition Values
+   ========================================================== */
+
+#conditionsWidget td:nth-child(2),
+#conditionsWidget td:nth-child(4) {
+
+    width:
+        38%;
+
+    min-width:
+        120px;
+
+    background:
+        #202d4e;
+
+    border:
+        1px solid #30405f;
+
+    border-radius:
+        10px;
+
+    color:
+        #ffffff;
+
+    font-size:
+        18px;
+
+    font-weight:
+        700;
+
+}
+
+
+/* ==========================================================
+   Primary Metric Values
+   ========================================================== */
+
+#dashboardAirTemp,
+#dashboardSeaTemp,
+#dashboardSurf,
+#dashboardSwell,
+#dashboardWind,
+#dashboardTide,
+#dashboardUV {
+
+    color:
+        #45c9e8;
+
+    font-size:
+        22px;
+
+    font-weight:
+        700;
+
+}
+
+
+/* ==========================================================
+   Air Temperature
+   ========================================================== */
+
+#dashboardAirTemp {
+
+    color:
+        #ffbf18;
+
+}
+
+
+/* ==========================================================
+   Wind
+   ========================================================== */
+
+#dashboardWind {
+
+    color:
+        #13c4df;
+
+}
+
+
+/* ==========================================================
+   Sea
+   ========================================================== */
+
+#dashboardSeaTemp {
+
+    color:
+        #4ac9e8;
+
+}
+
+
+/* ==========================================================
+   Surf
+   ========================================================== */
+
+#dashboardSurf {
+
+    color:
+        #ff2389;
+
+}
+
+
+/* ==========================================================
+   Swell
+   ========================================================== */
+
+#dashboardSwell {
+
+    color:
+        #ff2389;
+
+}
+
+
+/* ==========================================================
+   Tide
+   ========================================================== */
+
+#dashboardTide {
+
+    color:
+        #4ac9e8;
+
+}
+
+
+/* ==========================================================
+   UV
+   ========================================================== */
+
+#dashboardUV {
+
+    color:
+        #ffffff;
+
+}
+
+
+/* ==========================================================
+   Secondary Metric Values
+   ========================================================== */
+
+.metric-secondary {
+
+    margin-top:
+        3px;
+
+    color:
+        #a9c9e8;
+
+    font-size:
+        12px;
+
+    font-weight:
+        400;
+
+}
+
+
+/* ==========================================================
+   Beach Selection
+   ========================================================== */
+
+body > div:not(#dashboard) {
+
+    max-width:
+        1000px;
+
+    margin:
+        0 auto;
+
+}
+
+
+label {
+
+    color:
+        #c4d0e3;
+
+}
+
+
+select {
+
+    width:
+        100%;
+
+    max-width:
+        500px;
+
+    padding:
+        9px 12px;
+
+    margin-top:
+        4px;
+
+    color:
+        #ffffff;
+
+    background:
+        #1b2747;
+
+    border:
+        1px solid #405272;
+
+    border-radius:
+        7px;
+
+    font-size:
+        15px;
+
+}
+
+
+select:focus {
+
+    outline:
+        none;
+
+    border-color:
+        #35c7e8;
+
+}
+
+
+/* ==========================================================
+   Beach Information
+   ========================================================== */
+
+body > h2 {
+
+    max-width:
+        1000px;
+
+    margin:
+        20px auto 12px auto;
+
+    color:
+        #ffffff;
+
+    font-size:
+        18px;
+
+}
+
+
+body > p {
+
+    max-width:
+        1000px;
+
+    margin:
+        5px auto;
+
+    color:
+        #aebdd2;
+
+}
+
+
+body > p strong {
+
+    color:
+        #dbe5f2;
+
+}
+
+
+/* ==========================================================
+   Horizontal Rules
+   ========================================================== */
+
+hr {
+
+    max-width:
+        1000px;
+
+    margin:
+        20px auto;
+
+    border:
+        none;
+
+    border-top:
+        1px solid #30405f;
+
+}
+
 
 /* ==========================================================
    Dashboard Background Themes
    ========================================================== */
 
 .background-sunny {
-    background: linear-gradient(to bottom, #87CEEB, #EAF8FF);
+
+    background:
+        linear-gradient(
+            to bottom,
+            #0b1530,
+            #101d3d
+        );
+
 }
+
 
 .background-cloudy {
-    background: linear-gradient(to bottom, #AAB7C4, #E3E7EB);
+
+    background:
+        linear-gradient(
+            to bottom,
+            #0b1530,
+            #17233e
+        );
+
 }
+
 
 .background-rain {
-    background: linear-gradient(to bottom, #5F6F86, #AEB9C6);
+
+    background:
+        linear-gradient(
+            to bottom,
+            #091327,
+            #17233a
+        );
+
 }
+
 
 .background-storm {
-    background: linear-gradient(to bottom, #2C3E50, #566573);
+
+    background:
+        linear-gradient(
+            to bottom,
+            #080e1d,
+            #182033
+        );
+
 }
+
 
 .background-night {
-    background: linear-gradient(to bottom, #0B1D3A, #1C3D6E);
+
+    background:
+        linear-gradient(
+            to bottom,
+            #060d20,
+            #101d3b
+        );
+
 }
 
+
 /* ==========================================================
-   Dashboard Metric Secondary Values
+   Responsive Layout
    ========================================================== */
 
-.metric-secondary    {
+@media (max-width: 700px) {
 
-    font-size: 0.85em;
-    color: #555;
+    body {
+
+        padding:
+            14px;
+
+    }
+
+
+    body > h1 {
+
+        font-size:
+            22px;
+
+    }
+
+
+    #conditionsWidget table {
+
+        border-spacing:
+            6px;
+
+    }
+
+
+    #conditionsWidget td {
+
+        padding:
+            10px;
+
+    }
+
+
+    #conditionsWidget td:nth-child(1),
+    #conditionsWidget td:nth-child(3) {
+
+        font-size:
+            10px;
+
+    }
+
+
+    #conditionsWidget td:nth-child(2),
+    #conditionsWidget td:nth-child(4) {
+
+        min-width:
+            90px;
+
+        font-size:
+            15px;
+
+    }
+
+
+    #dashboardAirTemp,
+    #dashboardSeaTemp,
+    #dashboardSurf,
+    #dashboardSwell,
+    #dashboardWind,
+    #dashboardTide,
+    #dashboardUV {
+
+        font-size:
+            19px;
+
+    }
 
 }
