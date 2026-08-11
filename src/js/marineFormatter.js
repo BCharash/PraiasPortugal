@@ -1,37 +1,20 @@
-/*
- * --------------------------------------------------
- * marineFormatter.js
- * --------------------------------------------------
- *
- * Purpose:
- *     Format marine conditions for display.
- *
- * Responsibilities:
- *     - Format sea temperature.
- *     - Format wave conditions.
- *     - Format swell conditions.
- *     - Format wind-wave conditions.
- *     - Format ocean current conditions.
- *     - Convert marine directions to text.
- *
- * Notes:
- *     - Wave and swell directions describe where waves
- *       are coming from.
- *
- *     - Ocean current direction describes where the
- *       current is heading.
- *
- *     - Wave height and sea temperature use the
- *       application unit settings.
- */
+//--------------------------------------------------
+// Marine Formatter
+//
+// Formats marine conditions for display.
+// Uses application unit settings.
+//--------------------------------------------------
+
 
 //--------------------------------------------------
 // Public Formatters
 //--------------------------------------------------
 
-/*
- * Format the sea surface temperature.
- */
+
+//--------------------------------------------------
+// Sea Surface Temperature
+//--------------------------------------------------
+
 function formatSeaTemperature(marine) {
 
     if (!marine ||
@@ -49,9 +32,10 @@ function formatSeaTemperature(marine) {
 }
 
 
-/*
- * Format the total wave conditions.
- */
+//--------------------------------------------------
+// Total Wave Conditions
+//--------------------------------------------------
+
 function formatSurf(marine) {
 
     if (!marine ||
@@ -84,9 +68,10 @@ function formatSurf(marine) {
 }
 
 
-/*
- * Format the total wave direction.
- */
+//--------------------------------------------------
+// Total Wave Direction
+//--------------------------------------------------
+
 function formatWaveDirection(marine) {
 
     if (!marine ||
@@ -110,9 +95,10 @@ function formatWaveDirection(marine) {
 }
 
 
-/*
- * Format the primary swell.
- */
+//--------------------------------------------------
+// Primary Swell
+//--------------------------------------------------
+
 function formatSwell(marine) {
 
     if (!marine ||
@@ -145,9 +131,10 @@ function formatSwell(marine) {
 }
 
 
-/*
- * Format the wind waves.
- */
+//--------------------------------------------------
+// Wind Waves
+//--------------------------------------------------
+
 function formatWindWaves(marine) {
 
     if (!marine ||
@@ -180,12 +167,13 @@ function formatWindWaves(marine) {
 }
 
 
-/*
- * Format the ocean current.
- *
- * Current direction indicates where the current
- * is heading, rather than where it comes from.
- */
+//--------------------------------------------------
+// Ocean Current
+//
+// Current direction indicates where the current
+// is heading, rather than where it comes from.
+//--------------------------------------------------
+
 function formatOceanCurrent(marine) {
 
     if (!marine ||
@@ -195,7 +183,9 @@ function formatOceanCurrent(marine) {
         return "--";
 
     const velocity =
-        marine.current.velocity;
+        convertWindSpeed(
+            marine.current.velocity
+        );
 
     const arrow =
         getDirectionArrow(
@@ -207,15 +197,16 @@ function formatOceanCurrent(marine) {
             marine.current.direction
         );
 
-    return `${velocity.toFixed(1)} km/h ` +
+    return `${velocity.toFixed(1)} ` +
+           `${getWindSpeedSymbol()} ` +
            `${arrow} ${direction}`;
 
 }
 
 
-//--------------------------------------------------
+//==================================================
 // Temperature Conversion
-//--------------------------------------------------
+//==================================================
 
 function convertTemperature(celsius) {
 
@@ -247,9 +238,9 @@ function getTemperatureSymbol() {
 }
 
 
-//--------------------------------------------------
+//==================================================
 // Wave Height Conversion
-//--------------------------------------------------
+//==================================================
 
 function convertWaveHeight(meters) {
 
@@ -281,8 +272,64 @@ function getWaveHeightSymbol() {
 }
 
 
-//--------------------------------------------------
+//==================================================
+// Wind Speed Conversion
+//==================================================
+
+function convertWindSpeed(kmh) {
+
+    const unit =
+        getWindSpeedUnit();
+
+    if (unit === "knots")
+        return kmh / 1.852;
+
+    if (unit === "mph")
+        return kmh / 1.609344;
+
+    return kmh;
+
+}
+
+
+function getWindSpeedUnit() {
+
+    if (typeof appState !== "undefined" &&
+        appState.settings &&
+        appState.settings.windSpeedUnit) {
+
+        return appState.settings.windSpeedUnit;
+
+    }
+
+    return "kmh";
+
+}
+
+
+function getWindSpeedSymbol() {
+
+    const unit =
+        getWindSpeedUnit();
+
+    if (unit === "knots")
+        return "kn";
+
+    if (unit === "mph")
+        return "mph";
+
+    return "km/h";
+
+}
+
+
+//==================================================
 // Private Helpers
+//==================================================
+
+
+//--------------------------------------------------
+// Compass Direction
 //--------------------------------------------------
 
 function getCompassDirection(degrees) {
@@ -307,6 +354,10 @@ function getCompassDirection(degrees) {
 
 }
 
+
+//--------------------------------------------------
+// Direction Arrow
+//--------------------------------------------------
 
 function getDirectionArrow(degrees) {
 
