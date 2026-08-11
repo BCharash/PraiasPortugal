@@ -213,33 +213,7 @@ const translations = {
         // Languages
 
         english: "English",
-        portuguese: "Português",
-
-        // Weather
-
-        relativeHumidity: "RH",
-        feelsLike: "Feels like",
-        highShort: "H",
-        lowShort: "L",
-
-        uvLow: "Low",
-        uvModerate: "Moderate",
-        uvHigh: "High",
-        uvVeryHigh: "Very High",
-        uvExtreme: "Extreme",
-
-        weatherClearSky: "Clear sky",
-        weatherMainlyClear: "Mainly clear",
-        weatherPartlyCloudy: "Partly cloudy",
-        weatherOvercast: "Overcast",
-        weatherFog: "Fog",
-        weatherDrizzle: "Drizzle",
-        weatherRain: "Rain",
-        weatherSnow: "Snow",
-        weatherRainShowers: "Rain showers",
-        weatherThunderstorm: "Thunderstorm",
-        weatherThunderstormHail:
-            "Thunderstorm with hail"
+        portuguese: "Português"
 
     },
 
@@ -330,14 +304,580 @@ const translations = {
         // Idiomas
 
         english: "English",
-        portuguese: "Português",
+        portuguese: "Português"
 
-        // Meteorologia
+    }
 
-        relativeHumidity: "HR",
-        feelsLike: "Sensação térmica",
-        highShort: "Máx.",
-        lowShort: "Mín.",
+};
 
-        uvLow: "Baixo",
-        uvModerate: "
+
+//--------------------------------------------------
+// Translate
+//--------------------------------------------------
+
+function translate(key) {
+
+    const language =
+        appState.settings.language;
+
+    return translations[language]?.[key]
+        || translations.en[key]
+        || key;
+
+}
+
+
+//--------------------------------------------------
+// Apply Translation To Element
+//--------------------------------------------------
+
+function setTranslatedText(element, key) {
+
+    if (!element || !key)
+        return;
+
+    element.textContent =
+        translate(key);
+
+}
+
+
+//--------------------------------------------------
+// Apply Language
+//--------------------------------------------------
+
+function applyLanguage() {
+
+    const language =
+        appState.settings.language;
+
+
+    //--------------------------------------------------
+    // HTML Language
+    //--------------------------------------------------
+
+    document.documentElement.lang =
+        language;
+
+
+    //--------------------------------------------------
+    // Translate All Elements With data-i18n
+    //--------------------------------------------------
+
+    const elements =
+        document.querySelectorAll("[data-i18n]");
+
+
+    elements.forEach(element => {
+
+        const key =
+            element.dataset.i18n;
+
+        if (!key)
+            return;
+
+        element.textContent =
+            translate(key);
+
+    });
+
+
+    //--------------------------------------------------
+    // Dashboard Default Beach Text
+    //--------------------------------------------------
+
+    if (!appState.selectedBeachId) {
+
+        setTranslatedText(
+            document.getElementById("dashboardBeachName"),
+            "noBeachSelected"
+        );
+
+    }
+
+
+    //--------------------------------------------------
+    // Page Title
+    //--------------------------------------------------
+
+    document.title =
+        "Praias de Portugal";
+
+}
+
+
+//==================================================
+// SETTINGS STORAGE
+//==================================================
+
+//--------------------------------------------------
+// Load Settings
+//--------------------------------------------------
+
+function loadSettings() {
+
+    const storedSettings =
+        localStorage.getItem(
+            SETTINGS_STORAGE_KEY
+        );
+
+
+    if (!storedSettings)
+        return;
+
+
+    try {
+
+        const settings =
+            JSON.parse(storedSettings);
+
+
+        appState.settings = {
+
+            ...appState.settings,
+            ...settings
+
+        };
+
+    }
+
+    catch (error) {
+
+        // Ignore invalid stored settings.
+        // Defaults remain active.
+
+    }
+
+}
+
+
+//--------------------------------------------------
+// Save Settings
+//--------------------------------------------------
+
+function saveSettings() {
+
+    localStorage.setItem(
+
+        SETTINGS_STORAGE_KEY,
+
+        JSON.stringify(
+            appState.settings
+        )
+
+    );
+
+}
+
+
+//--------------------------------------------------
+// Load Selected Beach
+//--------------------------------------------------
+
+function loadSelectedBeach() {
+
+    const beachId =
+        localStorage.getItem(
+            BEACH_STORAGE_KEY
+        );
+
+
+    if (beachId)
+        appState.selectedBeachId =
+            beachId;
+
+}
+
+
+//--------------------------------------------------
+// Save Selected Beach
+//--------------------------------------------------
+
+function saveSelectedBeach(beachId) {
+
+    appState.selectedBeachId =
+        beachId;
+
+
+    localStorage.setItem(
+
+        BEACH_STORAGE_KEY,
+
+        beachId
+
+    );
+
+}
+
+
+//==================================================
+// SETTINGS
+//==================================================
+
+//--------------------------------------------------
+// Synchronize Settings Controls
+//--------------------------------------------------
+
+function updateSettingsControls() {
+
+    temperatureUnitSelect.value =
+        appState.settings.temperatureUnit;
+
+
+    windSpeedUnitSelect.value =
+        appState.settings.windSpeedUnit;
+
+
+    waveHeightUnitSelect.value =
+        appState.settings.waveHeightUnit;
+
+
+    startupPageSelect.value =
+        appState.settings.startupPage;
+
+
+    startupBeachSelect.value =
+        appState.settings.startupBeach;
+
+
+    autoUpdateOnStartup.checked =
+        appState.settings.autoUpdateOnStartup;
+
+
+    languageSelect.value =
+        appState.settings.language;
+
+}
+
+
+//--------------------------------------------------
+// Settings Changes
+//--------------------------------------------------
+
+async function handleSettingsChange() {
+
+    //--------------------------------------------------
+    // Read Current Settings
+    //--------------------------------------------------
+
+    appState.settings.temperatureUnit =
+        temperatureUnitSelect.value;
+
+
+    appState.settings.windSpeedUnit =
+        windSpeedUnitSelect.value;
+
+
+    appState.settings.waveHeightUnit =
+        waveHeightUnitSelect.value;
+
+
+    appState.settings.startupPage =
+        startupPageSelect.value;
+
+
+    appState.settings.startupBeach =
+        startupBeachSelect.value;
+
+
+    appState.settings.autoUpdateOnStartup =
+        autoUpdateOnStartup.checked;
+
+
+    appState.settings.language =
+        languageSelect.value;
+
+
+    //--------------------------------------------------
+    // Save
+    //--------------------------------------------------
+
+    saveSettings();
+
+
+    //--------------------------------------------------
+    // Apply Language Immediately
+    //--------------------------------------------------
+
+    applyLanguage();
+
+
+    //--------------------------------------------------
+    // Refresh Current Beach
+    //--------------------------------------------------
+
+    if (appState.selectedBeachId) {
+
+        await displayBeach(
+            appState.selectedBeachId
+        );
+
+    }
+
+}
+
+
+//==================================================
+// PAGE NAVIGATION
+//==================================================
+
+//--------------------------------------------------
+// Show Page
+//--------------------------------------------------
+
+function showPage(page) {
+
+    appState.currentPage =
+        page;
+
+
+    dashboardPage.hidden =
+        page !== "dashboard";
+
+
+    beachesPage.hidden =
+        page !== "beaches";
+
+
+    settingsPage.hidden =
+        page !== "settings";
+
+}
+
+
+//--------------------------------------------------
+// Show Dashboard
+//--------------------------------------------------
+
+function showDashboard() {
+
+    showPage("dashboard");
+
+}
+
+
+//--------------------------------------------------
+// Show Beaches
+//--------------------------------------------------
+
+function showBeaches() {
+
+    showPage("beaches");
+
+}
+
+
+//--------------------------------------------------
+// Show Settings
+//--------------------------------------------------
+
+function showSettings() {
+
+    showPage("settings");
+
+}
+
+
+//==================================================
+// APPLICATION STARTUP
+//==================================================
+
+//--------------------------------------------------
+// Initialize Application
+//--------------------------------------------------
+
+async function initializeApplication() {
+
+    //--------------------------------------------------
+    // Load Persistent State
+    //--------------------------------------------------
+
+    loadSettings();
+
+    loadSelectedBeach();
+
+
+    //--------------------------------------------------
+    // Initialize Data
+    //--------------------------------------------------
+
+    await initializeData();
+
+
+    //--------------------------------------------------
+    // Initialize Dashboard
+    //--------------------------------------------------
+
+    initializeDashboard();
+
+
+    //--------------------------------------------------
+    // Initial Dashboard Background
+    //--------------------------------------------------
+
+    updateBackground("sunny");
+
+
+    //--------------------------------------------------
+    // Synchronize Settings UI
+    //--------------------------------------------------
+
+    updateSettingsControls();
+
+
+    //--------------------------------------------------
+    // Apply Saved Language
+    //--------------------------------------------------
+
+    applyLanguage();
+
+
+    //--------------------------------------------------
+    // Populate Beaches
+    //--------------------------------------------------
+
+    populateRegions();
+
+
+    //--------------------------------------------------
+    // Navigation
+    //--------------------------------------------------
+
+    dashboardNavButton.addEventListener(
+        "click",
+        showDashboard
+    );
+
+
+    beachesNavButton.addEventListener(
+        "click",
+        showBeaches
+    );
+
+
+    settingsNavButton.addEventListener(
+        "click",
+        showSettings
+    );
+
+
+    //--------------------------------------------------
+    // Settings
+    //--------------------------------------------------
+
+    temperatureUnitSelect.addEventListener(
+        "change",
+        handleSettingsChange
+    );
+
+
+    windSpeedUnitSelect.addEventListener(
+        "change",
+        handleSettingsChange
+    );
+
+
+    waveHeightUnitSelect.addEventListener(
+        "change",
+        handleSettingsChange
+    );
+
+
+    startupPageSelect.addEventListener(
+        "change",
+        handleSettingsChange
+    );
+
+
+    startupBeachSelect.addEventListener(
+        "change",
+        handleSettingsChange
+    );
+
+
+    autoUpdateOnStartup.addEventListener(
+        "change",
+        handleSettingsChange
+    );
+
+
+    languageSelect.addEventListener(
+        "change",
+        handleSettingsChange
+    );
+
+
+    //--------------------------------------------------
+    // Region Selection
+    //--------------------------------------------------
+
+    regionSelect.addEventListener(
+        "change",
+        () => {
+
+            populateBeachComplexes(
+                regionSelect.value
+            );
+
+        }
+    );
+
+
+    //--------------------------------------------------
+    // Beach Complex Selection
+    //--------------------------------------------------
+
+    beachComplexSelect.addEventListener(
+        "change",
+        () => {
+
+            populateBeaches(
+                beachComplexSelect.value
+            );
+
+        }
+    );
+
+
+    //--------------------------------------------------
+    // Beach Selection
+    //--------------------------------------------------
+
+    beachSelect.addEventListener(
+        "change",
+        async () => {
+
+            const beachId =
+                beachSelect.value;
+
+
+            saveSelectedBeach(
+                beachId
+            );
+
+
+            await displayBeach(
+                beachId
+            );
+
+
+            showDashboard();
+
+        }
+    );
+
+
+    //--------------------------------------------------
+    // Initial Page
+    //--------------------------------------------------
+
+    showDashboard();
+
+}
+
+
+//--------------------------------------------------
+// Application Entry Point
+//--------------------------------------------------
+
+initializeApplication();
