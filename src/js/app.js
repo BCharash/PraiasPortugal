@@ -1,4 +1,5 @@
 //--------------------------------------------------
+// Praias de Portugal
 // Application State
 //--------------------------------------------------
 
@@ -11,15 +12,11 @@ const appState = {
     settings: {
 
         temperatureUnit: "celsius",
-
         windSpeedUnit: "kmh",
-
         waveHeightUnit: "meters",
 
         startupPage: "dashboard",
-
         startupBeach: "last",
-
         autoUpdateOnStartup: true,
 
         language: "en"
@@ -124,6 +121,361 @@ const BEACH_STORAGE_KEY =
     "praiasDePortugalSelectedBeach";
 
 
+//==================================================
+// LANGUAGE SYSTEM
+//==================================================
+
+const translations = {
+
+    en: {
+
+        // Navigation
+        dashboard: "Dashboard",
+        beaches: "Beaches",
+        settings: "Settings",
+
+        // Dashboard
+        selectedBeach: "Selected Beach",
+        noBeachSelected: "No beach selected",
+        alerts: "Alerts",
+        noActiveAlerts: "No active alerts",
+        currentConditions: "Current Conditions",
+
+        air: "Air",
+        sea: "Sea",
+        wind: "Wind",
+        surf: "Surf",
+        swell: "Swell",
+        tide: "Tide",
+        uv: "UV",
+
+        // Beach selection
+        region: "Region",
+        beachComplex: "Beach Complex",
+        beach: "Beach",
+
+        // Beach information
+        beachInformation: "Selected Beach",
+        municipality: "Municipality",
+        district: "District",
+        latitude: "Latitude",
+        longitude: "Longitude",
+
+        // Settings
+        unitPreferences: "Unit Preferences",
+        temperature: "Temperature",
+        windSpeed: "Wind Speed",
+        height: "Height",
+        startup: "Startup",
+        startupPage: "Startup Page",
+        startupBeach: "Startup Beach",
+        updateDataOnStartup: "Update data when application starts",
+        language: "Language",
+
+        // Options
+        dashboardOption: "Dashboard",
+        beachesOption: "Beaches",
+        lastSelectedBeach: "Last selected beach",
+
+        // General
+        english: "English",
+        portuguese: "Português"
+
+    },
+
+
+    pt: {
+
+        // Navegação
+        dashboard: "Painel",
+        beaches: "Praias",
+        settings: "Definições",
+
+        // Painel
+        selectedBeach: "Praia selecionada",
+        noBeachSelected: "Nenhuma praia selecionada",
+        alerts: "Alertas",
+        noActiveAlerts: "Sem alertas ativos",
+        currentConditions: "Condições atuais",
+
+        air: "Ar",
+        sea: "Mar",
+        wind: "Vento",
+        surf: "Surf",
+        swell: "Ondulação",
+        tide: "Maré",
+        uv: "UV",
+
+        // Seleção de praia
+        region: "Região",
+        beachComplex: "Conjunto de praias",
+        beach: "Praia",
+
+        // Informação da praia
+        beachInformation: "Praia selecionada",
+        municipality: "Município",
+        district: "Distrito",
+        latitude: "Latitude",
+        longitude: "Longitude",
+
+        // Definições
+        unitPreferences: "Preferências de unidades",
+        temperature: "Temperatura",
+        windSpeed: "Velocidade do vento",
+        height: "Altura",
+        startup: "Arranque",
+        startupPage: "Página inicial",
+        startupBeach: "Praia inicial",
+        updateDataOnStartup: "Atualizar dados ao iniciar a aplicação",
+        language: "Idioma",
+
+        // Opções
+        dashboardOption: "Painel",
+        beachesOption: "Praias",
+        lastSelectedBeach: "Última praia selecionada",
+
+        // Geral
+        english: "English",
+        portuguese: "Português"
+
+    }
+
+};
+
+
+//--------------------------------------------------
+// Translate
+//--------------------------------------------------
+
+function translate(key) {
+
+    const language =
+        appState.settings.language;
+
+    return translations[language]?.[key]
+        || translations.en[key]
+        || key;
+
+}
+
+
+//--------------------------------------------------
+// Translate Element Text
+//--------------------------------------------------
+
+function setTranslatedText(element, key) {
+
+    if (!element)
+        return;
+
+    element.textContent =
+        translate(key);
+
+}
+
+
+//--------------------------------------------------
+// Translate Exact Existing Text
+//
+// This allows us to translate labels that currently
+// do not have their own IDs in index.html.
+//--------------------------------------------------
+
+function translateExistingText() {
+
+    const elements =
+        document.querySelectorAll(
+            "h1, h2, h3, label, td, button, option"
+        );
+
+    elements.forEach(element => {
+
+        const original =
+            element.dataset.translationKey;
+
+        if (original) {
+
+            element.textContent =
+                translate(original);
+
+            return;
+
+        }
+
+        const text =
+            element.textContent.trim();
+
+        const keyMap = {
+
+            "Dashboard": "dashboard",
+            "Painel": "dashboard",
+
+            "Beaches": "beaches",
+            "Praias": "beaches",
+
+            "Settings": "settings",
+            "Definições": "settings",
+
+            "Selected Beach": "selectedBeach",
+            "Praia selecionada": "selectedBeach",
+
+            "No beach selected": "noBeachSelected",
+            "Nenhuma praia selecionada": "noBeachSelected",
+
+            "Alerts": "alerts",
+            "Alertas": "alerts",
+
+            "No active alerts": "noActiveAlerts",
+            "Sem alertas ativos": "noActiveAlerts",
+
+            "Current Conditions": "currentConditions",
+            "Condições atuais": "currentConditions",
+
+            "Air": "air",
+            "Ar": "air",
+
+            "Sea": "sea",
+            "Mar": "sea",
+
+            "Wind": "wind",
+            "Vento": "wind",
+
+            "Surf": "surf",
+
+            "Swell": "swell",
+            "Ondulação": "swell",
+
+            "Tide": "tide",
+            "Maré": "tide",
+
+            "UV": "uv",
+
+            "Region": "region",
+            "Região": "region",
+
+            "Beach Complex": "beachComplex",
+            "Conjunto de praias": "beachComplex",
+
+            "Beach": "beach",
+            "Praia": "beach",
+
+            "Municipality": "municipality",
+            "Município": "municipality",
+
+            "District": "district",
+
+            "Latitude": "latitude",
+
+            "Longitude": "longitude",
+
+            "Unit Preferences": "unitPreferences",
+            "Preferências de unidades": "unitPreferences",
+
+            "Temperature": "temperature",
+            "Temperatura": "temperature",
+
+            "Wind Speed": "windSpeed",
+            "Velocidade do vento": "windSpeed",
+
+            "Height": "height",
+            "Altura": "height",
+
+            "Startup": "startup",
+            "Arranque": "startup",
+
+            "Startup Page": "startupPage",
+            "Página inicial": "startupPage",
+
+            "Startup Beach": "startupBeach",
+            "Praia inicial": "startupBeach",
+
+            "Language": "language",
+            "Idioma": "language"
+
+        };
+
+
+        const key =
+            keyMap[text];
+
+        if (key)
+            element.textContent =
+                translate(key);
+
+    });
+
+}
+
+
+//--------------------------------------------------
+// Apply Language
+//--------------------------------------------------
+
+function applyLanguage() {
+
+    document.documentElement.lang =
+        appState.settings.language;
+
+    translateExistingText();
+
+    //--------------------------------------------------
+    // Special Dashboard Elements
+    //--------------------------------------------------
+
+    setTranslatedText(
+        document.getElementById("dashboardBeachName"),
+        appState.selectedBeachId
+            ? null
+            : "noBeachSelected"
+    );
+
+    //--------------------------------------------------
+    // Settings Option Text
+    //--------------------------------------------------
+
+    if (startupPageSelect) {
+
+        const dashboardOption =
+            startupPageSelect.querySelector(
+                'option[value="dashboard"]'
+            );
+
+        const beachesOption =
+            startupPageSelect.querySelector(
+                'option[value="beaches"]'
+            );
+
+        if (dashboardOption)
+            dashboardOption.textContent =
+                translate("dashboardOption");
+
+        if (beachesOption)
+            beachesOption.textContent =
+                translate("beachesOption");
+
+    }
+
+
+    if (startupBeachSelect) {
+
+        const lastBeachOption =
+            startupBeachSelect.querySelector(
+                'option[value="last"]'
+            );
+
+        if (lastBeachOption)
+            lastBeachOption.textContent =
+                translate("lastSelectedBeach");
+
+    }
+
+}
+
+
+//==================================================
+// SETTINGS STORAGE
+//==================================================
+
 //--------------------------------------------------
 // Load Settings
 //--------------------------------------------------
@@ -146,12 +498,12 @@ function loadSettings() {
         appState.settings = {
 
             ...appState.settings,
-
             ...settings
 
         };
 
     }
+
     catch (error) {
 
         // Ignore invalid stored settings.
@@ -218,6 +570,10 @@ function saveSelectedBeach(beachId) {
 
 }
 
+
+//==================================================
+// SETTINGS
+//==================================================
 
 //--------------------------------------------------
 // Synchronize Settings Controls
@@ -289,6 +645,13 @@ async function handleSettingsChange() {
 
 
     //--------------------------------------------------
+    // Apply Language Immediately
+    //--------------------------------------------------
+
+    applyLanguage();
+
+
+    //--------------------------------------------------
     // Refresh Current Beach
     //--------------------------------------------------
 
@@ -302,6 +665,10 @@ async function handleSettingsChange() {
 
 }
 
+
+//==================================================
+// PAGE NAVIGATION
+//==================================================
 
 //--------------------------------------------------
 // Show Page
@@ -357,9 +724,9 @@ function showSettings() {
 }
 
 
-//--------------------------------------------------
-// Application Startup
-//--------------------------------------------------
+//==================================================
+// APPLICATION STARTUP
+//==================================================
 
 async function initializeApplication() {
 
@@ -398,6 +765,13 @@ async function initializeApplication() {
     //--------------------------------------------------
 
     updateSettingsControls();
+
+
+    //--------------------------------------------------
+    // Apply Saved Language
+    //--------------------------------------------------
+
+    applyLanguage();
 
 
     //--------------------------------------------------
