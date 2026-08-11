@@ -561,6 +561,125 @@ function saveSelectedBeach(beachId) {
 
 
 //==================================================
+// RESTORE SAVED BEACH
+//==================================================
+
+//--------------------------------------------------
+// Restore the saved beach after the beach lists
+// have been populated.
+//--------------------------------------------------
+
+async function restoreSavedBeach() {
+
+    if (
+        appState.settings.startupBeach !== "last" ||
+        !appState.selectedBeachId
+    ) {
+
+        return false;
+
+    }
+
+
+    const savedBeachId =
+        String(appState.selectedBeachId);
+
+
+    const regions =
+        getRegions();
+
+
+    //--------------------------------------------------
+    // Search every region.
+    //--------------------------------------------------
+
+    for (const region of regions) {
+
+        const complexes =
+            getBeachComplexes(region);
+
+
+        //--------------------------------------------------
+        // Search every beach complex.
+        //--------------------------------------------------
+
+        for (const complex of complexes) {
+
+            const beaches =
+                getBeaches(complex.id);
+
+
+            //--------------------------------------------------
+            // Find saved beach.
+            //--------------------------------------------------
+
+            const beach =
+                beaches.find(
+                    item =>
+                        String(item.id) === savedBeachId
+                );
+
+
+            if (!beach)
+                continue;
+
+
+            //--------------------------------------------------
+            // Restore Region
+            //--------------------------------------------------
+
+            populateBeachComplexes(region);
+
+            regionSelect.value =
+                region;
+
+
+            //--------------------------------------------------
+            // Restore Beach Complex
+            //--------------------------------------------------
+
+            beachComplexSelect.value =
+                complex.id;
+
+            populateBeaches(
+                complex.id
+            );
+
+
+            //--------------------------------------------------
+            // Restore Beach
+            //--------------------------------------------------
+
+            beachSelect.value =
+                beach.id;
+
+
+            //--------------------------------------------------
+            // Display Saved Beach
+            //--------------------------------------------------
+
+            await displayBeach(
+                beach.id
+            );
+
+
+            return true;
+
+        }
+
+    }
+
+
+    //--------------------------------------------------
+    // Saved beach could not be found.
+    //--------------------------------------------------
+
+    return false;
+
+}
+
+
+//==================================================
 // SETTINGS
 //==================================================
 
@@ -787,6 +906,13 @@ async function initializeApplication() {
     //--------------------------------------------------
 
     populateRegions();
+
+
+    //--------------------------------------------------
+    // Restore Saved Beach
+    //--------------------------------------------------
+
+    await restoreSavedBeach();
 
 
     //--------------------------------------------------
