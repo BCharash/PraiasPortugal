@@ -845,6 +845,94 @@ function populateFavoriteBeachOptions() {
 
 }
 
+
+//--------------------------------------------------
+// Update Geographic Beach Selectors
+//--------------------------------------------------
+
+function updateBeachSelectors(beachId) {
+
+    if (!beachId)
+        return;
+
+
+    const targetBeachId =
+        String(beachId);
+
+
+    //--------------------------------------------------
+    // Search all regions
+    //--------------------------------------------------
+
+    for (const region of getRegions()) {
+
+        const complexes =
+            getBeachComplexes(region);
+
+
+        //--------------------------------------------------
+        // Search all beach complexes
+        //--------------------------------------------------
+
+        for (const complex of complexes) {
+
+            const beaches =
+                getBeaches(complex.id);
+
+
+            const beach =
+                beaches.find(
+                    item =>
+                        String(item.id) ===
+                        targetBeachId
+                );
+
+
+            if (!beach)
+                continue;
+
+
+            //--------------------------------------------------
+            // Update Region
+            //--------------------------------------------------
+
+            regionSelect.value =
+                region;
+
+
+            //--------------------------------------------------
+            // Update Beach Complex
+            //--------------------------------------------------
+
+            populateBeachComplexes(
+                region
+            );
+
+            beachComplexSelect.value =
+                complex.id;
+
+
+            //--------------------------------------------------
+            // Update Beach List
+            //--------------------------------------------------
+
+            populateBeaches(
+                complex.id
+            );
+
+            beachSelect.value =
+                beach.id;
+
+
+            return;
+
+        }
+
+    }
+
+}
+
+
 //--------------------------------------------------
 // Update Favorite Button
 //--------------------------------------------------
@@ -1422,7 +1510,7 @@ async function initializeApplication() {
         toggleFavorite
     );
 
-    
+
 //--------------------------------------------------
 // Favorite Beach Selection
 //--------------------------------------------------
