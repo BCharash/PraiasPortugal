@@ -26,15 +26,10 @@
 
 
     <!-- ==========================================================
-         Application Header
+         Application Navigation
     =========================================================== -->
 
     <header id="applicationHeader">
-
-        <div id="applicationTitle">
-            Praias de Portugal
-        </div>
-
 
         <nav id="mainNavigation">
 
@@ -77,10 +72,29 @@
                     No beach selected
                 </div>
 
-
                 <div id="dashboardAlerts">
                     No active alerts
                 </div>
+
+            </div>
+
+
+            <!-- ==================================================
+                 Alert Widget
+                 
+                 Hidden during normal conditions.
+                 Will be displayed when an actual alert exists.
+            =================================================== -->
+
+            <div id="alertsWidget"
+                 class="dashboard-widget"
+                 hidden>
+
+                <h3>Alerts</h3>
+
+                <p id="alertMessage">
+                    --
+                </p>
 
             </div>
 
