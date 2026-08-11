@@ -34,17 +34,20 @@
         <nav id="mainNavigation">
 
             <button id="dashboardNavButton"
-                    type="button">
+                    type="button"
+                    data-i18n="dashboard">
                 Dashboard
             </button>
 
             <button id="beachesNavButton"
-                    type="button">
+                    type="button"
+                    data-i18n="beaches">
                 Beaches
             </button>
 
             <button id="settingsNavButton"
-                    type="button">
+                    type="button"
+                    data-i18n="settings">
                 Settings
             </button>
 
@@ -72,7 +75,8 @@
                     No beach selected
                 </div>
 
-                <div id="dashboardAlerts">
+                <div id="dashboardAlerts"
+                     data-i18n="noActiveAlerts">
                     No active alerts
                 </div>
 
@@ -81,16 +85,18 @@
 
             <!-- ==================================================
                  Alert Widget
-                 
+
                  Hidden during normal conditions.
-                 Will be displayed when an actual alert exists.
+                 Displayed when an actual alert exists.
             =================================================== -->
 
             <div id="alertsWidget"
                  class="dashboard-widget"
                  hidden>
 
-                <h3>Alerts</h3>
+                <h3 data-i18n="alerts">
+                    Alerts
+                </h3>
 
                 <p id="alertMessage">
                     --
@@ -106,7 +112,9 @@
             <div id="conditionsWidget"
                  class="dashboard-widget">
 
-                <h3>Current Conditions</h3>
+                <h3 data-i18n="currentConditions">
+                    Current Conditions
+                </h3>
 
 
                 <table>
@@ -116,7 +124,9 @@
 
                     <tr>
 
-                        <td>🌡 Air</td>
+                        <td data-i18n="airLabel">
+                            🌡 Air
+                        </td>
 
                         <td>
 
@@ -142,7 +152,9 @@
                         </td>
 
 
-                        <td>🌊 Sea</td>
+                        <td data-i18n="seaLabel">
+                            🌊 Sea
+                        </td>
 
                         <td id="dashboardSeaTemp">
                             --
@@ -155,14 +167,18 @@
 
                     <tr>
 
-                        <td>🌬 Wind</td>
+                        <td data-i18n="windLabel">
+                            🌬 Wind
+                        </td>
 
                         <td id="dashboardWind">
                             --
                         </td>
 
 
-                        <td>🏄 Surf</td>
+                        <td data-i18n="surfLabel">
+                            🏄 Surf
+                        </td>
 
                         <td id="dashboardSurf">
                             --
@@ -175,14 +191,18 @@
 
                     <tr>
 
-                        <td>🌊 Swell</td>
+                        <td data-i18n="swellLabel">
+                            🌊 Swell
+                        </td>
 
                         <td id="dashboardSwell">
                             --
                         </td>
 
 
-                        <td>🌙 Tide</td>
+                        <td data-i18n="tideLabel">
+                            🌙 Tide
+                        </td>
 
                         <td id="dashboardTide">
                             --
@@ -195,7 +215,9 @@
 
                     <tr>
 
-                        <td>☀ UV</td>
+                        <td data-i18n="uvLabel">
+                            ☀ UV
+                        </td>
 
                         <td id="dashboardUV">
                             --
@@ -224,7 +246,9 @@
     <main id="beachesPage"
           hidden>
 
-        <h2>Beaches</h2>
+        <h2 data-i18n="beaches">
+            Beaches
+        </h2>
 
 
         <!-- ======================================================
@@ -233,12 +257,15 @@
 
         <div id="beachSelection">
 
-            <h3>Select Beach</h3>
+            <h3 data-i18n="selectBeach">
+                Select Beach
+            </h3>
 
 
             <div>
 
-                <label for="regionSelect">
+                <label for="regionSelect"
+                       data-i18n="region">
                     <strong>Region:</strong>
                 </label>
 
@@ -254,7 +281,8 @@
 
             <div>
 
-                <label for="beachComplexSelect">
+                <label for="beachComplexSelect"
+                       data-i18n="beachComplex">
                     <strong>Beach Complex:</strong>
                 </label>
 
@@ -270,7 +298,8 @@
 
             <div>
 
-                <label for="beachSelect">
+                <label for="beachSelect"
+                       data-i18n="beach">
                     <strong>Beach:</strong>
                 </label>
 
@@ -290,12 +319,16 @@
         <div id="selectedBeachInformation"
              class="dashboard-widget">
 
-            <h3>Selected Beach</h3>
+            <h3 data-i18n="selectedBeach">
+                Selected Beach
+            </h3>
 
 
             <p>
 
-                <strong>Region:</strong>
+                <strong data-i18n="region">
+                    Region:
+                </strong>
 
                 <span id="region"></span>
 
@@ -304,7 +337,9 @@
 
             <p>
 
-                <strong>Municipality:</strong>
+                <strong data-i18n="municipality">
+                    Municipality:
+                </strong>
 
                 <span id="municipality"></span>
 
@@ -313,7 +348,9 @@
 
             <p>
 
-                <strong>District:</strong>
+                <strong data-i18n="district">
+                    District:
+                </strong>
 
                 <span id="district"></span>
 
@@ -322,7 +359,9 @@
 
             <p>
 
-                <strong>Latitude:</strong>
+                <strong data-i18n="latitude">
+                    Latitude:
+                </strong>
 
                 <span id="latitude"></span>
 
@@ -331,7 +370,9 @@
 
             <p>
 
-                <strong>Longitude:</strong>
+                <strong data-i18n="longitude">
+                    Longitude:
+                </strong>
 
                 <span id="longitude"></span>
 
@@ -349,7 +390,9 @@
     <main id="settingsPage"
           hidden>
 
-        <h2>Settings</h2>
+        <h2 data-i18n="settings">
+            Settings
+        </h2>
 
 
         <!-- ======================================================
@@ -359,22 +402,27 @@
         <section id="unitSettings"
                  class="settings-section">
 
-            <h3>Units</h3>
+            <h3 data-i18n="units">
+                Units
+            </h3>
 
 
             <div>
 
-                <label for="temperatureUnitSelect">
+                <label for="temperatureUnitSelect"
+                       data-i18n="temperature">
                     Temperature:
                 </label>
 
                 <select id="temperatureUnitSelect">
 
-                    <option value="celsius">
+                    <option value="celsius"
+                            data-i18n="celsius">
                         Celsius (°C)
                     </option>
 
-                    <option value="fahrenheit">
+                    <option value="fahrenheit"
+                            data-i18n="fahrenheit">
                         Fahrenheit (°F)
                     </option>
 
@@ -388,21 +436,25 @@
 
             <div>
 
-                <label for="windSpeedUnitSelect">
+                <label for="windSpeedUnitSelect"
+                       data-i18n="windSpeed">
                     Wind speed:
                 </label>
 
                 <select id="windSpeedUnitSelect">
 
-                    <option value="kmh">
+                    <option value="kmh"
+                            data-i18n="kmh">
                         km/h
                     </option>
 
-                    <option value="knots">
+                    <option value="knots"
+                            data-i18n="knots">
                         knots
                     </option>
 
-                    <option value="mph">
+                    <option value="mph"
+                            data-i18n="mph">
                         mph
                     </option>
 
@@ -416,17 +468,20 @@
 
             <div>
 
-                <label for="waveHeightUnitSelect">
+                <label for="waveHeightUnitSelect"
+                       data-i18n="height">
                     Height:
                 </label>
 
                 <select id="waveHeightUnitSelect">
 
-                    <option value="meters">
+                    <option value="meters"
+                            data-i18n="meters">
                         metres (m)
                     </option>
 
-                    <option value="feet">
+                    <option value="feet"
+                            data-i18n="feet">
                         feet (ft)
                     </option>
 
@@ -444,22 +499,27 @@
         <section id="startupSettings"
                  class="settings-section">
 
-            <h3>Startup</h3>
+            <h3 data-i18n="startup">
+                Startup
+            </h3>
 
 
             <div>
 
-                <label for="startupPageSelect">
+                <label for="startupPageSelect"
+                       data-i18n="startupPage">
                     Startup page:
                 </label>
 
                 <select id="startupPageSelect">
 
-                    <option value="dashboard">
+                    <option value="dashboard"
+                            data-i18n="dashboard">
                         Dashboard
                     </option>
 
-                    <option value="beaches">
+                    <option value="beaches"
+                            data-i18n="beaches">
                         Beaches
                     </option>
 
@@ -473,13 +533,15 @@
 
             <div>
 
-                <label for="startupBeachSelect">
+                <label for="startupBeachSelect"
+                       data-i18n="startupBeach">
                     Startup beach:
                 </label>
 
                 <select id="startupBeachSelect">
 
-                    <option value="last">
+                    <option value="last"
+                            data-i18n="lastSelectedBeach">
                         Last selected beach
                     </option>
 
@@ -499,7 +561,9 @@
                            id="autoUpdateOnStartup"
                            checked>
 
-                    Update data when application starts
+                    <span data-i18n="updateDataOnStartup">
+                        Update data when application starts
+                    </span>
 
                 </label>
 
@@ -515,22 +579,27 @@
         <section id="languageSettings"
                  class="settings-section">
 
-            <h3>Language</h3>
+            <h3 data-i18n="language">
+                Language
+            </h3>
 
 
             <div>
 
-                <label for="languageSelect">
+                <label for="languageSelect"
+                       data-i18n="language">
                     Language:
                 </label>
 
                 <select id="languageSelect">
 
-                    <option value="en">
+                    <option value="en"
+                            data-i18n="english">
                         English
                     </option>
 
-                    <option value="pt">
+                    <option value="pt"
+                            data-i18n="portuguese">
                         Português
                     </option>
 
