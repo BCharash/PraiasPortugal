@@ -8,8 +8,17 @@
  *
  * Responsibilities:
  *     - Format sea temperature.
- *     - Format surf conditions.
- *     - Convert wave direction to text.
+ *     - Format wave conditions.
+ *     - Format swell conditions.
+ *     - Format wind-wave conditions.
+ *     - Format ocean current conditions.
+ *     - Convert marine directions to text.
+ *
+ * Notes:
+ *     - Wave and swell directions describe where waves
+ *       are coming from.
+ *     - Ocean current direction describes where the
+ *       current is heading.
  */
 
 //--------------------------------------------------
@@ -21,45 +30,135 @@
  */
 function formatSeaTemperature(marine) {
 
-    if (!marine || marine.seaTemperature == null)
+    if (!marine ||
+        !marine.sea ||
+        marine.sea.temperature == null)
         return "--";
 
-    return `${marine.seaTemperature.toFixed(1)}°C`;
+    return `${marine.sea.temperature.toFixed(1)}°C`;
 
 }
 
 
 /*
- * Format the surf conditions.
+ * Format the total wave conditions.
  */
 function formatSurf(marine) {
 
     if (!marine ||
-        marine.waveHeight == null ||
-        marine.waveDirection == null ||
-        marine.wavePeriod == null)
+        !marine.waves ||
+        marine.waves.height == null ||
+        marine.waves.direction == null ||
+        marine.waves.period == null)
         return "--";
 
-    const arrow = getDirectionArrow(marine.waveDirection);
-    const direction = getCompassDirection(marine.waveDirection);
+    const arrow =
+        getDirectionArrow(marine.waves.direction);
 
-    return `${marine.waveHeight.toFixed(1)} m ${arrow} ${direction} @ ${Math.round(marine.wavePeriod)} s`;
+    const direction =
+        getCompassDirection(marine.waves.direction);
+
+    return `${marine.waves.height.toFixed(1)} m ` +
+           `${arrow} ${direction} @ ` +
+           `${Math.round(marine.waves.period)} s`;
 
 }
 
 
 /*
- * Format the wave direction.
+ * Format the total wave direction.
  */
 function formatWaveDirection(marine) {
 
-    if (!marine || marine.waveDirection == null)
+    if (!marine ||
+        !marine.waves ||
+        marine.waves.direction == null)
         return "--";
 
-    const arrow = getDirectionArrow(marine.waveDirection);
-    const direction = getCompassDirection(marine.waveDirection);
+    const arrow =
+        getDirectionArrow(marine.waves.direction);
 
-    return `${arrow} ${direction} ${Math.round(marine.waveDirection)}°`;
+    const direction =
+        getCompassDirection(marine.waves.direction);
+
+    return `${arrow} ${direction} ` +
+           `${Math.round(marine.waves.direction)}°`;
+
+}
+
+
+/*
+ * Format the primary swell.
+ */
+function formatSwell(marine) {
+
+    if (!marine ||
+        !marine.swell ||
+        marine.swell.height == null ||
+        marine.swell.direction == null ||
+        marine.swell.period == null)
+        return "--";
+
+    const arrow =
+        getDirectionArrow(marine.swell.direction);
+
+    const direction =
+        getCompassDirection(marine.swell.direction);
+
+    return `${marine.swell.height.toFixed(1)} m ` +
+           `${arrow} ${direction} @ ` +
+           `${Math.round(marine.swell.period)} s`;
+
+}
+
+
+/*
+ * Format the wind waves.
+ */
+function formatWindWaves(marine) {
+
+    if (!marine ||
+        !marine.windWaves ||
+        marine.windWaves.height == null ||
+        marine.windWaves.direction == null ||
+        marine.windWaves.period == null)
+        return "--";
+
+    const arrow =
+        getDirectionArrow(marine.windWaves.direction);
+
+    const direction =
+        getCompassDirection(marine.windWaves.direction);
+
+    return `${marine.windWaves.height.toFixed(1)} m ` +
+           `${arrow} ${direction} @ ` +
+           `${Math.round(marine.windWaves.period)} s`;
+
+}
+
+
+/*
+ * Format the ocean current.
+ *
+ * Current direction indicates where the current
+ * is heading, rather than where it comes from.
+ */
+function formatOceanCurrent(marine) {
+
+    if (!marine ||
+        !marine.current ||
+        marine.current.velocity == null ||
+        marine.current.direction == null)
+        return "--";
+
+    const arrow =
+        getDirectionArrow(marine.current.direction);
+
+    const direction =
+        getCompassDirection(marine.current.direction);
+
+    return `${marine.current.velocity.toFixed(1)} km/h ` +
+           `${arrow} ${direction}`;
 
 }
 
@@ -83,7 +182,8 @@ function getCompassDirection(degrees) {
 
     ];
 
-    const index = Math.round(degrees / 45) % 8;
+    const index =
+        Math.round(degrees / 45) % 8;
 
     return directions[index];
 
@@ -105,7 +205,8 @@ function getDirectionArrow(degrees) {
 
     ];
 
-    const index = Math.round(degrees / 45) % 8;
+    const index =
+        Math.round(degrees / 45) % 8;
 
     return arrows[index];
 
