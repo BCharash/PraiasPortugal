@@ -213,7 +213,33 @@ const translations = {
         // Languages
 
         english: "English",
-        portuguese: "Português"
+        portuguese: "Português",
+
+        // Weather
+
+        relativeHumidity: "RH",
+        feelsLike: "Feels like",
+        highShort: "H",
+        lowShort: "L",
+
+        uvLow: "Low",
+        uvModerate: "Moderate",
+        uvHigh: "High",
+        uvVeryHigh: "Very High",
+        uvExtreme: "Extreme",
+
+        weatherClearSky: "Clear sky",
+        weatherMainlyClear: "Mainly clear",
+        weatherPartlyCloudy: "Partly cloudy",
+        weatherOvercast: "Overcast",
+        weatherFog: "Fog",
+        weatherDrizzle: "Drizzle",
+        weatherRain: "Rain",
+        weatherSnow: "Snow",
+        weatherRainShowers: "Rain showers",
+        weatherThunderstorm: "Thunderstorm",
+        weatherThunderstormHail:
+            "Thunderstorm with hail"
 
     },
 
@@ -304,7 +330,35 @@ const translations = {
         // Idiomas
 
         english: "English",
-        portuguese: "Português"
+        portuguese: "Português",
+
+        // Meteorologia
+
+        relativeHumidity: "HR",
+        feelsLike: "Sensação térmica",
+        highShort: "Máx.",
+        lowShort: "Mín.",
+
+        uvLow: "Baixo",
+        uvModerate: "Moderado",
+        uvHigh: "Alto",
+        uvVeryHigh: "Muito alto",
+        uvExtreme: "Extremo",
+
+        weatherClearSky: "Céu limpo",
+        weatherMainlyClear:
+            "Predominantemente limpo",
+        weatherPartlyCloudy:
+            "Parcialmente nublado",
+        weatherOvercast: "Nublado",
+        weatherFog: "Nevoeiro",
+        weatherDrizzle: "Chuvisco",
+        weatherRain: "Chuva",
+        weatherSnow: "Neve",
+        weatherRainShowers: "Aguaceiros",
+        weatherThunderstorm: "Trovoada",
+        weatherThunderstormHail:
+            "Trovoada com granizo"
 
     }
 
