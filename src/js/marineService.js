@@ -11,6 +11,8 @@
  *     - Request marine data.
  *     - Extract current marine conditions.
  *     - Extract hourly marine data.
+ *     - Extract daily marine summaries.
+ *     - Record when the application fetched the data.
  *     - Return a clean JavaScript object.
  *
  * Notes:
@@ -19,6 +21,9 @@
  *       current is heading.
  *     - Secondary and tertiary swell data may be
  *       unavailable for some model/location combinations.
+ *     - FetchedAt records when Praias de Portugal
+ *       retrieved the data. It does not represent
+ *       the underlying model's update time.
  */
 
 //--------------------------------------------------
@@ -36,10 +41,14 @@
  */
 async function getCurrentMarineConditions(beach) {
 
+    const fetchedAt = new Date().toISOString();
+
     const url =
         `https://marine-api.open-meteo.com/v1/marine` +
         `?latitude=${beach.latitude}` +
         `&longitude=${beach.longitude}` +
+        `&timezone=auto` +
+        `&forecast_days=7` +
         `&current=` +
         `sea_surface_temperature,` +
         `wave_height,` +
@@ -85,7 +94,19 @@ async function getCurrentMarineConditions(beach) {
         `tertiary_swell_wave_period,` +
         `ocean_current_velocity,` +
         `ocean_current_direction,` +
-        `sea_level_height_msl`;
+        `sea_level_height_msl` +
+        `&daily=` +
+        `wave_height_max,` +
+        `wave_direction_dominant,` +
+        `wave_period_max,` +
+        `wind_wave_height_max,` +
+        `wind_wave_direction_dominant,` +
+        `wind_wave_period_max,` +
+        `wind_wave_peak_period_max,` +
+        `swell_wave_height_max,` +
+        `swell_wave_direction_dominant,` +
+        `swell_wave_period_max,` +
+        `swell_wave_peak_period_max`;
 
     const response = await fetch(url);
 
@@ -107,10 +128,24 @@ async function getCurrentMarineConditions(beach) {
     const hourly = data.hourly;
 
     //--------------------------------------------------
+    // Daily
+    //--------------------------------------------------
+
+    const daily = data.daily;
+
+    //--------------------------------------------------
     // Marine Object
     //--------------------------------------------------
 
     return {
+
+        //--------------------------------------------------
+        // Data Source
+        //--------------------------------------------------
+
+        source: "Open-Meteo Marine API",
+
+        fetchedAt,
 
         //--------------------------------------------------
         // Sea
@@ -270,6 +305,57 @@ async function getCurrentMarineConditions(beach) {
             tide: {
 
                 seaLevel: hourly.sea_level_height_msl
+
+            }
+
+        },
+
+        //--------------------------------------------------
+        // Daily Data
+        //--------------------------------------------------
+
+        daily: {
+
+            time: daily.time,
+
+            waves: {
+
+                heightMax: daily.wave_height_max,
+                directionDominant:
+                    daily.wave_direction_dominant,
+                periodMax: daily.wave_period_max
+
+            },
+
+            windWaves: {
+
+                heightMax:
+                    daily.wind_wave_height_max,
+
+                directionDominant:
+                    daily.wind_wave_direction_dominant,
+
+                periodMax:
+                    daily.wind_wave_period_max,
+
+                peakPeriodMax:
+                    daily.wind_wave_peak_period_max
+
+            },
+
+            swell: {
+
+                heightMax:
+                    daily.swell_wave_height_max,
+
+                directionDominant:
+                    daily.swell_wave_direction_dominant,
+
+                periodMax:
+                    daily.swell_wave_period_max,
+
+                peakPeriodMax:
+                    daily.swell_wave_peak_period_max
 
             }
 
