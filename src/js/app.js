@@ -1406,11 +1406,7 @@ async function initializeApplication() {
             updateFavoriteButton();
 
 
-            //--------------------------------------------------
-            // Return To Dashboard
-            //--------------------------------------------------
-
-            showDashboard();
+            
 
         }
     );
