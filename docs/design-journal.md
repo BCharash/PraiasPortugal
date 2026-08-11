@@ -338,3 +338,111 @@ This approach was rejected because it mixes presentation with formatting, reduce
 ## Status
 
 Accepted
+
+# DJ005 — Dashboard Accessibility and Visual Hierarchy
+
+**Date:** 2026-08-11
+
+## Decision
+
+The Dashboard visual design will prioritize readability and accessibility as
+fundamental design requirements rather than treating accessibility as a later
+enhancement.
+
+The Dashboard must remain comfortably usable by users with color-vision
+deficiency and reduced near-vision acuity, including under less-than-ideal
+lighting conditions.
+
+## Accessibility Principles
+
+Color must not be the sole means of communicating information.
+
+Important distinctions should remain understandable through a combination of:
+
+- Text
+- Position
+- Labels
+- Line style
+- Icons
+- Markers
+- Contrast
+- Color
+
+The color palette should be selected and evaluated for compatibility with
+protan color-vision deficiency.
+
+Luminance contrast is more important than relying on differences in hue alone.
+
+## Visual Hierarchy
+
+Dashboard information should have a deliberate hierarchy.
+
+Primary measurements should be visually dominant.
+
+Secondary measurements should provide context without competing with the
+primary value.
+
+Examples include:
+
+- Air temperature as the primary value, with humidity, feels-like
+  temperature, and daily range as secondary information.
+- Wind speed as the primary value, with gust speed and direction as secondary
+  information.
+- UV index as the primary value, with daily maximum and risk classification
+  as secondary information.
+
+This is consistent with DJ004's decision that dashboard metrics may contain
+multiple related values.
+
+## Typography
+
+Font sizes should be chosen according to information hierarchy rather than
+using a single global size.
+
+Primary dashboard values should be substantially larger than labels and
+secondary information.
+
+Selectors and other interactive controls should remain comfortably readable.
+
+The application should eventually support user-selectable display scaling so
+that users can increase text size without requiring a redesign of individual
+widgets.
+
+## Charts
+
+Charts must remain interpretable without depending solely on color.
+
+Where multiple data series are displayed, visual distinctions should include
+one or more of:
+
+- Line style
+- Line weight
+- Markers
+- Direct labels
+- Explicit legends
+
+Color may reinforce these distinctions but should not be their only mechanism.
+
+## Consequences
+
+Accessibility becomes part of the visual design system for Praias de Portugal.
+
+Future Dashboard widgets should be evaluated against these principles before
+being considered complete.
+
+The existing Dashboard typography and color palette should be treated as a
+starting point rather than a fixed standard.
+
+Future visual refinement should establish a consistent application-wide
+typography and color system that applies to:
+
+- Dashboard
+- Beach selector
+- Settings
+- Charts
+- Alerts
+- Navigation
+
+## Status
+
+Accepted
