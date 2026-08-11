@@ -1422,6 +1422,38 @@ async function initializeApplication() {
         toggleFavorite
     );
 
+    
+//--------------------------------------------------
+// Favorite Beach Selection
+//--------------------------------------------------
+
+favoriteBeachSelect.addEventListener(
+    "change",
+    async () => {
+
+        const beachId =
+            favoriteBeachSelect.value;
+
+        if (!beachId)
+            return;
+
+        saveSelectedBeach(
+            beachId
+        );
+
+        await displayBeach(
+            beachId
+        );
+
+        updateBeachSelectors(
+            beachId
+        );
+
+        updateFavoriteButton();
+
+    }
+);
+
 
     //--------------------------------------------------
     // Settings
