@@ -1100,14 +1100,36 @@ function toggleFavorite() {
 
 async function restoreSavedBeach() {
 
+       //--------------------------------------------------
+    // Determine which beach to restore
+    //--------------------------------------------------
+
+    let beachIdToRestore;
+
+
     if (
-        appState.settings.startupBeach !== "last" ||
-        !appState.selectedBeachId
+        appState.settings.startupBeach === "last"
     ) {
 
-        return false;
+        beachIdToRestore =
+            appState.selectedBeachId;
 
     }
+
+    else {
+
+        beachIdToRestore =
+            appState.settings.startupBeach;
+
+    }
+
+
+    //--------------------------------------------------
+    // No beach available
+    //--------------------------------------------------
+
+    if (!beachIdToRestore)
+        return false;
 
 
     const savedBeachId =
@@ -1238,7 +1260,7 @@ async function restoreSavedBeach() {
 
 function populateStartupBeachOptions() {
 
-    
+
     //--------------------------------------------------
     // Keep the current setting
     //--------------------------------------------------
