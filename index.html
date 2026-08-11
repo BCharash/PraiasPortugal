@@ -1,261 +1,517 @@
 <!DOCTYPE html>
 <html lang="en">
 
-
 <head>
-
 
     <!-- ==========================================================
          Document Metadata
     =========================================================== -->
 
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-
     <title>Praias de Portugal</title>
-
 
     <!-- Application Styles -->
     <link rel="stylesheet" href="src/css/styles.css">
-
 
 </head>
 
 
 <body>
 
-
     <!-- ==========================================================
-         Dashboard
+         Application Header
     =========================================================== -->
 
+    <header id="applicationHeader">
 
-    <h1>Praias de Portugal</h1>
+        <h1>Praias de Portugal</h1>
+
+        <nav id="mainNavigation">
+
+            <button id="dashboardNavButton"
+                    type="button">
+                Dashboard
+            </button>
+
+            <button id="beachesNavButton"
+                    type="button">
+                Beaches
+            </button>
+
+            <button id="settingsNavButton"
+                    type="button">
+                Settings
+            </button>
+
+        </nav>
+
+    </header>
 
 
-    <div id="dashboard">
+    <!-- ==========================================================
+         Dashboard Page
+    =========================================================== -->
+
+    <main id="dashboardPage">
+
+        <div id="dashboard">
+
+            <h2>Dashboard</h2>
 
 
-        <h2>Dashboard</h2>
+            <!-- ==================================================
+                 Selected Beach Widget
+            =================================================== -->
+
+            <div id="beachHeaderWidget"
+                 class="dashboard-widget">
+
+                <h3>Selected Beach</h3>
+
+                <p id="dashboardBeachName">
+                    No beach selected
+                </p>
+
+            </div>
 
 
-        <!-- Selected Beach Widget -->
+            <!-- ==================================================
+                 Alerts Widget
+            =================================================== -->
+
+            <div id="alertsWidget"
+                 class="dashboard-widget">
+
+                <h3>Alerts</h3>
+
+                <p id="dashboardAlerts">
+                    No active alerts
+                </p>
+
+            </div>
 
 
-        <div id="beachHeaderWidget" class="dashboard-widget">
+            <!-- ==================================================
+                 Current Conditions Widget
+            =================================================== -->
 
+            <div id="conditionsWidget"
+                 class="dashboard-widget">
+
+                <h3>Current Conditions</h3>
+
+                <table>
+
+                    <!-- Air / Sea -->
+
+                    <tr>
+
+                        <td>🌡 Air</td>
+
+                        <td>
+
+                            <div id="dashboardAirTemp">
+                                --
+                            </div>
+
+                            <div id="dashboardAirHumidity"
+                                 class="metric-secondary">
+                                --
+                            </div>
+
+                            <div id="dashboardAirFeelsLike"
+                                 class="metric-secondary">
+                                --
+                            </div>
+
+                            <div id="dashboardAirHighLow"
+                                 class="metric-secondary">
+                                --
+                            </div>
+
+                        </td>
+
+
+                        <td>🌊 Sea</td>
+
+                        <td id="dashboardSeaTemp">
+                            --
+                        </td>
+
+                    </tr>
+
+
+                    <!-- Wind / Surf -->
+
+                    <tr>
+
+                        <td>🌬 Wind</td>
+
+                        <td id="dashboardWind">
+                            --
+                        </td>
+
+
+                        <td>🏄 Surf</td>
+
+                        <td id="dashboardSurf">
+                            --
+                        </td>
+
+                    </tr>
+
+
+                    <!-- Swell / Tide -->
+
+                    <tr>
+
+                        <td>🌊 Swell</td>
+
+                        <td id="dashboardSwell">
+                            --
+                        </td>
+
+
+                        <td>🌙 Tide</td>
+
+                        <td id="dashboardTide">
+                            --
+                        </td>
+
+                    </tr>
+
+
+                    <!-- UV -->
+
+                    <tr>
+
+                        <td>☀ UV</td>
+
+                        <td id="dashboardUV">
+                            --
+                        </td>
+
+                        <td></td>
+
+                        <td></td>
+
+                    </tr>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </main>
+
+
+    <!-- ==========================================================
+         Beaches Page
+    =========================================================== -->
+
+    <main id="beachesPage"
+          hidden>
+
+        <h2>Beaches</h2>
+
+
+        <!-- ======================================================
+             Beach Selection
+        ======================================================= -->
+
+        <div id="beachSelection">
+
+            <h3>Select Beach</h3>
+
+
+            <div>
+
+                <label for="regionSelect">
+                    <strong>Region:</strong>
+                </label>
+
+                <br>
+
+                <select id="regionSelect"></select>
+
+            </div>
+
+
+            <br>
+
+
+            <div>
+
+                <label for="beachComplexSelect">
+                    <strong>Beach Complex:</strong>
+                </label>
+
+                <br>
+
+                <select id="beachComplexSelect"></select>
+
+            </div>
+
+
+            <br>
+
+
+            <div>
+
+                <label for="beachSelect">
+                    <strong>Beach:</strong>
+                </label>
+
+                <br>
+
+                <select id="beachSelect"></select>
+
+            </div>
+
+        </div>
+
+
+        <!-- ======================================================
+             Selected Beach Information
+        ======================================================= -->
+
+        <div id="selectedBeachInformation"
+             class="dashboard-widget">
 
             <h3>Selected Beach</h3>
 
+            <p>
+                <strong>Region:</strong>
+                <span id="region"></span>
+            </p>
 
-            <p id="dashboardBeachName">No beach selected</p>
+            <p>
+                <strong>Municipality:</strong>
+                <span id="municipality"></span>
+            </p>
 
+            <p>
+                <strong>District:</strong>
+                <span id="district"></span>
+            </p>
+
+            <p>
+                <strong>Latitude:</strong>
+                <span id="latitude"></span>
+            </p>
+
+            <p>
+                <strong>Longitude:</strong>
+                <span id="longitude"></span>
+            </p>
 
         </div>
 
-
-        <!-- Alerts Widget -->
-
-
-        <div id="alertsWidget" class="dashboard-widget">
-
-
-            <h3>Alerts</h3>
-
-
-            <p id="dashboardAlerts">No active alerts</p>
-
-
-        </div>
-
-
-        <!-- Current Conditions Widget -->
-
-
-        <div id="conditionsWidget" class="dashboard-widget">
-
-
-            <h3>Current Conditions</h3>
-
-
-            <table>
-
-
-                <!-- Air / Sea -->
-
-
-                <tr>
-
-
-                    <td>🌡 Air</td>
-
-                    <td>
-
-                        <div id="dashboardAirTemp">--</div>
-
-                        <div id="dashboardAirHumidity"
-                             class="metric-secondary">
-                            --
-                        </div>
-
-                        <div id="dashboardAirFeelsLike"
-                             class="metric-secondary">
-                            --
-                        </div>
-
-                        <div id="dashboardAirHighLow"
-                             class="metric-secondary">
-                            --
-                        </div>
-
-                    </td>
-
-
-                    <td>🌊 Sea</td>
-
-                    <td id="dashboardSeaTemp">--</td>
-
-
-                </tr>
-
-
-                <!-- Wind / Surf -->
-
-
-                <tr>
-
-
-                    <td>🌬 Wind</td>
-
-                    <td id="dashboardWind">--</td>
-
-
-                    <td>🏄 Surf</td>
-
-                    <td id="dashboardSurf">--</td>
-
-
-                </tr>
-
-
-                <!-- Swell / Tide -->
-
-
-                <tr>
-
-
-                    <td>🌊 Swell</td>
-
-                    <td id="dashboardSwell">--</td>
-
-
-                    <td>🌙 Tide</td>
-
-                    <td id="dashboardTide">--</td>
-
-
-                </tr>
-
-
-                <!-- UV -->
-
-
-                <tr>
-
-
-                    <td>☀ UV</td>
-
-                    <td id="dashboardUV">--</td>
-
-                    <td></td>
-
-                    <td></td>
-
-
-                </tr>
-
-
-            </table>
-
-
-        </div>
-
-
-    </div>
-
-
-    <hr>
+    </main>
 
 
     <!-- ==========================================================
-         Beach Selection
+         Settings Page
     =========================================================== -->
 
+    <main id="settingsPage"
+          hidden>
 
-    <div>
-
-
-        <label for="regionSelect"><strong>Region:</strong></label><br>
-
-
-        <select id="regionSelect"></select>
+        <h2>Settings</h2>
 
 
-    </div>
+        <!-- ======================================================
+             Units
+        ======================================================= -->
+
+        <section id="unitSettings"
+                 class="settings-section">
+
+            <h3>Units</h3>
 
 
-    <br>
+            <div>
+
+                <label for="temperatureUnitSelect">
+                    Temperature:
+                </label>
+
+                <select id="temperatureUnitSelect">
+
+                    <option value="celsius">
+                        Celsius (°C)
+                    </option>
+
+                    <option value="fahrenheit">
+                        Fahrenheit (°F)
+                    </option>
+
+                </select>
+
+            </div>
 
 
-    <div>
+            <br>
 
 
-        <label for="beachComplexSelect"><strong>Beach Complex:</strong></label><br>
+            <div>
+
+                <label for="windSpeedUnitSelect">
+                    Wind speed:
+                </label>
+
+                <select id="windSpeedUnitSelect">
+
+                    <option value="kmh">
+                        km/h
+                    </option>
+
+                    <option value="knots">
+                        knots
+                    </option>
+
+                    <option value="mph">
+                        mph
+                    </option>
+
+                </select>
+
+            </div>
 
 
-        <select id="beachComplexSelect"></select>
+            <br>
 
 
-    </div>
+            <div>
+
+                <label for="waveHeightUnitSelect">
+                    Wave height:
+                </label>
+
+                <select id="waveHeightUnitSelect">
+
+                    <option value="meters">
+                        metres (m)
+                    </option>
+
+                    <option value="feet">
+                        feet (ft)
+                    </option>
+
+                </select>
+
+            </div>
+
+        </section>
 
 
-    <br>
+        <!-- ======================================================
+             Startup Preferences
+        ======================================================= -->
+
+        <section id="startupSettings"
+                 class="settings-section">
+
+            <h3>Startup</h3>
 
 
-    <div>
+            <div>
+
+                <label for="startupPageSelect">
+                    Startup page:
+                </label>
+
+                <select id="startupPageSelect">
+
+                    <option value="dashboard">
+                        Dashboard
+                    </option>
+
+                    <option value="beaches">
+                        Beaches
+                    </option>
+
+                </select>
+
+            </div>
 
 
-        <label for="beachSelect"><strong>Beach:</strong></label><br>
+            <br>
 
 
-        <select id="beachSelect"></select>
+            <div>
+
+                <label for="startupBeachSelect">
+                    Startup beach:
+                </label>
+
+                <select id="startupBeachSelect">
+
+                    <option value="last">
+                        Last selected beach
+                    </option>
+
+                </select>
+
+            </div>
 
 
-    </div>
+            <br>
 
 
-    <hr>
+            <div>
+
+                <label>
+
+                    <input type="checkbox"
+                           id="autoUpdateOnStartup"
+                           checked>
+
+                    Update data when application starts
+
+                </label>
+
+            </div>
+
+        </section>
 
 
-    <!-- ==========================================================
-         Beach Information
-    =========================================================== -->
+        <!-- ======================================================
+             Language
+        ======================================================= -->
+
+        <section id="languageSettings"
+                 class="settings-section">
+
+            <h3>Language</h3>
 
 
-    <h2>Selected Beach</h2>
+            <div>
 
+                <label for="languageSelect">
+                    Language:
+                </label>
 
-    <p><strong>Region:</strong> <span id="region"></span></p>
+                <select id="languageSelect">
 
-    <p><strong>Municipality:</strong> <span id="municipality"></span></p>
+                    <option value="en">
+                        English
+                    </option>
 
-    <p><strong>District:</strong> <span id="district"></span></p>
+                    <option value="pt">
+                        Português
+                    </option>
 
-    <p><strong>Latitude:</strong> <span id="latitude"></span></p>
+                </select>
 
-    <p><strong>Longitude:</strong> <span id="longitude"></span></p>
+            </div>
+
+        </section>
+
+    </main>
 
 
     <!-- ==========================================================
@@ -303,6 +559,5 @@
 
 
 </body>
-
 
 </html>
