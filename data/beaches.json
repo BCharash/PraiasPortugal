@@ -5,8 +5,8 @@
     "region": "Oeste",
     "municipality": "Torres Vedras",
     "district": "Lisboa",
-    "latitude": 39.1687,
-    "longitude": -9.3705
+    "latitude": 39.17454,
+    "longitude": -9.35688
   },
   {
     "id": "praia-de-santa-rita-sul",
@@ -14,8 +14,8 @@
     "region": "Oeste",
     "municipality": "Torres Vedras",
     "district": "Lisboa",
-    "latitude": 39.1675,
-    "longitude": -9.3694
+    "latitude": 39.17118,
+    "longitude": -9.35859
   },
   {
     "id": "praia-de-porto-novo",
@@ -23,8 +23,8 @@
     "region": "Oeste",
     "municipality": "Torres Vedras",
     "district": "Lisboa",
-    "latitude": 39.1776,
-    "longitude": -9.3570
+    "latitude": 39.17751,
+    "longitude": -9.35603
   },
   {
     "id": "praia-da-fisica",
@@ -32,8 +32,8 @@
     "region": "Oeste",
     "municipality": "Torres Vedras",
     "district": "Lisboa",
-    "latitude": 39.1485,
-    "longitude": -9.3790
+    "latitude": 39.13865,
+    "longitude": -9.37952
   },
   {
     "id": "praia-do-centro",
@@ -41,8 +41,8 @@
     "region": "Oeste",
     "municipality": "Torres Vedras",
     "district": "Lisboa",
-    "latitude": 39.1494,
-    "longitude": -9.3782
+    "latitude": 39.13710,
+    "longitude": -9.38121
   },
   {
     "id": "praia-formosa",
@@ -50,7 +50,7 @@
     "region": "Oeste",
     "municipality": "Torres Vedras",
     "district": "Lisboa",
-    "latitude": 39.1510,
-    "longitude": -9.3773
+    "latitude": 39.13130,
+    "longitude": -9.38539
   }
 ]
