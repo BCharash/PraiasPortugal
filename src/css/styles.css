@@ -790,6 +790,17 @@ select:focus {
 
 }
 
+.settings-section label {
+    display:
+        block;
+}
+
+
+.settings-section select {
+    display:
+        block;
+}
+
 
 .settings-section > div:last-child {
 
