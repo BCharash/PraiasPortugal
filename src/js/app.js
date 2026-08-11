@@ -135,7 +135,7 @@ const autoUpdateOnStartup =
     document.getElementById(
         "autoUpdateOnStartup"
     );
-
+ select
 const languageSelect =
     document.getElementById(
         "languageSelect"
@@ -323,6 +323,8 @@ const translations = {
         beachComplex:
             "Conjunto de praias:",
         beach: "Praia:",
+        favorites: "Favoritos:",
+        selectFavorite: "Selecionar favorito",
 
         // Informação da praia
 
