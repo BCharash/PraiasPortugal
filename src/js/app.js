@@ -1134,7 +1134,7 @@ async function restoreSavedBeach() {
 
     const savedBeachId =
         String(
-            appState.selectedBeachId
+            beachIdToRestore
         );
 
 
@@ -1850,7 +1850,19 @@ favoriteBeachSelect.addEventListener(
     // Initial Page
     //--------------------------------------------------
 
-    showDashboard();
+   if (
+    appState.settings.startupPage === "beaches"
+    ) {
+
+        showBeaches();
+
+    }
+
+    else {
+
+        showDashboard();
+
+    }
 
 }
 
