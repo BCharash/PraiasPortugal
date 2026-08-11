@@ -253,7 +253,11 @@ function updateSettingsControls() {
 // Settings Changes
 //--------------------------------------------------
 
-function handleSettingsChange() {
+async function handleSettingsChange() {
+
+    //--------------------------------------------------
+    // Read Current Settings
+    //--------------------------------------------------
 
     appState.settings.temperatureUnit =
         temperatureUnitSelect.value;
@@ -276,16 +280,21 @@ function handleSettingsChange() {
     appState.settings.language =
         languageSelect.value;
 
+
+    //--------------------------------------------------
+    // Save
+    //--------------------------------------------------
+
     saveSettings();
 
 
     //--------------------------------------------------
-    // Refresh Current Dashboard
+    // Refresh Current Beach
     //--------------------------------------------------
 
     if (appState.selectedBeachId) {
 
-        displayBeach(
+        await displayBeach(
             appState.selectedBeachId
         );
 
