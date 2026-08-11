@@ -57,8 +57,6 @@ const latitudeSpan =
 const longitudeSpan =
     document.getElementById("longitude");
 
-const viewOnMapLink =
-    document.getElementById("viewOnMapLink");
 
 
 //--------------------------------------------------
