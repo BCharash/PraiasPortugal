@@ -9,6 +9,8 @@ const appState = {
 
     selectedBeachId: null,
 
+    favorites: [],
+
     settings: {
 
         temperatureUnit: "celsius",
@@ -57,6 +59,16 @@ const longitudeSpan =
 
 
 //--------------------------------------------------
+// Favorite Beach Control
+//--------------------------------------------------
+
+const favoriteBeachButton =
+    document.getElementById(
+        "favoriteBeachButton"
+    );
+
+
+//--------------------------------------------------
 // Pages
 //--------------------------------------------------
 
@@ -89,25 +101,39 @@ const settingsNavButton =
 //--------------------------------------------------
 
 const temperatureUnitSelect =
-    document.getElementById("temperatureUnitSelect");
+    document.getElementById(
+        "temperatureUnitSelect"
+    );
 
 const windSpeedUnitSelect =
-    document.getElementById("windSpeedUnitSelect");
+    document.getElementById(
+        "windSpeedUnitSelect"
+    );
 
 const waveHeightUnitSelect =
-    document.getElementById("waveHeightUnitSelect");
+    document.getElementById(
+        "waveHeightUnitSelect"
+    );
 
 const startupPageSelect =
-    document.getElementById("startupPageSelect");
+    document.getElementById(
+        "startupPageSelect"
+    );
 
 const startupBeachSelect =
-    document.getElementById("startupBeachSelect");
+    document.getElementById(
+        "startupBeachSelect"
+    );
 
 const autoUpdateOnStartup =
-    document.getElementById("autoUpdateOnStartup");
+    document.getElementById(
+        "autoUpdateOnStartup"
+    );
 
 const languageSelect =
-    document.getElementById("languageSelect");
+    document.getElementById(
+        "languageSelect"
+    );
 
 
 //--------------------------------------------------
@@ -119,6 +145,9 @@ const SETTINGS_STORAGE_KEY =
 
 const BEACH_STORAGE_KEY =
     "praiasDePortugalSelectedBeach";
+
+const FAVORITES_STORAGE_KEY =
+    "praiasDePortugalFavorites";
 
 
 //==================================================
@@ -233,7 +262,8 @@ const translations = {
         weatherSnow: "Snow",
         weatherRainShowers: "Rain showers",
         weatherThunderstorm: "Thunderstorm",
-        weatherThunderstormHail: "Thunderstorm with hail",
+        weatherThunderstormHail:
+            "Thunderstorm with hail",
 
         // Languages
 
@@ -258,12 +288,15 @@ const translations = {
         // Painel
 
         selectedBeach: "Praia selecionada",
-        noBeachSelected: "Nenhuma praia selecionada",
+        noBeachSelected:
+            "Nenhuma praia selecionada",
 
         alerts: "Alertas",
-        noActiveAlerts: "Sem alertas ativos",
+        noActiveAlerts:
+            "Sem alertas ativos",
 
-        currentConditions: "Condições atuais",
+        currentConditions:
+            "Condições atuais",
 
         airLabel: "🌡 Ar",
         seaLabel: "🌊 Mar",
@@ -275,10 +308,12 @@ const translations = {
 
         // Seleção de praia
 
-        selectBeach: "Selecionar praia",
+        selectBeach:
+            "Selecionar praia",
 
         region: "Região:",
-        beachComplex: "Conjunto de praias:",
+        beachComplex:
+            "Conjunto de praias:",
         beach: "Praia:",
 
         // Informação da praia
@@ -291,15 +326,19 @@ const translations = {
         // Definições
 
         units: "Unidades",
-        unitPreferences: "Preferências de unidades",
+        unitPreferences:
+            "Preferências de unidades",
 
         temperature: "Temperatura:",
-        windSpeed: "Velocidade do vento:",
+        windSpeed:
+            "Velocidade do vento:",
         height: "Altura:",
 
         startup: "Arranque",
-        startupPage: "Página inicial:",
-        startupBeach: "Praia inicial:",
+        startupPage:
+            "Página inicial:",
+        startupBeach:
+            "Praia inicial:",
 
         updateDataOnStartup:
             "Atualizar dados ao iniciar a aplicação",
@@ -340,16 +379,21 @@ const translations = {
         uvExtreme: "Extremo",
 
         weatherClearSky: "Céu limpo",
-        weatherMainlyClear: "Pouco nublado",
-        weatherPartlyCloudy: "Parcialmente nublado",
+        weatherMainlyClear:
+            "Pouco nublado",
+        weatherPartlyCloudy:
+            "Parcialmente nublado",
         weatherOvercast: "Nublado",
         weatherFog: "Nevoeiro",
         weatherDrizzle: "Chuvisco",
         weatherRain: "Chuva",
         weatherSnow: "Neve",
-        weatherRainShowers: "Aguaceiros",
-        weatherThunderstorm: "Trovoada",
-        weatherThunderstormHail: "Trovoada com granizo",
+        weatherRainShowers:
+            "Aguaceiros",
+        weatherThunderstorm:
+            "Trovoada",
+        weatherThunderstormHail:
+            "Trovoada com granizo",
 
         // Idiomas
 
@@ -415,7 +459,9 @@ function applyLanguage() {
     //--------------------------------------------------
 
     const elements =
-        document.querySelectorAll("[data-i18n]");
+        document.querySelectorAll(
+            "[data-i18n]"
+        );
 
 
     elements.forEach(element => {
@@ -439,8 +485,13 @@ function applyLanguage() {
     if (!appState.selectedBeachId) {
 
         setTranslatedText(
-            document.getElementById("dashboardBeachName"),
+
+            document.getElementById(
+                "dashboardBeachName"
+            ),
+
             "noBeachSelected"
+
         );
 
     }
@@ -479,7 +530,9 @@ function loadSettings() {
     try {
 
         const settings =
-            JSON.parse(storedSettings);
+            JSON.parse(
+                storedSettings
+            );
 
 
         appState.settings = {
@@ -519,6 +572,10 @@ function saveSettings() {
 
 }
 
+
+//==================================================
+// SELECTED BEACH STORAGE
+//==================================================
 
 //--------------------------------------------------
 // Load Selected Beach
@@ -561,6 +618,243 @@ function saveSelectedBeach(beachId) {
 
 
 //==================================================
+// FAVORITES
+//==================================================
+
+//--------------------------------------------------
+// Load Favorites
+//--------------------------------------------------
+
+function loadFavorites() {
+
+    const storedFavorites =
+        localStorage.getItem(
+            FAVORITES_STORAGE_KEY
+        );
+
+
+    if (!storedFavorites)
+        return;
+
+
+    try {
+
+        const favorites =
+            JSON.parse(
+                storedFavorites
+            );
+
+
+        if (Array.isArray(favorites)) {
+
+            appState.favorites =
+                favorites.map(
+                    beachId =>
+                        String(beachId)
+                );
+
+        }
+
+    }
+
+    catch (error) {
+
+        // Ignore invalid stored favorites.
+        // Start with an empty favorite list.
+
+        appState.favorites = [];
+
+    }
+
+}
+
+
+//--------------------------------------------------
+// Save Favorites
+//--------------------------------------------------
+
+function saveFavorites() {
+
+    localStorage.setItem(
+
+        FAVORITES_STORAGE_KEY,
+
+        JSON.stringify(
+            appState.favorites
+        )
+
+    );
+
+}
+
+
+//--------------------------------------------------
+// Is Beach A Favorite?
+//--------------------------------------------------
+
+function isFavorite(beachId) {
+
+    if (!beachId)
+        return false;
+
+
+    return appState.favorites.includes(
+        String(beachId)
+    );
+
+}
+
+
+//--------------------------------------------------
+// Update Favorite Button
+//--------------------------------------------------
+
+function updateFavoriteButton() {
+
+    if (!favoriteBeachButton)
+        return;
+
+
+    //--------------------------------------------------
+    // No beach selected
+    //--------------------------------------------------
+
+    if (!appState.selectedBeachId) {
+
+        favoriteBeachButton.textContent =
+            "♡";
+
+        favoriteBeachButton.disabled =
+            true;
+
+        favoriteBeachButton.setAttribute(
+            "aria-label",
+            "Add to favorites"
+        );
+
+        favoriteBeachButton.setAttribute(
+            "title",
+            "Add to favorites"
+        );
+
+        return;
+
+    }
+
+
+    //--------------------------------------------------
+    // Beach selected
+    //--------------------------------------------------
+
+    favoriteBeachButton.disabled =
+        false;
+
+
+    if (
+        isFavorite(
+            appState.selectedBeachId
+        )
+    ) {
+
+        favoriteBeachButton.textContent =
+            "♥";
+
+        favoriteBeachButton.setAttribute(
+            "aria-label",
+            "Remove from favorites"
+        );
+
+        favoriteBeachButton.setAttribute(
+            "title",
+            "Remove from favorites"
+        );
+
+    }
+
+    else {
+
+        favoriteBeachButton.textContent =
+            "♡";
+
+        favoriteBeachButton.setAttribute(
+            "aria-label",
+            "Add to favorites"
+        );
+
+        favoriteBeachButton.setAttribute(
+            "title",
+            "Add to favorites"
+        );
+
+    }
+
+}
+
+
+//--------------------------------------------------
+// Toggle Favorite
+//--------------------------------------------------
+
+function toggleFavorite() {
+
+    //--------------------------------------------------
+    // Nothing selected
+    //--------------------------------------------------
+
+    if (!appState.selectedBeachId)
+        return;
+
+
+    const beachId =
+        String(
+            appState.selectedBeachId
+        );
+
+
+    //--------------------------------------------------
+    // Remove existing favorite
+    //--------------------------------------------------
+
+    if (isFavorite(beachId)) {
+
+        appState.favorites =
+            appState.favorites.filter(
+                id => id !== beachId
+            );
+
+    }
+
+
+    //--------------------------------------------------
+    // Add new favorite
+    //--------------------------------------------------
+
+    else {
+
+        appState.favorites.push(
+            beachId
+        );
+
+    }
+
+
+    //--------------------------------------------------
+    // Save
+    //--------------------------------------------------
+
+    saveFavorites();
+
+
+    //--------------------------------------------------
+    // Update UI immediately
+    //--------------------------------------------------
+
+    updateFavoriteButton();
+
+}
+
+
+//==================================================
 // RESTORE SAVED BEACH
 //==================================================
 
@@ -582,7 +876,9 @@ async function restoreSavedBeach() {
 
 
     const savedBeachId =
-        String(appState.selectedBeachId);
+        String(
+            appState.selectedBeachId
+        );
 
 
     const regions =
@@ -596,7 +892,9 @@ async function restoreSavedBeach() {
     for (const region of regions) {
 
         const complexes =
-            getBeachComplexes(region);
+            getBeachComplexes(
+                region
+            );
 
 
         //--------------------------------------------------
@@ -606,7 +904,9 @@ async function restoreSavedBeach() {
         for (const complex of complexes) {
 
             const beaches =
-                getBeaches(complex.id);
+                getBeaches(
+                    complex.id
+                );
 
 
             //--------------------------------------------------
@@ -616,7 +916,8 @@ async function restoreSavedBeach() {
             const beach =
                 beaches.find(
                     item =>
-                        String(item.id) === savedBeachId
+                        String(item.id) ===
+                        savedBeachId
                 );
 
 
@@ -628,7 +929,10 @@ async function restoreSavedBeach() {
             // Restore Region
             //--------------------------------------------------
 
-            populateBeachComplexes(region);
+            populateBeachComplexes(
+                region
+            );
+
 
             regionSelect.value =
                 region;
@@ -640,6 +944,7 @@ async function restoreSavedBeach() {
 
             beachComplexSelect.value =
                 complex.id;
+
 
             populateBeaches(
                 complex.id
@@ -661,6 +966,13 @@ async function restoreSavedBeach() {
             await displayBeach(
                 beach.id
             );
+
+
+            //--------------------------------------------------
+            // Update Favorite Button
+            //--------------------------------------------------
+
+            updateFavoriteButton();
 
 
             return true;
@@ -783,6 +1095,13 @@ async function handleSettingsChange() {
 
     }
 
+
+    //--------------------------------------------------
+    // Keep Favorite Button Correct
+    //--------------------------------------------------
+
+    updateFavoriteButton();
+
 }
 
 
@@ -820,7 +1139,9 @@ function showPage(page) {
 
 function showDashboard() {
 
-    showPage("dashboard");
+    showPage(
+        "dashboard"
+    );
 
 }
 
@@ -831,7 +1152,9 @@ function showDashboard() {
 
 function showBeaches() {
 
-    showPage("beaches");
+    showPage(
+        "beaches"
+    );
 
 }
 
@@ -842,7 +1165,9 @@ function showBeaches() {
 
 function showSettings() {
 
-    showPage("settings");
+    showPage(
+        "settings"
+    );
 
 }
 
@@ -865,6 +1190,8 @@ async function initializeApplication() {
 
     loadSelectedBeach();
 
+    loadFavorites();
+
 
     //--------------------------------------------------
     // Initialize Data
@@ -884,7 +1211,9 @@ async function initializeApplication() {
     // Initial Dashboard Background
     //--------------------------------------------------
 
-    updateBackground("sunny");
+    updateBackground(
+        "sunny"
+    );
 
 
     //--------------------------------------------------
@@ -916,6 +1245,13 @@ async function initializeApplication() {
 
 
     //--------------------------------------------------
+    // Update Favorite Button
+    //--------------------------------------------------
+
+    updateFavoriteButton();
+
+
+    //--------------------------------------------------
     // Navigation
     //--------------------------------------------------
 
@@ -934,6 +1270,16 @@ async function initializeApplication() {
     settingsNavButton.addEventListener(
         "click",
         showSettings
+    );
+
+
+    //--------------------------------------------------
+    // Favorite Button
+    //--------------------------------------------------
+
+    favoriteBeachButton.addEventListener(
+        "click",
+        toggleFavorite
     );
 
 
@@ -1027,15 +1373,42 @@ async function initializeApplication() {
                 beachSelect.value;
 
 
+            //--------------------------------------------------
+            // Ignore placeholder
+            //--------------------------------------------------
+
+            if (!beachId)
+                return;
+
+
+            //--------------------------------------------------
+            // Save Selected Beach
+            //--------------------------------------------------
+
             saveSelectedBeach(
                 beachId
             );
 
 
+            //--------------------------------------------------
+            // Display Beach
+            //--------------------------------------------------
+
             await displayBeach(
                 beachId
             );
 
+
+            //--------------------------------------------------
+            // Update Favorite Button
+            //--------------------------------------------------
+
+            updateFavoriteButton();
+
+
+            //--------------------------------------------------
+            // Return To Dashboard
+            //--------------------------------------------------
 
             showDashboard();
 
