@@ -716,6 +716,136 @@ function isFavorite(beachId) {
 
 
 //--------------------------------------------------
+// Populate Favorites Dropdown
+//--------------------------------------------------
+
+function populateFavoriteBeachOptions() {
+
+    if (!favoriteBeachSelect)
+        return;
+
+
+    //--------------------------------------------------
+    // Clear existing options
+    //--------------------------------------------------
+
+    favoriteBeachSelect.innerHTML = "";
+
+
+    //--------------------------------------------------
+    // Placeholder
+    //--------------------------------------------------
+
+    const placeholder =
+        document.createElement("option");
+
+    placeholder.value = "";
+
+    placeholder.textContent =
+        "Select Favorite";
+
+    favoriteBeachSelect.appendChild(
+        placeholder
+    );
+
+
+    //--------------------------------------------------
+    // Add each favorite
+    //--------------------------------------------------
+
+    appState.favorites.forEach(
+        favoriteId => {
+
+            const favoriteIdString =
+                String(favoriteId);
+
+            let favoriteBeach = null;
+
+
+            //--------------------------------------------------
+            // Search all regions and complexes
+            //--------------------------------------------------
+
+            for (const region of getRegions()) {
+
+                const complexes =
+                    getBeachComplexes(region);
+
+                for (const complex of complexes) {
+
+                    const beaches =
+                        getBeaches(complex.id);
+
+                    const beach =
+                        beaches.find(
+                            item =>
+                                String(item.id) ===
+                                favoriteIdString
+                        );
+
+                    if (beach) {
+
+                        favoriteBeach =
+                            beach;
+
+                        break;
+
+                    }
+
+                }
+
+                if (favoriteBeach)
+                    break;
+
+            }
+
+
+            //--------------------------------------------------
+            // Add favorite if found
+            //--------------------------------------------------
+
+            if (favoriteBeach) {
+
+                const option =
+                    document.createElement("option");
+
+                option.value =
+                    favoriteIdString;
+
+                option.textContent =
+                    favoriteBeach.name;
+
+                favoriteBeachSelect.appendChild(
+                    option
+                );
+
+            }
+
+        }
+    );
+
+
+    //--------------------------------------------------
+    // Reflect current selection
+    //--------------------------------------------------
+
+    if (
+        appState.selectedBeachId &&
+        isFavorite(
+            appState.selectedBeachId
+        )
+    ) {
+
+        favoriteBeachSelect.value =
+            String(
+                appState.selectedBeachId
+            );
+
+    }
+
+}
+
+//--------------------------------------------------
 // Update Favorite Button
 //--------------------------------------------------
 
