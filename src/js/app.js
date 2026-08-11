@@ -1490,6 +1490,13 @@ async function initializeApplication() {
     //--------------------------------------------------
 
     populateFavoriteBeachOptions();
+ 
+    
+    //--------------------------------------------------
+    // Populate Startup Beach Options
+    //--------------------------------------------------
+
+    populateStartupBeachOptions();
 
 
     //--------------------------------------------------
