@@ -17,8 +17,12 @@
  * Notes:
  *     - Wave and swell directions describe where waves
  *       are coming from.
+ *
  *     - Ocean current direction describes where the
  *       current is heading.
+ *
+ *     - Wave height and sea temperature use the
+ *       application unit settings.
  */
 
 //--------------------------------------------------
@@ -35,7 +39,12 @@ function formatSeaTemperature(marine) {
         marine.sea.temperature == null)
         return "--";
 
-    return `${marine.sea.temperature.toFixed(1)}°C`;
+    const temperature =
+        convertTemperature(
+            marine.sea.temperature
+        );
+
+    return `${temperature.toFixed(1)}${getTemperatureSymbol()}`;
 
 }
 
@@ -52,13 +61,23 @@ function formatSurf(marine) {
         marine.waves.period == null)
         return "--";
 
+    const height =
+        convertWaveHeight(
+            marine.waves.height
+        );
+
     const arrow =
-        getDirectionArrow(marine.waves.direction);
+        getDirectionArrow(
+            marine.waves.direction
+        );
 
     const direction =
-        getCompassDirection(marine.waves.direction);
+        getCompassDirection(
+            marine.waves.direction
+        );
 
-    return `${marine.waves.height.toFixed(1)} m ` +
+    return `${height.toFixed(1)} ` +
+           `${getWaveHeightSymbol()} ` +
            `${arrow} ${direction} @ ` +
            `${Math.round(marine.waves.period)} s`;
 
@@ -76,10 +95,14 @@ function formatWaveDirection(marine) {
         return "--";
 
     const arrow =
-        getDirectionArrow(marine.waves.direction);
+        getDirectionArrow(
+            marine.waves.direction
+        );
 
     const direction =
-        getCompassDirection(marine.waves.direction);
+        getCompassDirection(
+            marine.waves.direction
+        );
 
     return `${arrow} ${direction} ` +
            `${Math.round(marine.waves.direction)}°`;
@@ -99,13 +122,23 @@ function formatSwell(marine) {
         marine.swell.period == null)
         return "--";
 
+    const height =
+        convertWaveHeight(
+            marine.swell.height
+        );
+
     const arrow =
-        getDirectionArrow(marine.swell.direction);
+        getDirectionArrow(
+            marine.swell.direction
+        );
 
     const direction =
-        getCompassDirection(marine.swell.direction);
+        getCompassDirection(
+            marine.swell.direction
+        );
 
-    return `${marine.swell.height.toFixed(1)} m ` +
+    return `${height.toFixed(1)} ` +
+           `${getWaveHeightSymbol()} ` +
            `${arrow} ${direction} @ ` +
            `${Math.round(marine.swell.period)} s`;
 
@@ -124,13 +157,23 @@ function formatWindWaves(marine) {
         marine.windWaves.period == null)
         return "--";
 
+    const height =
+        convertWaveHeight(
+            marine.windWaves.height
+        );
+
     const arrow =
-        getDirectionArrow(marine.windWaves.direction);
+        getDirectionArrow(
+            marine.windWaves.direction
+        );
 
     const direction =
-        getCompassDirection(marine.windWaves.direction);
+        getCompassDirection(
+            marine.windWaves.direction
+        );
 
-    return `${marine.windWaves.height.toFixed(1)} m ` +
+    return `${height.toFixed(1)} ` +
+           `${getWaveHeightSymbol()} ` +
            `${arrow} ${direction} @ ` +
            `${Math.round(marine.windWaves.period)} s`;
 
@@ -151,14 +194,89 @@ function formatOceanCurrent(marine) {
         marine.current.direction == null)
         return "--";
 
+    const velocity =
+        marine.current.velocity;
+
     const arrow =
-        getDirectionArrow(marine.current.direction);
+        getDirectionArrow(
+            marine.current.direction
+        );
 
     const direction =
-        getCompassDirection(marine.current.direction);
+        getCompassDirection(
+            marine.current.direction
+        );
 
-    return `${marine.current.velocity.toFixed(1)} km/h ` +
+    return `${velocity.toFixed(1)} km/h ` +
            `${arrow} ${direction}`;
+
+}
+
+
+//--------------------------------------------------
+// Temperature Conversion
+//--------------------------------------------------
+
+function convertTemperature(celsius) {
+
+    if (typeof appState !== "undefined" &&
+        appState.settings &&
+        appState.settings.temperatureUnit === "fahrenheit") {
+
+        return (celsius * 9 / 5) + 32;
+
+    }
+
+    return celsius;
+
+}
+
+
+function getTemperatureSymbol() {
+
+    if (typeof appState !== "undefined" &&
+        appState.settings &&
+        appState.settings.temperatureUnit === "fahrenheit") {
+
+        return "°F";
+
+    }
+
+    return "°C";
+
+}
+
+
+//--------------------------------------------------
+// Wave Height Conversion
+//--------------------------------------------------
+
+function convertWaveHeight(meters) {
+
+    if (typeof appState !== "undefined" &&
+        appState.settings &&
+        appState.settings.waveHeightUnit === "feet") {
+
+        return meters * 3.28084;
+
+    }
+
+    return meters;
+
+}
+
+
+function getWaveHeightSymbol() {
+
+    if (typeof appState !== "undefined" &&
+        appState.settings &&
+        appState.settings.waveHeightUnit === "feet") {
+
+        return "ft";
+
+    }
+
+    return "m";
 
 }
 
