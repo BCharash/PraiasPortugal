@@ -68,6 +68,12 @@ const favoriteBeachButton =
     );
 
 
+const favoriteBeachSelect =
+    document.getElementById(
+        "favoriteBeachSelect"
+    );
+
+
 //--------------------------------------------------
 // Pages
 //--------------------------------------------------
@@ -193,6 +199,8 @@ const translations = {
         region: "Region:",
         beachComplex: "Beach Complex:",
         beach: "Beach:",
+        favorites: "Favorites",
+        selectFavorite: "Select Favorite",
 
         // Beach information
 
