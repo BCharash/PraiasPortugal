@@ -15,6 +15,7 @@ let airHighLowElement;
 let seaTempElement;
 let windElement;
 let surfElement;
+let swellElement;
 let tideElement;
 let uvElement;
 
@@ -33,6 +34,7 @@ function initializeConditions() {
     seaTempElement = document.getElementById("dashboardSeaTemp");
     windElement    = document.getElementById("dashboardWind");
     surfElement    = document.getElementById("dashboardSurf");
+    swellElement   = document.getElementById("dashboardSwell");
     tideElement    = document.getElementById("dashboardTide");
     uvElement      = document.getElementById("dashboardUV");
 
@@ -46,6 +48,9 @@ function initializeConditions() {
     surfElement.textContent    = "--";
     tideElement.textContent    = "--";
     uvElement.textContent      = "--";
+
+    if (swellElement)
+        swellElement.textContent = "--";
 
 }
 
@@ -66,14 +71,23 @@ function updateConditions(dashboardData) {
 
     if (weather) {
 
-        airTempElement.textContent      = formatAirTemperature(weather);
-        airHumidityElement.textContent  = formatHumidity(weather);
-        airFeelsLikeElement.textContent = formatFeelsLike(weather);
-        airHighLowElement.textContent   = formatHighLow(weather);
+        airTempElement.textContent =
+            formatAirTemperature(weather);
 
-        windElement.textContent = formatWind(weather);
+        airHumidityElement.textContent =
+            formatHumidity(weather);
 
-        uvElement.textContent = formatUV(weather);
+        airFeelsLikeElement.textContent =
+            formatFeelsLike(weather);
+
+        airHighLowElement.textContent =
+            formatHighLow(weather);
+
+        windElement.textContent =
+            formatWind(weather);
+
+        uvElement.textContent =
+            formatUV(weather);
 
     }
 
@@ -83,9 +97,15 @@ function updateConditions(dashboardData) {
 
     if (marine) {
 
-        seaTempElement.textContent = formatSeaTemperature(marine);
+        seaTempElement.textContent =
+            formatSeaTemperature(marine);
 
-        surfElement.textContent = formatSurf(marine);
+        surfElement.textContent =
+            formatSurf(marine);
+
+        if (swellElement)
+            swellElement.textContent =
+                formatSwell(marine);
 
     }
 
@@ -96,7 +116,8 @@ function updateConditions(dashboardData) {
     if (tide) {
 
         tideElement.textContent =
-            `${formatCurrentTideHeight(tide)} ${formatTideTrend(tide)}`;
+            `${formatCurrentTideHeight(tide)} ` +
+            `${formatTideTrend(tide)}`;
 
     }
 
