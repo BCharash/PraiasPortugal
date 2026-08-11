@@ -135,7 +135,7 @@ const autoUpdateOnStartup =
     document.getElementById(
         "autoUpdateOnStartup"
     );
- select
+
 const languageSelect =
     document.getElementById(
         "languageSelect"
