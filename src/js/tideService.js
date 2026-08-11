@@ -11,13 +11,17 @@
  *     - Determine whether the tide is rising.
  *     - Find the next high tide.
  *     - Find the next low tide.
+ *
+ * Notes:
+ *     - Open-Meteo provides sea level relative to
+ *       Mean Sea Level.
+ *     - The application converts this to an
+ *       approximate Portuguese Hydrographic Zero.
  */
-
 
 //--------------------------------------------------
 // Constants
 //--------------------------------------------------
-
 
 const HYDROGRAPHIC_ZERO_OFFSET = 2.08;
 
@@ -26,15 +30,37 @@ const HYDROGRAPHIC_ZERO_OFFSET = 2.08;
 // Tide Information
 //--------------------------------------------------
 
+/*
+ * Derive tide information from hourly marine data.
+ *
+ * Parameters:
+ *     marine - Marine data object.
+ *
+ * Returns:
+ *     Tide information, or null if hourly tide data
+ *     are unavailable.
+ */
 function getTideInformation(marine) {
 
-    if (!marine || !marine.hourly)
+    if (!marine ||
+        !marine.hourly ||
+        !marine.hourly.tide ||
+        !marine.hourly.tide.seaLevel)
         return null;
 
     const hourly = marine.hourly;
 
-    const heights = hourly.seaLevel.map(level =>
-        level + HYDROGRAPHIC_ZERO_OFFSET);
+    //--------------------------------------------------
+    // Sea Level
+    //--------------------------------------------------
+
+    const heights = hourly.tide.seaLevel.map(level =>
+        level + HYDROGRAPHIC_ZERO_OFFSET
+    );
+
+    //--------------------------------------------------
+    // Current Time
+    //--------------------------------------------------
 
     const now = new Date();
 
