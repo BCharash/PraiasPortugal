@@ -8,12 +8,14 @@
     =========================================================== -->
 
     <meta charset="UTF-8">
+
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
 
     <title>Praias de Portugal</title>
 
     <!-- Application Styles -->
+
     <link rel="stylesheet"
           href="src/css/styles.css">
 
@@ -21,6 +23,7 @@
 
 
 <body>
+
 
     <!-- ==========================================================
          Application Header
@@ -31,6 +34,7 @@
         <div id="applicationTitle">
             Praias de Portugal
         </div>
+
 
         <nav id="mainNavigation">
 
@@ -62,43 +66,27 @@
 
         <div id="dashboard">
 
-            <h2>Dashboard</h2>
-
 
             <!-- ==================================================
-                 Selected Beach Widget
+                 Dashboard Status
             =================================================== -->
 
-            <div id="beachHeaderWidget"
-                 class="dashboard-widget">
+            <div id="dashboardStatus">
 
-                <h3>Selected Beach</h3>
-
-                <p id="dashboardBeachName">
+                <div id="dashboardBeachName">
                     No beach selected
-                </p>
-
-            </div>
+                </div>
 
 
-            <!-- ==================================================
-                 Alerts Widget
-            =================================================== -->
-
-            <div id="alertsWidget"
-                 class="dashboard-widget">
-
-                <h3>Alerts</h3>
-
-                <p id="dashboardAlerts">
+                <div id="dashboardAlerts">
                     No active alerts
-                </p>
+                </div>
 
             </div>
 
 
             <!-- ==================================================
-                 Current Conditions Widget
+                 Current Conditions
             =================================================== -->
 
             <div id="conditionsWidget"
@@ -106,7 +94,9 @@
 
                 <h3>Current Conditions</h3>
 
+
                 <table>
+
 
                     <!-- Air / Sea -->
 
@@ -203,6 +193,7 @@
 
                     </tr>
 
+
                 </table>
 
             </div>
@@ -287,29 +278,49 @@
 
             <h3>Selected Beach</h3>
 
+
             <p>
+
                 <strong>Region:</strong>
+
                 <span id="region"></span>
+
             </p>
 
+
             <p>
+
                 <strong>Municipality:</strong>
+
                 <span id="municipality"></span>
+
             </p>
 
+
             <p>
+
                 <strong>District:</strong>
+
                 <span id="district"></span>
+
             </p>
 
+
             <p>
+
                 <strong>Latitude:</strong>
+
                 <span id="latitude"></span>
+
             </p>
 
+
             <p>
+
                 <strong>Longitude:</strong>
+
                 <span id="longitude"></span>
+
             </p>
 
         </div>
@@ -531,34 +542,43 @@
     <!-- Services -->
 
     <script src="src/js/weatherService.js"></script>
+
     <script src="src/js/marineService.js"></script>
+
     <script src="src/js/tideService.js"></script>
 
 
     <!-- Formatters -->
 
     <script src="src/js/weatherFormatter.js"></script>
+
     <script src="src/js/marineFormatter.js"></script>
+
     <script src="src/js/tideFormatter.js"></script>
 
 
     <!-- Browser -->
 
     <script src="src/js/browse.js"></script>
+
     <script src="src/js/display.js"></script>
 
 
     <!-- Dashboard -->
 
     <script src="src/js/beachHeader.js"></script>
+
     <script src="src/js/alerts.js"></script>
+
     <script src="src/js/conditions.js"></script>
+
     <script src="src/js/dashboard.js"></script>
 
 
     <!-- Application -->
 
     <script src="src/js/background.js"></script>
+
     <script src="src/js/app.js"></script>
 
 
