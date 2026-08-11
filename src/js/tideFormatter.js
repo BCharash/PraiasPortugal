@@ -11,6 +11,10 @@
  *     - Format the tide trend.
  *     - Format the next high tide.
  *     - Format the next low tide.
+ *
+ * Notes:
+ *     - Tide height uses the application's
+ *       wave-height unit setting.
  */
 
 //--------------------------------------------------
@@ -25,7 +29,10 @@ function formatCurrentTideHeight(tide) {
     if (!tide || tide.currentHeight == null)
         return "--";
 
-    return `${tide.currentHeight.toFixed(1)} m`;
+    const height =
+        convertTideHeight(tide.currentHeight);
+
+    return `${height.toFixed(1)} ${getTideHeightSymbol()}`;
 
 }
 
@@ -53,7 +60,11 @@ function formatNextHighTide(tide) {
     if (!tide || !tide.nextHigh)
         return "--";
 
-    return `↑ ${formatTime(tide.nextHigh.time)} (${tide.nextHigh.height.toFixed(1)} m)`;
+    const height =
+        convertTideHeight(tide.nextHigh.height);
+
+    return `↑ ${formatTime(tide.nextHigh.time)} ` +
+           `(${height.toFixed(1)} ${getTideHeightSymbol()})`;
 
 }
 
@@ -66,7 +77,45 @@ function formatNextLowTide(tide) {
     if (!tide || !tide.nextLow)
         return "--";
 
-    return `↓ ${formatTime(tide.nextLow.time)} (${tide.nextLow.height.toFixed(1)} m)`;
+    const height =
+        convertTideHeight(tide.nextLow.height);
+
+    return `↓ ${formatTime(tide.nextLow.time)} ` +
+           `(${height.toFixed(1)} ${getTideHeightSymbol()})`;
+
+}
+
+
+//--------------------------------------------------
+// Tide Height Conversion
+//--------------------------------------------------
+
+function convertTideHeight(meters) {
+
+    if (typeof appState !== "undefined" &&
+        appState.settings &&
+        appState.settings.waveHeightUnit === "feet") {
+
+        return meters * 3.28084;
+
+    }
+
+    return meters;
+
+}
+
+
+function getTideHeightSymbol() {
+
+    if (typeof appState !== "undefined" &&
+        appState.settings &&
+        appState.settings.waveHeightUnit === "feet") {
+
+        return "ft";
+
+    }
+
+    return "m";
 
 }
 
@@ -80,7 +129,8 @@ function formatNextLowTide(tide) {
  */
 function formatTime(isoTime) {
 
-    const date = new Date(isoTime);
+    const date =
+        new Date(isoTime);
 
     return date.toLocaleTimeString([], {
 
