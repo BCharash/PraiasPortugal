@@ -12,10 +12,11 @@
     box-sizing: border-box;
 }
 
+
 body {
 
     margin: 0;
-    padding: 24px;
+    padding: 12px 24px;
 
     font-family:
         Arial,
@@ -28,41 +29,176 @@ body {
     color:
         #f4f7fb;
 
-    line-height: 1.4;
+    line-height:
+        1.4;
 
 }
 
 
 /* ==========================================================
-   Main Application
+   Application Header
    ========================================================== */
 
-body > h1 {
+#applicationHeader {
 
-    max-width: 1000px;
+    max-width:
+        1000px;
 
     margin:
-        0 auto 2px auto;
+        0 auto 10px auto;
+
+    padding:
+        4px 0 8px 0;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        space-between;
+
+    border-bottom:
+        1px solid #30405f;
+
+}
+
+
+#applicationTitle {
 
     color:
         #35c7e8;
 
     font-size:
-        26px;
+        22px;
 
     font-weight:
         700;
 
+    white-space:
+        nowrap;
+
 }
 
 
-body > h1 + #dashboard {
+/* ==========================================================
+   Main Navigation
+   ========================================================== */
+
+#mainNavigation {
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    gap:
+        6px;
+
+}
+
+
+#mainNavigation button {
+
+    padding:
+        6px 11px;
+
+    color:
+        #c4d0e3;
+
+    background:
+        transparent;
+
+    border:
+        1px solid transparent;
+
+    border-radius:
+        6px;
+
+    font-family:
+        inherit;
+
+    font-size:
+        13px;
+
+    font-weight:
+        600;
+
+    cursor:
+        pointer;
+
+}
+
+
+#mainNavigation button:hover {
+
+    color:
+        #ffffff;
+
+    background:
+        #1b2747;
+
+    border-color:
+        #30405f;
+
+}
+
+
+#mainNavigation button:focus {
+
+    outline:
+        none;
+
+    border-color:
+        #35c7e8;
+
+}
+
+
+/* ==========================================================
+   Main Pages
+   ========================================================== */
+
+#dashboardPage,
+#beachesPage,
+#settingsPage {
 
     max-width:
         1000px;
 
     margin:
         0 auto;
+
+}
+
+
+/* ==========================================================
+   Page Headings
+   ========================================================== */
+
+#dashboard > h2,
+#beachesPage > h2,
+#settingsPage > h2 {
+
+    margin:
+        0 0 10px 0;
+
+    padding-bottom:
+        7px;
+
+    border-bottom:
+        1px solid #30405f;
+
+    color:
+        #ffffff;
+
+    font-size:
+        18px;
+
+    font-weight:
+        600;
 
 }
 
@@ -79,26 +215,6 @@ body > h1 + #dashboard {
 }
 
 
-#dashboard > h2 {
-
-    margin:
-        0 0 14px 0;
-
-    padding-bottom:
-        10px;
-
-    border-bottom:
-        1px solid #30405f;
-
-    color:
-        #ffffff;
-
-    font-size:
-        18px;
-
-}
-
-
 /* ==========================================================
    Dashboard Widgets
    ========================================================== */
@@ -106,10 +222,10 @@ body > h1 + #dashboard {
 .dashboard-widget {
 
     margin-bottom:
-        14px;
+        10px;
 
     padding:
-        16px;
+        12px 14px;
 
     background:
         #1b2747;
@@ -118,10 +234,10 @@ body > h1 + #dashboard {
         1px solid #30405f;
 
     border-radius:
-        12px;
+        10px;
 
     box-shadow:
-        0 4px 12px rgba(0, 0, 0, 0.18);
+        0 3px 10px rgba(0, 0, 0, 0.16);
 
 }
 
@@ -129,13 +245,13 @@ body > h1 + #dashboard {
 .dashboard-widget h3 {
 
     margin:
-        0 0 10px 0;
+        0 0 7px 0;
 
     color:
         #ffffff;
 
     font-size:
-        15px;
+        14px;
 
     font-weight:
         600;
@@ -150,7 +266,7 @@ body > h1 + #dashboard {
 #beachHeaderWidget {
 
     padding:
-        14px 18px;
+        10px 14px;
 
 }
 
@@ -164,7 +280,7 @@ body > h1 + #dashboard {
         #35c7e8;
 
     font-size:
-        20px;
+        18px;
 
     font-weight:
         700;
@@ -202,19 +318,16 @@ body > h1 + #dashboard {
 #conditionsWidget table {
 
     width:
-        100%;
+        calc(100% + 16px);
+
+    margin:
+        -8px;
 
     border-collapse:
         separate;
 
     border-spacing:
-        10px;
-
-    margin:
-        -10px;
-
-    width:
-        calc(100% + 20px);
+        8px;
 
 }
 
@@ -222,7 +335,7 @@ body > h1 + #dashboard {
 #conditionsWidget td {
 
     padding:
-        13px 14px;
+        10px 11px;
 
     vertical-align:
         top;
@@ -244,7 +357,7 @@ body > h1 + #dashboard {
         #8fa4c4;
 
     font-size:
-        12px;
+        11px;
 
     font-weight:
         700;
@@ -278,13 +391,13 @@ body > h1 + #dashboard {
         1px solid #30405f;
 
     border-radius:
-        10px;
+        8px;
 
     color:
         #ffffff;
 
     font-size:
-        18px;
+        17px;
 
     font-weight:
         700;
@@ -308,7 +421,7 @@ body > h1 + #dashboard {
         #45c9e8;
 
     font-size:
-        22px;
+        21px;
 
     font-weight:
         700;
@@ -407,13 +520,13 @@ body > h1 + #dashboard {
 .metric-secondary {
 
     margin-top:
-        3px;
+        2px;
 
     color:
         #a9c9e8;
 
     font-size:
-        12px;
+        11px;
 
     font-weight:
         400;
@@ -422,19 +535,42 @@ body > h1 + #dashboard {
 
 
 /* ==========================================================
-   Beach Selection
+   Beaches Page
    ========================================================== */
 
-body > div:not(#dashboard) {
+#beachSelection {
 
-    max-width:
-        1000px;
-
-    margin:
-        0 auto;
+    margin-bottom:
+        14px;
 
 }
 
+
+#beachSelection h3 {
+
+    margin:
+        0 0 10px 0;
+
+    color:
+        #ffffff;
+
+    font-size:
+        15px;
+
+}
+
+
+#selectedBeachInformation {
+
+    max-width:
+        600px;
+
+}
+
+
+/* ==========================================================
+   Form Labels
+   ========================================================== */
 
 label {
 
@@ -443,6 +579,10 @@ label {
 
 }
 
+
+/* ==========================================================
+   Select Controls
+   ========================================================== */
 
 select {
 
@@ -453,10 +593,10 @@ select {
         500px;
 
     padding:
-        9px 12px;
+        8px 10px;
 
     margin-top:
-        4px;
+        3px;
 
     color:
         #ffffff;
@@ -470,8 +610,11 @@ select {
     border-radius:
         7px;
 
+    font-family:
+        inherit;
+
     font-size:
-        15px;
+        14px;
 
 }
 
@@ -488,33 +631,70 @@ select:focus {
 
 
 /* ==========================================================
-   Beach Information
+   Settings
    ========================================================== */
 
-body > h2 {
+.settings-section {
 
     max-width:
-        1000px;
+        600px;
+
+    margin-bottom:
+        14px;
+
+    padding:
+        14px;
+
+    background:
+        #1b2747;
+
+    border:
+        1px solid #30405f;
+
+    border-radius:
+        10px;
+
+}
+
+
+.settings-section h3 {
 
     margin:
-        20px auto 12px auto;
+        0 0 12px 0;
 
     color:
         #ffffff;
 
     font-size:
-        18px;
+        15px;
 
 }
 
 
-body > p {
+.settings-section > div {
 
-    max-width:
-        1000px;
+    margin-bottom:
+        10px;
+
+}
+
+
+.settings-section > div:last-child {
+
+    margin-bottom:
+        0;
+
+}
+
+
+/* ==========================================================
+   Beach Information
+   ========================================================== */
+
+#selectedBeachInformation p {
 
     margin:
-        5px auto;
+        5px 0;
 
     color:
         #aebdd2;
@@ -522,7 +702,7 @@ body > p {
 }
 
 
-body > p strong {
+#selectedBeachInformation strong {
 
     color:
         #dbe5f2;
@@ -540,7 +720,7 @@ hr {
         1000px;
 
     margin:
-        20px auto;
+        14px auto;
 
     border:
         none;
@@ -624,15 +804,64 @@ hr {
     body {
 
         padding:
-            14px;
+            10px 14px;
 
     }
 
 
-    body > h1 {
+    #applicationHeader {
+
+        flex-direction:
+            column;
+
+        align-items:
+            flex-start;
+
+        gap:
+            5px;
+
+        margin-bottom:
+            10px;
+
+    }
+
+
+    #applicationTitle {
 
         font-size:
-            22px;
+            20px;
+
+    }
+
+
+    #mainNavigation {
+
+        width:
+            100%;
+
+        gap:
+            4px;
+
+    }
+
+
+    #mainNavigation button {
+
+        padding:
+            5px 9px;
+
+        font-size:
+            12px;
+
+    }
+
+
+    #dashboard > h2,
+    #beachesPage > h2,
+    #settingsPage > h2 {
+
+        font-size:
+            17px;
 
     }
 
@@ -640,7 +869,7 @@ hr {
     #conditionsWidget table {
 
         border-spacing:
-            6px;
+            5px;
 
     }
 
@@ -648,7 +877,7 @@ hr {
     #conditionsWidget td {
 
         padding:
-            10px;
+            8px;
 
     }
 
@@ -657,7 +886,7 @@ hr {
     #conditionsWidget td:nth-child(3) {
 
         font-size:
-            10px;
+            9px;
 
     }
 
@@ -669,7 +898,7 @@ hr {
             90px;
 
         font-size:
-            15px;
+            14px;
 
     }
 
@@ -683,7 +912,7 @@ hr {
     #dashboardUV {
 
         font-size:
-            19px;
+            18px;
 
     }
 
