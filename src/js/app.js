@@ -1230,6 +1230,19 @@ async function restoreSavedBeach() {
 // SETTINGS
 //==================================================
 
+
+
+//--------------------------------------------------
+// Populate Startup Beach Options
+//--------------------------------------------------
+
+function populateStartupBeachOptions() {
+
+    // function contents here
+
+}
+
+
 //--------------------------------------------------
 // Synchronize Settings Controls
 //--------------------------------------------------
@@ -1470,7 +1483,7 @@ async function initializeApplication() {
     //--------------------------------------------------
 
     populateRegions();
-    
+
 
     //--------------------------------------------------
     // Populate Favorites
