@@ -16,7 +16,7 @@
 body {
 
     margin: 0;
-    padding: 12px 24px;
+    padding: 10px 24px;
 
     font-family:
         Arial,
@@ -36,7 +36,7 @@ body {
 
 
 /* ==========================================================
-   Application Header
+   Application Navigation
    ========================================================== */
 
 #applicationHeader {
@@ -45,19 +45,10 @@ body {
         1000px;
 
     margin:
-        0 auto 10px auto;
+        0 auto 6px auto;
 
     padding:
-        4px 0 8px 0;
-
-    display:
-        flex;
-
-    align-items:
-        center;
-
-    justify-content:
-        space-between;
+        0 0 5px 0;
 
     border-bottom:
         1px solid #30405f;
@@ -65,37 +56,19 @@ body {
 }
 
 
-#applicationTitle {
-
-    color:
-        #35c7e8;
-
-    font-size:
-        22px;
-
-    font-weight:
-        700;
-
-    white-space:
-        nowrap;
-
-}
-
-
-/* ==========================================================
-   Main Navigation
-   ========================================================== */
-
 #mainNavigation {
 
     display:
         flex;
 
+    justify-content:
+        flex-end;
+
     align-items:
         center;
 
     gap:
-        6px;
+        5px;
 
 }
 
@@ -103,10 +76,10 @@ body {
 #mainNavigation button {
 
     padding:
-        6px 11px;
+        5px 10px;
 
     color:
-        #c4d0e3;
+        #aebdd2;
 
     background:
         transparent;
@@ -121,7 +94,7 @@ body {
         inherit;
 
     font-size:
-        13px;
+        12px;
 
     font-weight:
         600;
@@ -175,27 +148,68 @@ body {
 
 
 /* ==========================================================
-   Page Headings
+   Dashboard
    ========================================================== */
 
-#dashboard > h2,
-#beachesPage > h2,
-#settingsPage > h2 {
+#dashboard {
+
+    width:
+        100%;
+
+}
+
+
+/* ==========================================================
+   Dashboard Status
+   ========================================================== */
+
+#dashboardStatus {
+
+    display:
+        flex;
+
+    justify-content:
+        space-between;
+
+    align-items:
+        center;
+
+    min-height:
+        32px;
 
     margin:
-        0 0 10px 0;
+        0 0 6px 0;
 
-    padding-bottom:
-        7px;
+    padding:
+        2px 2px 5px 2px;
 
     border-bottom:
         1px solid #30405f;
 
+}
+
+
+#dashboardBeachName {
+
     color:
-        #ffffff;
+        #35c7e8;
 
     font-size:
         18px;
+
+    font-weight:
+        700;
+
+}
+
+
+#dashboardAlerts {
+
+    color:
+        #aebdd2;
+
+    font-size:
+        12px;
 
     font-weight:
         600;
@@ -204,13 +218,53 @@ body {
 
 
 /* ==========================================================
-   Dashboard
+   Alert Widget
    ========================================================== */
 
-#dashboard {
+#alertsWidget {
 
-    width:
-        100%;
+    margin:
+        0 0 10px 0;
+
+    padding:
+        10px 14px;
+
+    background:
+        #3a2430;
+
+    border:
+        1px solid #704052;
+
+    border-radius:
+        8px;
+
+}
+
+
+#alertsWidget h3 {
+
+    margin:
+        0 0 5px 0;
+
+    color:
+        #ffbf18;
+
+    font-size:
+        13px;
+
+}
+
+
+#alertsWidget p {
+
+    margin:
+        0;
+
+    color:
+        #ffffff;
+
+    font-size:
+        14px;
 
 }
 
@@ -225,7 +279,7 @@ body {
         10px;
 
     padding:
-        12px 14px;
+        11px 14px;
 
     background:
         #1b2747;
@@ -245,7 +299,7 @@ body {
 .dashboard-widget h3 {
 
     margin:
-        0 0 7px 0;
+        0 0 6px 0;
 
     color:
         #ffffff;
@@ -255,50 +309,6 @@ body {
 
     font-weight:
         600;
-
-}
-
-
-/* ==========================================================
-   Selected Beach
-   ========================================================== */
-
-#beachHeaderWidget {
-
-    padding:
-        10px 14px;
-
-}
-
-
-#dashboardBeachName {
-
-    margin:
-        0;
-
-    color:
-        #35c7e8;
-
-    font-size:
-        18px;
-
-    font-weight:
-        700;
-
-}
-
-
-/* ==========================================================
-   Alerts
-   ========================================================== */
-
-#alertsWidget p {
-
-    margin:
-        0;
-
-    color:
-        #b8c7dd;
 
 }
 
@@ -335,7 +345,7 @@ body {
 #conditionsWidget td {
 
     padding:
-        10px 11px;
+        9px 10px;
 
     vertical-align:
         top;
@@ -711,6 +721,34 @@ select:focus {
 
 
 /* ==========================================================
+   Page Headings
+   ========================================================== */
+
+#beachesPage > h2,
+#settingsPage > h2 {
+
+    margin:
+        0 0 10px 0;
+
+    padding-bottom:
+        7px;
+
+    border-bottom:
+        1px solid #30405f;
+
+    color:
+        #ffffff;
+
+    font-size:
+        18px;
+
+    font-weight:
+        600;
+
+}
+
+
+/* ==========================================================
    Horizontal Rules
    ========================================================== */
 
@@ -804,43 +842,23 @@ hr {
     body {
 
         padding:
-            10px 14px;
+            8px 14px;
 
     }
 
 
     #applicationHeader {
 
-        flex-direction:
-            column;
-
-        align-items:
-            flex-start;
-
-        gap:
-            5px;
-
         margin-bottom:
-            10px;
-
-    }
-
-
-    #applicationTitle {
-
-        font-size:
-            20px;
+            5px;
 
     }
 
 
     #mainNavigation {
 
-        width:
-            100%;
-
-        gap:
-            4px;
+        justify-content:
+            flex-start;
 
     }
 
@@ -848,20 +866,34 @@ hr {
     #mainNavigation button {
 
         padding:
-            5px 9px;
+            5px 8px;
 
         font-size:
-            12px;
+            11px;
 
     }
 
 
-    #dashboard > h2,
-    #beachesPage > h2,
-    #settingsPage > h2 {
+    #dashboardStatus {
+
+        min-height:
+            30px;
+
+    }
+
+
+    #dashboardBeachName {
 
         font-size:
-            17px;
+            16px;
+
+    }
+
+
+    #dashboardAlerts {
+
+        font-size:
+            10px;
 
     }
 
