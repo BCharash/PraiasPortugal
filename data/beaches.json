@@ -41,7 +41,7 @@
     "region": "Oeste",
     "municipality": "Torres Vedras",
     "district": "Lisboa",
-    "latitude": 39.13710,
+    "latitude": 39.1371,
     "longitude": -9.38121
   },
   {
@@ -50,7 +50,268 @@
     "region": "Oeste",
     "municipality": "Torres Vedras",
     "district": "Lisboa",
-    "latitude": 39.13130,
+    "latitude": 39.1313,
     "longitude": -9.38539
+  },
+  {
+    "id": "praia-de-alges",
+    "name": "Praia de Algés",
+    "region": "Lisboa",
+    "municipality": "Oeiras",
+    "district": "Lisboa",
+    "latitude": 38.695701,
+    "longitude": -9.230929
+  },
+  {
+    "id": "praia-do-dafundo",
+    "name": "Praia do Dafundo",
+    "region": "Lisboa",
+    "municipality": "Oeiras",
+    "district": "Lisboa",
+    "latitude": 38.69747,
+    "longitude": -9.23809
+  },
+  {
+    "id": "praia-da-cruz-quebrada",
+    "name": "Praia da Cruz Quebrada",
+    "region": "Lisboa",
+    "municipality": "Oeiras",
+    "district": "Lisboa",
+    "latitude": 38.69922,
+    "longitude": -9.25201
+  },
+  {
+    "id": "praia-de-sao-bruno",
+    "name": "Praia de São Bruno",
+    "region": "Lisboa",
+    "municipality": "Oeiras",
+    "district": "Lisboa",
+    "latitude": 38.69832,
+    "longitude": -9.27379
+  },
+  {
+    "id": "praia-de-caxias",
+    "name": "Praia de Caxias",
+    "region": "Lisboa",
+    "municipality": "Oeiras",
+    "district": "Lisboa",
+    "latitude": 38.69828,
+    "longitude": -9.274
+  },
+  {
+    "id": "praia-da-giribita",
+    "name": "Praia da Giribita",
+    "region": "Lisboa",
+    "municipality": "Oeiras",
+    "district": "Lisboa",
+    "latitude": 38.69717,
+    "longitude": -9.283516
+  },
+  {
+    "id": "praia-velha",
+    "name": "Praia Velha",
+    "region": "Lisboa",
+    "municipality": "Oeiras",
+    "district": "Lisboa",
+    "latitude": 38.693116,
+    "longitude": -9.291449
+  },
+  {
+    "id": "praia-de-paco-de-arcos",
+    "name": "Praia de Paço de Arcos",
+    "region": "Lisboa",
+    "municipality": "Oeiras",
+    "district": "Lisboa",
+    "latitude": 38.69045,
+    "longitude": -9.29684
+  },
+  {
+    "id": "praia-das-fontainhas",
+    "name": "Praia das Fontainhas",
+    "region": "Lisboa",
+    "municipality": "Oeiras",
+    "district": "Lisboa",
+    "latitude": 38.68713,
+    "longitude": -9.30154
+  },
+  {
+    "id": "praia-de-santo-amaro-de-oeiras",
+    "name": "Praia de Santo Amaro de Oeiras",
+    "region": "Lisboa",
+    "municipality": "Oeiras",
+    "district": "Lisboa",
+    "latitude": 38.685151,
+    "longitude": -9.311088
+  },
+  {
+    "id": "praia-da-laje",
+    "name": "Praia da Laje",
+    "region": "Lisboa",
+    "municipality": "Oeiras",
+    "district": "Lisboa",
+    "latitude": 38.68343,
+    "longitude": -9.31415
+  },
+  {
+    "id": "praia-da-torre",
+    "name": "Praia da Torre",
+    "region": "Lisboa",
+    "municipality": "Oeiras",
+    "district": "Lisboa",
+    "latitude": 38.675978,
+    "longitude": -9.322951
+  },
+  {
+    "id": "praia-de-carcavelos",
+    "name": "Praia de Carcavelos",
+    "region": "Lisboa",
+    "municipality": "Cascais",
+    "district": "Lisboa",
+    "latitude": 38.67983,
+    "longitude": -9.335344
+  },
+  {
+    "id": "praia-da-parede",
+    "name": "Praia da Parede",
+    "region": "Lisboa",
+    "municipality": "Cascais",
+    "district": "Lisboa",
+    "latitude": 38.685768,
+    "longitude": -9.353609
+  },
+  {
+    "id": "praia-das-avencas",
+    "name": "Praia das Avencas",
+    "region": "Lisboa",
+    "municipality": "Cascais",
+    "district": "Lisboa",
+    "latitude": 38.68825,
+    "longitude": -9.360312
+  },
+  {
+    "id": "praia-da-bafureira",
+    "name": "Praia da Bafureira",
+    "region": "Lisboa",
+    "municipality": "Cascais",
+    "district": "Lisboa",
+    "latitude": 38.69196,
+    "longitude": -9.36565
+  },
+  {
+    "id": "praia-de-sao-pedro-do-estoril",
+    "name": "Praia de São Pedro do Estoril",
+    "region": "Lisboa",
+    "municipality": "Cascais",
+    "district": "Lisboa",
+    "latitude": 38.693816,
+    "longitude": -9.371291
+  },
+  {
+    "id": "praia-da-azarujinha",
+    "name": "Praia da Azarujinha",
+    "region": "Lisboa",
+    "municipality": "Cascais",
+    "district": "Lisboa",
+    "latitude": 38.70066,
+    "longitude": -9.38934
+  },
+  {
+    "id": "praia-da-poca",
+    "name": "Praia da Poça",
+    "region": "Lisboa",
+    "municipality": "Cascais",
+    "district": "Lisboa",
+    "latitude": 38.70202,
+    "longitude": -9.391944
+  },
+  {
+    "id": "praia-do-tamariz",
+    "name": "Praia do Tamariz",
+    "region": "Lisboa",
+    "municipality": "Cascais",
+    "district": "Lisboa",
+    "latitude": 38.70275,
+    "longitude": -9.399355
+  },
+  {
+    "id": "praia-das-moitas",
+    "name": "Praia das Moitas",
+    "region": "Lisboa",
+    "municipality": "Cascais",
+    "district": "Lisboa",
+    "latitude": 38.70178,
+    "longitude": -9.409458
+  },
+  {
+    "id": "praia-da-duquesa",
+    "name": "Praia da Duquesa",
+    "region": "Lisboa",
+    "municipality": "Cascais",
+    "district": "Lisboa",
+    "latitude": 38.70087,
+    "longitude": -9.414853
+  },
+  {
+    "id": "praia-da-conceicao",
+    "name": "Praia da Conceição",
+    "region": "Lisboa",
+    "municipality": "Cascais",
+    "district": "Lisboa",
+    "latitude": 38.70035,
+    "longitude": -9.416531
+  },
+  {
+    "id": "praia-da-rainha",
+    "name": "Praia da Rainha",
+    "region": "Lisboa",
+    "municipality": "Cascais",
+    "district": "Lisboa",
+    "latitude": 38.699149,
+    "longitude": -9.41812
+  },
+  {
+    "id": "praia-da-ribeira-de-cascais",
+    "name": "Praia da Ribeira de Cascais",
+    "region": "Lisboa",
+    "municipality": "Cascais",
+    "district": "Lisboa",
+    "latitude": 38.69666,
+    "longitude": -9.419863
+  },
+  {
+    "id": "praia-de-santa-marta",
+    "name": "Praia de Santa Marta",
+    "region": "Lisboa",
+    "municipality": "Cascais",
+    "district": "Lisboa",
+    "latitude": 38.691885,
+    "longitude": -9.422182
+  },
+  {
+    "id": "praia-da-cresmina",
+    "name": "Praia da Cresmina",
+    "region": "Lisboa",
+    "municipality": "Cascais",
+    "district": "Lisboa",
+    "latitude": 38.72506,
+    "longitude": -9.476661
+  },
+  {
+    "id": "praia-grande-do-guincho",
+    "name": "Praia grande do Guincho",
+    "region": "Lisboa",
+    "municipality": "Cascais",
+    "district": "Lisboa",
+    "latitude": 38.73075,
+    "longitude": -9.474059
+  },
+  {
+    "id": "praia-do-abano",
+    "name": "Praia do Abano",
+    "region": "Lisboa",
+    "municipality": "Cascais",
+    "district": "Lisboa",
+    "latitude": 38.741533,
+    "longitude": -9.472644
   }
 ]
