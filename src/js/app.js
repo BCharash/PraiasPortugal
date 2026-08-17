@@ -198,7 +198,7 @@ const translations = {
         selectBeach: "Select Beach",
 
         region: "Region:",
-        beachComplex: "Beach Complex:",
+        beachComplex: "Area:",
         beach: "Beach:",
         favorites: "Favorites",
         selectFavorite: "Select Favorite",
@@ -322,7 +322,7 @@ const translations = {
 
         region: "Região:",
         beachComplex:
-            "Conjunto de praias:",
+            "Área:",
         beach: "Praia:",
         favorites: "Favoritos:",
         selectFavorite: "Selecionar favorito",
