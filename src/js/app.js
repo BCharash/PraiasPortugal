@@ -1847,24 +1847,38 @@ favoriteBeachSelect.addEventListener(
     );
 
 
-    //--------------------------------------------------
-    // Initial Page
-    //--------------------------------------------------
+   
+    
+ //--------------------------------------------------
+// Initial Page
+//--------------------------------------------------
+//
+// If no beach is selected, always open the
+// Beaches page so the user can choose one.
+//
+// Otherwise, respect the user's Startup Page
+// preference.
+//
 
-   if (
+if (!appState.selectedBeachId) {
+
+    showBeaches();
+
+}
+
+else if (
     appState.settings.startupPage === "beaches"
-    ) {
+) {
 
-        showBeaches();
+    showBeaches();
 
-    }
+}
 
-    else {
+else {
 
-        showDashboard();
+    showDashboard();
 
-    }
-
+}   
 }
 
 
