@@ -31,5 +31,52 @@
       "praia-do-centro",
       "praia-formosa"
     ]
+  },
+  {
+    "id": "oeiras",
+    "name": "Oeiras",
+    "region": "Lisboa",
+    "municipality": "Oeiras",
+    "district": "Lisboa",
+    "beaches": [
+      "praia-de-alges",
+      "praia-do-dafundo",
+      "praia-da-cruz-quebrada",
+      "praia-de-sao-bruno",
+      "praia-de-caxias",
+      "praia-da-giribita",
+      "praia-velha",
+      "praia-de-paco-de-arcos",
+      "praia-das-fontainhas",
+      "praia-de-santo-amaro-de-oeiras",
+      "praia-da-laje",
+      "praia-da-torre"
+    ]
+  },
+  {
+    "id": "cascais",
+    "name": "Cascais",
+    "region": "Lisboa",
+    "municipality": "Cascais",
+    "district": "Lisboa",
+    "beaches": [
+      "praia-de-carcavelos",
+      "praia-da-parede",
+      "praia-das-avencas",
+      "praia-da-bafureira",
+      "praia-de-sao-pedro-do-estoril",
+      "praia-da-azarujinha",
+      "praia-da-poca",
+      "praia-do-tamariz",
+      "praia-das-moitas",
+      "praia-da-duquesa",
+      "praia-da-conceicao",
+      "praia-da-rainha",
+      "praia-da-ribeira-de-cascais",
+      "praia-de-santa-marta",
+      "praia-da-cresmina",
+      "praia-grande-do-guincho",
+      "praia-do-abano"
+    ]
   }
 ]
