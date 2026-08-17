@@ -1,7 +1,7 @@
 [
   {
     "id": "santa-rita",
-    "name": "Praia de Santa Rita",
+    "name": "Santa Rita",
     "region": "Oeste",
     "municipality": "Torres Vedras",
     "district": "Lisboa",
@@ -12,7 +12,7 @@
   },
   {
     "id": "porto-novo",
-    "name": "Praia de Porto Novo",
+    "name": "Porto Novo",
     "region": "Oeste",
     "municipality": "Torres Vedras",
     "district": "Lisboa",
