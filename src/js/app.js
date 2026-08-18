@@ -21,7 +21,8 @@ const appState = {
         startupBeach: "last",
         autoUpdateOnStartup: true,
 
-        language: "en"
+        language: "en",
+        fontSize: "normal"
 
     }
 
@@ -140,6 +141,12 @@ const autoUpdateOnStartup =
 const languageSelect =
     document.getElementById(
         "languageSelect"
+    );
+
+
+const textSizeSelect =
+    document.getElementById(
+        "textSizeSelect"
     );
 
 
@@ -514,6 +521,39 @@ function applyLanguage() {
 
     document.title =
         "Praias de Portugal";
+
+}
+
+
+//--------------------------------------------------
+// Apply Text Size
+//--------------------------------------------------
+
+function applyTextSize() {
+
+    const validSizes = [
+        "small",
+        "normal",
+        "large",
+        "extra-large"
+    ];
+
+    const textSize =
+        validSizes.includes(
+            appState.settings.fontSize
+        )
+            ? appState.settings.fontSize
+            : "normal";
+
+
+    appState.settings.fontSize =
+        textSize;
+
+
+    document.documentElement.setAttribute(
+        "data-text-size",
+        textSize
+    );
 
 }
 
@@ -1404,6 +1444,13 @@ function updateSettingsControls() {
     languageSelect.value =
         appState.settings.language;
 
+
+    textSizeSelect.value =
+        appState.settings.fontSize;
+
+
+    applyTextSize();
+
 }
 
 
@@ -1443,6 +1490,17 @@ async function handleSettingsChange() {
 
     appState.settings.language =
         languageSelect.value;
+
+
+    appState.settings.fontSize =
+        textSizeSelect.value;
+
+
+    //--------------------------------------------------
+    // Apply Text Size
+    //--------------------------------------------------
+
+    applyTextSize();
 
 
     //--------------------------------------------------
@@ -1753,6 +1811,12 @@ favoriteBeachSelect.addEventListener(
 
 
     languageSelect.addEventListener(
+        "change",
+        handleSettingsChange
+    );
+
+
+    textSizeSelect.addEventListener(
         "change",
         handleSettingsChange
     );

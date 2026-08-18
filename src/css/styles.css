@@ -5,20 +5,333 @@
 
 
 /* ==========================================================
+   Typography System
+
+   Normal is the baseline design.
+
+   Text-size preferences adjust semantic roles rather
+   than applying one global scale to every piece of text.
+
+   Graphics have their own typography roles so that
+   chart text can later be tuned independently.
+   ========================================================== */
+
+:root {
+
+    /* Interface */
+
+    --font-body:
+        16px;
+
+    --font-navigation:
+        12px;
+
+    --font-page-heading:
+        18px;
+
+    --font-section-heading:
+        15px;
+
+    --font-widget-heading:
+        14px;
+
+
+    /* Dashboard */
+
+    --font-dashboard-beach:
+        18px;
+
+    --font-dashboard-alert:
+        12px;
+
+    --font-alert-heading:
+        13px;
+
+    --font-alert-body:
+        14px;
+
+    --font-condition-label:
+        11px;
+
+    --font-condition-value:
+        17px;
+
+    --font-primary-metric:
+        21px;
+
+    --font-secondary-metric:
+        11px;
+
+
+    /* Forms / Information */
+
+    --font-form-label:
+        16px;
+
+    --font-select:
+        14px;
+
+    --font-beach-information:
+        16px;
+
+
+    /* Graphics */
+
+    --font-chart-title:
+        14px;
+
+    --font-chart-axis:
+        10px;
+
+    --font-chart-legend:
+        11px;
+
+    --font-chart-data:
+        11px;
+
+    --font-chart-tooltip:
+        12px;
+
+}
+
+
+/* ==========================================================
+   User Text Size Presets
+   ========================================================== */
+
+[data-text-size="small"] {
+
+    --font-body:
+        15px;
+
+    --font-navigation:
+        11px;
+
+    --font-page-heading:
+        17px;
+
+    --font-section-heading:
+        14px;
+
+    --font-widget-heading:
+        13px;
+
+
+    --font-dashboard-beach:
+        17px;
+
+    --font-dashboard-alert:
+        11px;
+
+    --font-alert-heading:
+        12px;
+
+    --font-alert-body:
+        13px;
+
+    --font-condition-label:
+        10px;
+
+    --font-condition-value:
+        15px;
+
+    --font-primary-metric:
+        19px;
+
+    --font-secondary-metric:
+        10px;
+
+
+    --font-form-label:
+        15px;
+
+    --font-select:
+        13px;
+
+    --font-beach-information:
+        15px;
+
+
+    --font-chart-title:
+        13px;
+
+    --font-chart-axis:
+        9px;
+
+    --font-chart-legend:
+        10px;
+
+    --font-chart-data:
+        10px;
+
+    --font-chart-tooltip:
+        11px;
+
+}
+
+
+[data-text-size="large"] {
+
+    --font-body:
+        17px;
+
+    --font-navigation:
+        13px;
+
+    --font-page-heading:
+        20px;
+
+    --font-section-heading:
+        17px;
+
+    --font-widget-heading:
+        16px;
+
+
+    --font-dashboard-beach:
+        20px;
+
+    --font-dashboard-alert:
+        14px;
+
+    --font-alert-heading:
+        15px;
+
+    --font-alert-body:
+        16px;
+
+    --font-condition-label:
+        13px;
+
+    --font-condition-value:
+        20px;
+
+    --font-primary-metric:
+        24px;
+
+    --font-secondary-metric:
+        14px;
+
+
+    --font-form-label:
+        17px;
+
+    --font-select:
+        16px;
+
+    --font-beach-information:
+        17px;
+
+
+    --font-chart-title:
+        16px;
+
+    --font-chart-axis:
+        12px;
+
+    --font-chart-legend:
+        13px;
+
+    --font-chart-data:
+        14px;
+
+    --font-chart-tooltip:
+        14px;
+
+}
+
+
+[data-text-size="extra-large"] {
+
+    --font-body:
+        18px;
+
+    --font-navigation:
+        14px;
+
+    --font-page-heading:
+        22px;
+
+    --font-section-heading:
+        19px;
+
+    --font-widget-heading:
+        18px;
+
+
+    --font-dashboard-beach:
+        22px;
+
+    --font-dashboard-alert:
+        16px;
+
+    --font-alert-heading:
+        17px;
+
+    --font-alert-body:
+        18px;
+
+    --font-condition-label:
+        15px;
+
+    --font-condition-value:
+        22px;
+
+    --font-primary-metric:
+        28px;
+
+    --font-secondary-metric:
+        16px;
+
+
+    --font-form-label:
+        18px;
+
+    --font-select:
+        17px;
+
+    --font-beach-information:
+        18px;
+
+
+    --font-chart-title:
+        18px;
+
+    --font-chart-axis:
+        14px;
+
+    --font-chart-legend:
+        15px;
+
+    --font-chart-data:
+        16px;
+
+    --font-chart-tooltip:
+        16px;
+
+}
+
+
+/* ==========================================================
    Global
    ========================================================== */
 
-   
 
 * {
-    box-sizing: border-box;
+
+    box-sizing:
+        border-box;
+
 }
 
 
 body {
 
-    margin: 0;
-    padding: 10px 24px;
+    margin:
+        0;
+
+    padding:
+        10px 24px;
 
     font-family:
         Arial,
@@ -33,6 +346,9 @@ body {
 
     line-height:
         1.4;
+
+    font-size:
+        var(--font-body);
 
 }
 
@@ -96,7 +412,7 @@ body {
         inherit;
 
     font-size:
-        12px;
+        var(--font-navigation);
 
     font-weight:
         600;
@@ -197,7 +513,7 @@ body {
         #35c7e8;
 
     font-size:
-        18px;
+        var(--font-dashboard-beach);
 
     font-weight:
         700;
@@ -211,7 +527,7 @@ body {
         #aebdd2;
 
     font-size:
-        12px;
+        var(--font-dashboard-alert);
 
     font-weight:
         600;
@@ -252,7 +568,7 @@ body {
         #ffbf18;
 
     font-size:
-        13px;
+        var(--font-alert-heading);
 
 }
 
@@ -266,7 +582,7 @@ body {
         #ffffff;
 
     font-size:
-        14px;
+        var(--font-alert-body);
 
 }
 
@@ -307,7 +623,7 @@ body {
         #ffffff;
 
     font-size:
-        14px;
+        var(--font-widget-heading);
 
     font-weight:
         600;
@@ -369,7 +685,7 @@ body {
         #8fa4c4;
 
     font-size:
-        11px;
+        var(--font-condition-label);
 
     font-weight:
         700;
@@ -409,7 +725,7 @@ body {
         #ffffff;
 
     font-size:
-        17px;
+        var(--font-condition-value);
 
     font-weight:
         700;
@@ -433,7 +749,7 @@ body {
         #45c9e8;
 
     font-size:
-        21px;
+        var(--font-primary-metric);
 
     font-weight:
         700;
@@ -538,7 +854,7 @@ body {
         #a9c9e8;
 
     font-size:
-        11px;
+        var(--font-secondary-metric);
 
     font-weight:
         400;
@@ -567,7 +883,7 @@ body {
         #ffffff;
 
     font-size:
-        15px;
+        var(--font-section-heading);
 
 }
 
@@ -691,6 +1007,9 @@ label {
     color:
         #c4d0e3;
 
+    font-size:
+        var(--font-form-label);
+
 }
 
 
@@ -728,7 +1047,7 @@ select {
         inherit;
 
     font-size:
-        14px;
+        var(--font-select);
 
 }
 
@@ -780,7 +1099,7 @@ select:focus {
         #ffffff;
 
     font-size:
-        15px;
+        var(--font-section-heading);
 
 }
 
@@ -792,15 +1111,20 @@ select:focus {
 
 }
 
+
 .settings-section label {
+
     display:
         block;
+
 }
 
 
 .settings-section select {
+
     display:
         block;
+
 }
 
 
@@ -823,6 +1147,9 @@ select:focus {
 
     color:
         #aebdd2;
+
+    font-size:
+        var(--font-beach-information);
 
 }
 
@@ -855,7 +1182,7 @@ select:focus {
         #ffffff;
 
     font-size:
-        18px;
+        var(--font-page-heading);
 
     font-weight:
         600;
@@ -954,6 +1281,36 @@ hr {
 
 @media (max-width: 700px) {
 
+    /* --------------------------------------------------
+       Mobile baseline
+
+       These preserve the existing mobile visual
+       hierarchy until another size is selected.
+       -------------------------------------------------- */
+
+    :root {
+
+        --font-navigation:
+            11px;
+
+        --font-dashboard-beach:
+            16px;
+
+        --font-dashboard-alert:
+            10px;
+
+        --font-condition-label:
+            9px;
+
+        --font-condition-value:
+            14px;
+
+        --font-primary-metric:
+            18px;
+
+    }
+
+
     body {
 
         padding:
@@ -983,9 +1340,6 @@ hr {
         padding:
             5px 8px;
 
-        font-size:
-            11px;
-
     }
 
 
@@ -993,22 +1347,6 @@ hr {
 
         min-height:
             30px;
-
-    }
-
-
-    #dashboardBeachName {
-
-        font-size:
-            16px;
-
-    }
-
-
-    #dashboardAlerts {
-
-        font-size:
-            10px;
 
     }
 
@@ -1032,9 +1370,6 @@ hr {
     #conditionsWidget td:nth-child(1),
     #conditionsWidget td:nth-child(3) {
 
-        font-size:
-            9px;
-
     }
 
 
@@ -1043,9 +1378,6 @@ hr {
 
         min-width:
             90px;
-
-        font-size:
-            14px;
 
     }
 
@@ -1058,20 +1390,106 @@ hr {
     #dashboardTide,
     #dashboardUV {
 
-        font-size:
+    }
+
+
+    /* --------------------------------------------------
+       Mobile text-size adjustments
+       -------------------------------------------------- */
+
+    :root[data-text-size="small"] {
+
+        --font-navigation:
+            10px;
+
+        --font-dashboard-beach:
+            15px;
+
+        --font-dashboard-alert:
+            9px;
+
+        --font-condition-label:
+            9px;
+
+        --font-condition-value:
+            13px;
+
+        --font-primary-metric:
+            17px;
+
+        --font-secondary-metric:
+            10px;
+
+    }
+
+
+    :root[data-text-size="large"] {
+
+        --font-navigation:
+            13px;
+
+        --font-dashboard-beach:
+            20px;
+
+        --font-dashboard-alert:
+            13px;
+
+        --font-condition-label:
+            13px;
+
+        --font-condition-value:
             18px;
+
+        --font-primary-metric:
+            23px;
+
+        --font-secondary-metric:
+            14px;
+
+    }
+
+
+    :root[data-text-size="extra-large"] {
+
+        --font-navigation:
+            14px;
+
+        --font-dashboard-beach:
+            22px;
+
+        --font-dashboard-alert:
+            15px;
+
+        --font-condition-label:
+            15px;
+
+        --font-condition-value:
+            21px;
+
+        --font-primary-metric:
+            27px;
+
+        --font-secondary-metric:
+            16px;
 
     }
 
 }
+
 
 /*--------------------------------------------------
   View on Map Link
 --------------------------------------------------*/
 
 #viewOnMapLink {
-    color: #48cae4;
-    font-weight: 600;
-    text-decoration: underline;
-}
 
+    color:
+        #48cae4;
+
+    font-weight:
+        600;
+
+    text-decoration:
+        underline;
+
+}
