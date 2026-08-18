@@ -1153,14 +1153,14 @@ select:focus {
 
 .text-size-icon-small {
 
-    font-size: 12px;
+    font-size: var(--font-navigation);
 
 }
 
 
 .text-size-icon-large {
 
-    font-size: 24px;
+    font-size: var(--font-navigation);
 
 }
 
