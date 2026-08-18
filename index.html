@@ -630,32 +630,25 @@
                 Appearance
             </h3>
 
-            <div>
+            <div id="textSizeControl">
 
-                <label for="textSizeSelect">
-                    Text size:
-                </label>
+                <span class="text-size-icon"
+                      aria-hidden="true">
+                    A
+                </span>
 
-                <select id="textSizeSelect">
+                <input type="range"
+                       id="textSizeSlider"
+                       min="0"
+                       max="3"
+                       step="1"
+                       value="1"
+                       aria-label="Text size">
 
-                    <option value="small">
-                        Small
-                    </option>
-
-                    <option value="normal"
-                            selected>
-                        Normal
-                    </option>
-
-                    <option value="large">
-                        Large
-                    </option>
-
-                    <option value="extra-large">
-                        Extra Large
-                    </option>
-
-                </select>
+                <span class="text-size-icon text-size-icon-large"
+                      aria-hidden="true">
+                    A
+                </span>
 
             </div>
 
