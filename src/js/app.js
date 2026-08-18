@@ -35,8 +35,8 @@ const appState = {
 const regionSelect =
     document.getElementById("regionSelect");
 
-const beachComplexSelect =
-    document.getElementById("beachComplexSelect");
+const areaSelect =
+    document.getElementById("areaSelect");
 
 const beachSelect =
     document.getElementById("beachSelect");
@@ -764,18 +764,18 @@ function populateFavoriteBeachOptions() {
 
 
             //--------------------------------------------------
-            // Search all regions and complexes
+            // Search all regions and areas
             //--------------------------------------------------
 
             for (const region of getRegions()) {
 
-                const complexes =
-                    getBeachComplexes(region);
+                const areas =
+                    getAreas(region);
 
-                for (const complex of complexes) {
+                for (const area of areas) {
 
                     const beaches =
-                        getBeaches(complex.id);
+                        getBeaches(area.id);
 
                     const beach =
                         beaches.find(
@@ -867,18 +867,18 @@ function updateBeachSelectors(beachId) {
 
     for (const region of getRegions()) {
 
-        const complexes =
-            getBeachComplexes(region);
+        const areas =
+            getAreas(region);
 
 
         //--------------------------------------------------
-        // Search all beach complexes
+        // Search all areas
         //--------------------------------------------------
 
-        for (const complex of complexes) {
+        for (const area of areas) {
 
             const beaches =
-                getBeaches(complex.id);
+                getBeaches(area.id);
 
 
             const beach =
@@ -902,15 +902,15 @@ function updateBeachSelectors(beachId) {
 
 
             //--------------------------------------------------
-            // Update Beach Complex
+            // Update Area
             //--------------------------------------------------
 
-            populateBeachComplexes(
+            populateAreas(
                 region
             );
 
-            beachComplexSelect.value =
-                complex.id;
+            areaSelect.value =
+                area.id;
 
 
             //--------------------------------------------------
@@ -918,7 +918,7 @@ function updateBeachSelectors(beachId) {
             //--------------------------------------------------
 
             populateBeaches(
-                complex.id
+                area.id
             );
 
             beachSelect.value =
@@ -1149,21 +1149,21 @@ async function restoreSavedBeach() {
 
     for (const region of regions) {
 
-        const complexes =
-            getBeachComplexes(
+        const areas =
+            getAreas(
                 region
             );
 
 
         //--------------------------------------------------
-        // Search every beach complex.
+        // Search every area.
         //--------------------------------------------------
 
-        for (const complex of complexes) {
+        for (const area of areas) {
 
             const beaches =
                 getBeaches(
-                    complex.id
+                    area.id
                 );
 
 
@@ -1187,7 +1187,7 @@ async function restoreSavedBeach() {
             // Restore Region
             //--------------------------------------------------
 
-            populateBeachComplexes(
+            populateAreas(
                 region
             );
 
@@ -1197,15 +1197,15 @@ async function restoreSavedBeach() {
 
 
             //--------------------------------------------------
-            // Restore Beach Complex
+            // Restore Area
             //--------------------------------------------------
 
-            beachComplexSelect.value =
-                complex.id;
+            areaSelect.value =
+                area.id;
 
 
             populateBeaches(
-                complex.id
+                area.id
             );
 
 
@@ -1300,18 +1300,18 @@ function populateStartupBeachOptions() {
 
 
             //--------------------------------------------------
-            // Search all regions and complexes
+            // Search all regions and areas
             //--------------------------------------------------
 
             for (const region of getRegions()) {
 
-                const complexes =
-                    getBeachComplexes(region);
+                const areas =
+                    getAreas(region);
 
-                for (const complex of complexes) {
+                for (const area of areas) {
 
                     const beaches =
-                        getBeaches(complex.id);
+                        getBeaches(area.id);
 
                     const beach =
                         beaches.find(
@@ -1766,7 +1766,7 @@ favoriteBeachSelect.addEventListener(
         "change",
         () => {
 
-            populateBeachComplexes(
+            populateAreas(
                 regionSelect.value
             );
 
@@ -1775,15 +1775,15 @@ favoriteBeachSelect.addEventListener(
 
 
     //--------------------------------------------------
-    // Beach Complex Selection
+    // Area Selection
     //--------------------------------------------------
 
-    beachComplexSelect.addEventListener(
+    areaSelect.addEventListener(
         "change",
         () => {
 
             populateBeaches(
-                beachComplexSelect.value
+                areaSelect.value
             );
 
         }

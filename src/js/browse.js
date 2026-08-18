@@ -9,7 +9,7 @@
 // Responsibilities:
 //
 // - Populate the Region list.
-// - Populate the Beach Complex list.
+// - Populate the Area list.
 // - Populate the Beach list.
 //
 // This module should not:
@@ -84,7 +84,7 @@ function populateRegions() {
         regionSelect.value =
             regions[0];
 
-        populateBeachComplexes(
+        populateAreas(
             regions[0]
         );
 
@@ -94,11 +94,11 @@ function populateRegions() {
 
 
 //--------------------------------------------------
-// Beach Complex Browsing
+// Area Browsing
 //--------------------------------------------------
 
 /*
- * Populate the Beach Complex drop-down list for
+ * Populate the Area drop-down list for
  * the selected region.
  *
  * Parameters:
@@ -106,34 +106,34 @@ function populateRegions() {
  * region - The selected region.
  */
 
-function populateBeachComplexes(region) {
+function populateAreas(region) {
 
-    beachComplexSelect.innerHTML =
+    areaSelect.innerHTML =
         "";
 
 
-    const complexes =
-        getBeachComplexes(region);
+    const areas =
+        getAreas(region);
 
 
-    complexes.forEach(complex => {
+    areas.forEach(area => {
 
         addOption(
-            beachComplexSelect,
-            complex.id,
-            complex.name
+            areaSelect,
+            area.id,
+            area.name
         );
 
     });
 
 
-    if (complexes.length > 0) {
+    if (areas.length > 0) {
 
-        beachComplexSelect.value =
-            complexes[0].id;
+        areaSelect.value =
+            areas[0].id;
 
         populateBeaches(
-            complexes[0].id
+            areas[0].id
         );
 
     }
@@ -147,21 +147,21 @@ function populateBeachComplexes(region) {
 
 /*
  * Populate the Beach drop-down list for the
- * selected beach complex.
+ * selected area.
  *
  * Parameters:
  *
- * beachComplexId - The selected beach complex.
+ * areaId - The selected area.
  */
 
-function populateBeaches(beachComplexId) {
+function populateBeaches(areaId) {
 
     beachSelect.innerHTML =
         "";
 
 
     const beaches =
-        getBeaches(beachComplexId);
+        getBeaches(areaId);
 
 
     //--------------------------------------------------
