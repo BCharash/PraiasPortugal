@@ -1153,15 +1153,6 @@ select:focus {
 
 }
 
-#textSizeSliderContainer {
-
-    position: relative;
-
-    width: 100px;
-
-    flex-shrink: 0;
-
-}
 
 .text-size-icon-small {
 
