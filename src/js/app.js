@@ -1515,8 +1515,10 @@ async function handleSettingsChange() {
         languageSelect.value;
 
 
-    appState.settings.fontSize =
-        textSizeSelect.value;
+    textSizeSlider.addEventListener(
+    "input",
+    handleSettingsChange
+);
 
 
     //--------------------------------------------------
@@ -1837,7 +1839,7 @@ favoriteBeachSelect.addEventListener(
     textSizeSlider.addEventListener(
     "input",
     handleSettingsChange
-);
+    );
 
 
     //--------------------------------------------------
