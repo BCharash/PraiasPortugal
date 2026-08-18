@@ -1151,6 +1151,19 @@ select:focus {
 
 }
 
+.text-size-icon-small {
+
+    font-size: 12px;
+
+}
+
+
+.text-size-icon-large {
+
+    font-size: 24px;
+
+}
+
 
 /* ==========================================================
    Beach Information
