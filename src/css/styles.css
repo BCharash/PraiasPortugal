@@ -1160,6 +1160,11 @@ select:focus {
 
 }
 
+#textSizeSlider {
+
+    width: 85px;
+
+}
 
 .text-size-icon-large {
 
