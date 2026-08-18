@@ -139,9 +139,12 @@ const languageSelect =
     );
 
 
-const textSizeSelect =
+const textSizeSlider =
+
     document.getElementById(
-        "textSizeSelect"
+
+        "textSizeSlider"
+
     );
 
 
