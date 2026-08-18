@@ -1833,7 +1833,6 @@ favoriteBeachSelect.addEventListener(
     );
 
 
-    
     languageSelect.addEventListener(
         "change",
         handleSettingsChange
@@ -1841,7 +1840,7 @@ favoriteBeachSelect.addEventListener(
 
 
     textSizeSlider.addEventListener(
-    "input",
+    "change",
     handleSettingsChange
     );
 
