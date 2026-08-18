@@ -1515,10 +1515,14 @@ async function handleSettingsChange() {
         languageSelect.value;
 
 
-    textSizeSlider.addEventListener(
-    "input",
-    handleSettingsChange
-);
+    appState.settings.fontSize =
+        textSizeSlider.value === "0"
+            ? "small"
+            : textSizeSlider.value === "1"
+                ? "normal"
+                : textSizeSlider.value === "2"
+                    ? "large"
+                    : "extra-large";
 
 
     //--------------------------------------------------
