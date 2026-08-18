@@ -1834,10 +1834,10 @@ favoriteBeachSelect.addEventListener(
     );
 
 
-    textSizeSelect.addEventListener(
-        "change",
-        handleSettingsChange
-    );
+    textSizeSlider.addEventListener(
+    "input",
+    handleSettingsChange
+);
 
 
     //--------------------------------------------------
