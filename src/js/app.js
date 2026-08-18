@@ -19,8 +19,7 @@ const appState = {
 
         startupPage: "dashboard",
         startupBeach: "last",
-        autoUpdateOnStartup: true,
-
+        
         language: "en",
         fontSize: "normal"
 
@@ -133,10 +132,6 @@ const startupBeachSelect =
         "startupBeachSelect"
     );
 
-const autoUpdateOnStartup =
-    document.getElementById(
-        "autoUpdateOnStartup"
-    );
 
 const languageSelect =
     document.getElementById(
@@ -1445,9 +1440,7 @@ function updateSettingsControls() {
         appState.settings.startupBeach;
 
 
-    autoUpdateOnStartup.checked =
-        appState.settings.autoUpdateOnStartup;
-
+   
 
     languageSelect.value =
         appState.settings.language;
@@ -1492,10 +1485,7 @@ async function handleSettingsChange() {
         startupBeachSelect.value;
 
 
-    appState.settings.autoUpdateOnStartup =
-        autoUpdateOnStartup.checked;
-
-
+   
     appState.settings.language =
         languageSelect.value;
 
@@ -1812,12 +1802,7 @@ favoriteBeachSelect.addEventListener(
     );
 
 
-    autoUpdateOnStartup.addEventListener(
-        "change",
-        handleSettingsChange
-    );
-
-
+    
     languageSelect.addEventListener(
         "change",
         handleSettingsChange
