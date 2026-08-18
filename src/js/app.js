@@ -1466,9 +1466,14 @@ function updateSettingsControls() {
         appState.settings.language;
 
 
-    textSizeSelect.value =
-        appState.settings.fontSize;
-
+    textSizeSlider.value =
+    appState.settings.fontSize === "small"
+        ? 0
+        : appState.settings.fontSize === "normal"
+            ? 1
+            : appState.settings.fontSize === "large"
+                ? 2
+                : 3;
 
     applyTextSize();
 
