@@ -446,3 +446,147 @@ typography and color system that applies to:
 ## Status
 
 Accepted
+
+# DJ006 — Beach Complex Renamed Area
+
+**Date:** 2026-08-18
+
+## Decision
+
+Rename the application concept **Beach Complex** to **Area**.
+
+An Area represents a continuous or geographically coherent stretch of coastline used by *Praias de Portugal* as a grouping of one or more named Beaches.
+
+The term **Area** is used throughout the application's user interface, domain terminology, data structures, and internal code rather than Beach Complex.
+
+## Motivation
+
+During development it became clear that **Beach Complex** was unnecessarily technical and potentially misleading as a user-facing concept.
+
+The grouping represents a geographic area containing one or more named beaches. It is not an official Portuguese administrative designation and should not be confused with an administrative or regulatory entity.
+
+**Area** is simpler, more intuitive, and better suited to the eventual Beach Selector interface.
+
+The distinction between an Area and an individual Beach remains important:
+
+- **Area** — a geographic grouping used to associate beaches sharing environmental conditions and other area-level information.
+- **Beach** — an individual named beach with its own facilities, services, accessibility characteristics, and other beach-specific information.
+
+## Consequences
+
+The application's terminology and internal model will use **Area** rather than **Beach Complex**.
+
+This includes:
+
+- Data files
+- Variables
+- Functions
+- Selectors
+- Navigation and user interface terminology
+- Documentation
+- Future datasets and relationships
+
+The underlying architectural principle remains unchanged: Areas and Beaches are independent entities connected through explicit relationships.
+
+Environmental information such as weather, marine conditions, tides, and sea temperature remains associated with Areas, while beach-specific characteristics remain associated with individual Beaches.
+
+## Alternatives Considered
+
+### Retain Beach Complex
+
+Rejected because the term is unnecessarily technical and does not accurately communicate the concept to users.
+
+### Region
+
+Rejected because Region already represents a higher-level geographic classification within the application.
+
+### Location
+
+Rejected because Location is too generic and could refer to either an Area or an individual Beach.
+
+## Status
+
+Accepted
+
+
+# DJ007 — Global User-Adjustable Text Scaling
+
+**Date:** 2026-08-18
+
+## Decision
+
+Introduce a global, user-adjustable text-size control accessible from the application's primary navigation.
+
+The control uses a compact **A–A slider** with four discrete text-size settings:
+
+- Small
+- Normal
+- Large
+- Extra-large
+
+The control is available from the primary navigation rather than being confined to Settings.
+
+## Motivation
+
+The Dashboard accessibility work established that typography must support users with different levels of visual acuity and that font sizes should reflect information hierarchy. DJ005 specifically identified user-selectable display scaling as a future requirement.
+
+A global control is preferable to placing this preference only within Settings because text scaling affects the entire application and may need to be adjusted while viewing any page.
+
+The compact A–A representation was chosen because it communicates the function without requiring a textual label and occupies minimal navigation space.
+
+## Design
+
+The control uses four discrete positions rather than continuous scaling.
+
+The smallest and largest A markers visually represent the approximate lower and upper bounds of the available text sizes.
+
+The slider is intentionally compact so that it can remain in the primary navigation on mobile devices.
+
+The current implementation uses a 100px slider and applies the selected scale throughout the application.
+
+Text scaling is applied globally while preserving the existing hierarchy between primary values, secondary values, labels, controls, and other interface elements.
+
+## Interaction
+
+The slider uses discrete detents corresponding to the four supported sizes.
+
+The selected size is applied when the user finishes moving the control rather than continuously during touch movement.
+
+This avoids repeated dashboard rendering and data refreshes while a user is dragging the control on a touch device.
+
+This behavior is particularly important on mobile devices, where continuous layout changes during a finger drag can make the control difficult to operate.
+
+## Consequences
+
+Text scaling becomes an application-wide accessibility feature rather than a Settings-only preference.
+
+The typography system must therefore support scaling without destroying the intended visual hierarchy.
+
+Future refinement should ensure that:
+
+- Primary measurements remain visually dominant.
+- Secondary measurements remain subordinate.
+- Navigation remains usable at the largest size.
+- Charts, axes, labels, and other graphical text scale appropriately.
+- Mobile layouts do not develop horizontal overflow.
+- The selected size persists between application sessions.
+
+The A–A control itself should remain accessible regardless of which application page is currently displayed.
+
+## Alternatives Considered
+
+### Text-size dropdown in Settings
+
+Rejected because the control is less discoverable and requires navigating to Settings before the user can adjust readability.
+
+### Continuous text scaling
+
+Rejected because the application currently has four deliberate typography levels and a continuous scale could produce awkward intermediate sizes and inconsistent visual hierarchy.
+
+### Continuous updating while dragging
+
+Rejected because changing the entire application layout repeatedly during touch interaction causes visible reflow and makes precise slider manipulation difficult.
+
+## Status
+
+Accepted
