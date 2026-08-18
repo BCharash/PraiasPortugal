@@ -2,7 +2,7 @@
 // Application Data
 //--------------------------------------------------
 
-let beachComplexes = [];
+let areas = [];
 let beaches = [];
 
 
@@ -12,11 +12,18 @@ let beaches = [];
 
 async function initializeData() {
 
-    const complexResponse = await fetch("data/beach-complexes.json");
-    beachComplexes = await complexResponse.json();
+    const areaResponse =
+        await fetch("data/areas.json");
 
-    const beachResponse = await fetch("data/beaches.json");
-    beaches = await beachResponse.json();
+    areas =
+        await areaResponse.json();
+
+
+    const beachResponse =
+        await fetch("data/beaches.json");
+
+    beaches =
+        await beachResponse.json();
 
 }
 
@@ -27,13 +34,18 @@ async function initializeData() {
 
 function findBeach(id) {
 
-    return beaches.find(beach => beach.id === id);
+    return beaches.find(
+        beach => beach.id === id
+    );
 
 }
 
-function findBeachComplex(id) {
 
-    return beachComplexes.find(complex => complex.id === id);
+function findArea(id) {
+
+    return areas.find(
+        area => area.id === id
+    );
 
 }
 
@@ -48,47 +60,67 @@ function findBeachComplex(id) {
  * Returns:
  *     An array containing the unique region names.
  */
+
 function getRegions() {
 
-    return [...new Set(beachComplexes.map(c => c.region))].sort();
+    return [
+        ...new Set(
+            areas.map(
+                area => area.region
+            )
+        )
+    ].sort();
 
 }
 
+
 /*
- * Return the beach complexes in a region.
+ * Return the areas in a region.
  *
  * Parameters:
  *     region - The region to search.
  *
  * Returns:
- *     An array of beach complexes.
+ *     An array of areas.
  */
-function getBeachComplexes(region) {
 
-    return beachComplexes.filter(
-        complex => complex.region === region
+function getAreas(region) {
+
+    return areas.filter(
+        area => area.region === region
     );
 
 }
 
+
 /*
- * Return the beaches belonging to a beach complex.
+ * Return the beaches belonging to an area.
  *
  * Parameters:
- *     beachComplexId - The beach complex to search.
+ *     areaId - The area to search.
  *
  * Returns:
  *     An array of beach objects.
  */
-function getBeaches(beachComplexId) {
 
-    const complex = findBeachComplex(beachComplexId);
+function getBeaches(areaId) {
 
-    if (!complex)
+    const area =
+        findArea(areaId);
+
+
+    if (!area)
         return [];
 
-    return complex.beaches
-        .map(beachId => findBeach(beachId))
-        .filter(beach => beach !== undefined);
+
+    return area.beaches
+        .map(
+            beachId =>
+                findBeach(beachId)
+        )
+        .filter(
+            beach =>
+                beach !== undefined
+        );
 
 }
