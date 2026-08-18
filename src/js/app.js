@@ -1081,12 +1081,29 @@ function toggleFavorite() {
 
     if (isFavorite(beachId)) {
 
-        appState.favorites =
-            appState.favorites.filter(
-                id => id !== beachId
-            );
+    appState.favorites =
+        appState.favorites.filter(
+            id => id !== beachId
+        );
+
+
+    //--------------------------------------------------
+    // If this was the Startup Beach, revert to
+    // Last selected beach.
+    //--------------------------------------------------
+
+    if (
+        appState.settings.startupBeach === beachId
+    ) {
+
+        appState.settings.startupBeach =
+            "last";
+
+        saveSettings();
 
     }
+
+}
 
 
     //--------------------------------------------------
