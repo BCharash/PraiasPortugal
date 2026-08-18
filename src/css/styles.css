@@ -1135,6 +1135,22 @@ select:focus {
 
 }
 
+/* ==========================================================
+   Text Size Control
+   ========================================================== */
+
+#textSizeControl {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    margin-bottom: 0;
+
+}
+
 
 /* ==========================================================
    Beach Information
