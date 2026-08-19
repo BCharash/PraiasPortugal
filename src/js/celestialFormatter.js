@@ -60,9 +60,7 @@ function renderCelestialGraphic(
 
                
 
-                <g
-                    transform="translate(${x} ${y}) scale(0.36 1) translate(${-x} ${-y})"
-                >
+            <g>
 
     <circle
         cx="${x}"
