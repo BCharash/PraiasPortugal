@@ -130,19 +130,29 @@ function updateConditions(dashboardData) {
         const celestial =
             getCelestialState(weather);
 
-        const celestialGraphicElement =
+                const celestialGraphicElement =
             document.getElementById("celestialGraphic");
 
         if (celestialGraphicElement) {
 
+            const graphicWidth =
+                celestialGraphicElement.clientWidth;
+
+            const graphicHeight =
+                celestialGraphicElement.clientHeight;
+
+            
+
+
             celestialGraphicElement.innerHTML =
                 renderCelestialGraphic(
                     celestial,
-                     weather
-        );
+                    weather,
+                    graphicWidth,
+                    graphicHeight
+                );
 
-}
-
+        }
         
 
         airTempElement.textContent =

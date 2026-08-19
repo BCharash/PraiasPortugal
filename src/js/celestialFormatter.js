@@ -11,18 +11,21 @@
 
 function renderCelestialGraphic(
     celestialState,
-    weather
+    weather,
+    graphicWidth,
+    graphicHeight
 ) {
+
 
     if (!celestialState)
         return "";
 
 
-    const width =
-        100;
+        const width =
+            graphicWidth;
 
-    const height =
-        60;
+        const height =
+            graphicHeight;
 
 
     //--------------------------------------------------
@@ -36,9 +39,9 @@ function renderCelestialGraphic(
             celestialState.sun.position.progress;
 
         const x =
-            10 + progress * 80;
+            graphicWidth *
+            (0.10 + progress * 0.80);
 
-        
 
         const arc =
             Math.sin(
@@ -46,7 +49,9 @@ function renderCelestialGraphic(
             );
 
         const y =
-            52 - arc * 38;
+            graphicHeight *
+            (0.87 - arc * 0.63);
+
 
         return `
 
