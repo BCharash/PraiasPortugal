@@ -130,9 +130,10 @@ function updateConditions(dashboardData) {
         const celestial =
             getCelestialState(weather);
 
-        console.log(
-            "CELESTIAL STATE:",
-            celestial
+        weatherIconElement.innerHTML =
+            renderCelestialGraphic(
+                celestial,
+                weather
         );
 
         
