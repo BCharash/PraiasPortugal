@@ -9,7 +9,6 @@
 // Public Functions
 //--------------------------------------------------
 
-
 async function getCurrentWeather(beach) {
 
     const url =
@@ -43,7 +42,9 @@ async function getCurrentWeather(beach) {
         `precipitation_probability_max,` +
         `sunrise,` +
         `sunset,` +
-        `moon_phase`;
+        `moon_phase,` +
+        `moonrise,` +
+        `moonset`;
 
     const response =
         await fetch(url);
@@ -175,6 +176,12 @@ async function getCurrentWeather(beach) {
         moonPhase:
             data.daily.moon_phase[0],
 
+        moonrise:
+            data.daily.moonrise[0],
+
+        moonset:
+            data.daily.moonset[0],
+
 
         //--------------------------------------------------
         // Day / Night
@@ -251,7 +258,7 @@ function getWeatherIcon(weatherCode, isDay) {
             return isDay ? "mainly-clear-day" : "mainly-clear-night";
 
         case 2:
-             return isDay ? "partly-cloudy-day" : "partly-cloudy-night";
+            return isDay ? "partly-cloudy-day" : "partly-cloudy-night";
 
         case 3:
             return "cloudy";
