@@ -19,10 +19,10 @@ function renderCelestialGraphic(
 
 
     const width =
-        96;
+        100;
 
     const height =
-        72;
+        60;
 
 
     //--------------------------------------------------
@@ -31,28 +31,43 @@ function renderCelestialGraphic(
 
     if (celestialState.sun.isVisible) {
 
+        
+        const progress =
+            celestialState.sun.position.progress;
+
         const x =
-            celestialState.sun.position.x;
+            10 + progress * 80;
+
+        
+
+        const arc =
+            Math.sin(
+                progress * Math.PI
+            );
 
         const y =
-            celestialState.sun.position.y;
-
+            52 - arc * 38;
 
         return `
 
             <svg
                 viewBox="0 0 ${width} ${height}"
-                width="${width}"
-                height="${height}"
+                width="100%"
+                height="100%"
+                preserveAspectRatio="none"
                 xmlns="http://www.w3.org/2000/svg"
             >
 
-                <g>
+               
+
+                <g
+                    transform="translate(${x} ${y}) scale(0.36 1) translate(${-x} ${-y})"
+                >
 
     <circle
         cx="${x}"
         cy="${y}"
-        r="20"
+        r="13"
         fill="#ffd34d"
         opacity="0.12"
     />
@@ -60,7 +75,7 @@ function renderCelestialGraphic(
     <circle
         cx="${x}"
         cy="${y}"
-        r="13"
+        r="8"
         fill="#ffd34d"
     />
 
@@ -72,58 +87,58 @@ function renderCelestialGraphic(
 
         <line
             x1="${x}"
-            y1="${y - 18}"
+            y1="${y - 11}"
             x2="${x}"
-            y2="${y - 23}"
+            y2="${y - 15}"
         />
 
         <line
-            x1="${x + 18}"
+            x1="${x + 11}"
             y1="${y}"
-            x2="${x + 23}"
+            x2="${x + 15}"
             y2="${y}"
         />
 
         <line
             x1="${x}"
-            y1="${y + 18}"
+            y1="${y + 11}"
             x2="${x}"
-            y2="${y + 23}"
+            y2="${y + 15}"
         />
 
         <line
-            x1="${x - 18}"
+            x1="${x - 11}"
             y1="${y}"
-            x2="${x - 23}"
+            x2="${x - 15}"
             y2="${y}"
         />
 
-        <line
-            x1="${x + 13}"
-            y1="${y - 13}"
-            x2="${x + 17}"
-            y2="${y - 17}"
+                <line
+            x1="${x + 7.8}"
+            y1="${y - 7.8}"
+            x2="${x + 10.6}"
+            y2="${y - 10.6}"
         />
 
         <line
-            x1="${x + 13}"
-            y1="${y + 13}"
-            x2="${x + 17}"
-            y2="${y + 17}"
+            x1="${x + 7.8}"
+            y1="${y + 7.8}"
+            x2="${x + 10.6}"
+            y2="${y + 10.6}"
         />
 
         <line
-            x1="${x - 13}"
-            y1="${y + 13}"
-            x2="${x - 17}"
-            y2="${y + 17}"
+            x1="${x - 7.8}"
+            y1="${y + 7.8}"
+            x2="${x - 10.6}"
+            y2="${y + 10.6}"
         />
 
         <line
-            x1="${x - 13}"
-            y1="${y - 13}"
-            x2="${x - 17}"
-            y2="${y - 17}"
+            x1="${x - 7.8}"
+            y1="${y - 7.8}"
+            x2="${x - 10.6}"
+            y2="${y - 10.6}"
         />
 
     </g>
