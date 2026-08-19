@@ -9,6 +9,7 @@
 // Public Functions
 //--------------------------------------------------
 
+
 async function getCurrentWeather(beach) {
 
     const url =
@@ -34,51 +35,153 @@ async function getCurrentWeather(beach) {
         `snowfall,` +
         `uv_index,` +
         `is_day` +
+        `&timezone=Europe%2FLisbon` +
         `&daily=` +
         `temperature_2m_max,` +
-        `temperature_2m_min`;
+        `temperature_2m_min,` +
+        `uv_index_max,` +
+        `precipitation_probability_max,` +
+        `sunrise,` +
+        `sunset,` +
+        `moon_phase`;
 
-    const response = await fetch(url);
+    const response =
+        await fetch(url);
 
-    const data = await response.json();
+    const data =
+        await response.json();
 
     return {
 
-        airTemperature:      data.current.temperature_2m,
-        apparentTemperature: data.current.apparent_temperature,
-        relativeHumidity:    data.current.relative_humidity_2m,
+        //--------------------------------------------------
+        // Air
+        //--------------------------------------------------
 
-        highTemperature:     data.daily.temperature_2m_max[0],
-        lowTemperature:      data.daily.temperature_2m_min[0],
+        airTemperature:
+            data.current.temperature_2m,
 
-        windSpeed:           data.current.wind_speed_10m,
-        windDirection:       data.current.wind_direction_10m,
-        windGusts:           data.current.wind_gusts_10m,
+        apparentTemperature:
+            data.current.apparent_temperature,
 
-        cloudCover:          data.current.cloud_cover,
-        cloudCoverLow:       data.current.cloud_cover_low,
-        cloudCoverMid:       data.current.cloud_cover_mid,
-        cloudCoverHigh:      data.current.cloud_cover_high,
+        relativeHumidity:
+            data.current.relative_humidity_2m,
+
+        highTemperature:
+            data.daily.temperature_2m_max[0],
+
+        lowTemperature:
+            data.daily.temperature_2m_min[0],
+
+
+        //--------------------------------------------------
+        // Wind
+        //--------------------------------------------------
+
+        windSpeed:
+            data.current.wind_speed_10m,
+
+        windDirection:
+            data.current.wind_direction_10m,
+
+        windGusts:
+            data.current.wind_gusts_10m,
+
+
+        //--------------------------------------------------
+        // Clouds
+        //--------------------------------------------------
+
+        cloudCover:
+            data.current.cloud_cover,
+
+        cloudCoverLow:
+            data.current.cloud_cover_low,
+
+        cloudCoverMid:
+            data.current.cloud_cover_mid,
+
+        cloudCoverHigh:
+            data.current.cloud_cover_high,
+
+
+        //--------------------------------------------------
+        // Precipitation
+        //--------------------------------------------------
 
         precipitationProbability:
-                             data.current.precipitation_probability,
+            data.current.precipitation_probability,
 
-        precipitation:       data.current.precipitation,
-        rain:                data.current.rain,
-        showers:             data.current.showers,
-        snowfall:            data.current.snowfall,
+        precipitationProbabilityMax:
+            data.daily.precipitation_probability_max[0],
+
+        precipitation:
+            data.current.precipitation,
+
+        rain:
+            data.current.rain,
+
+        showers:
+            data.current.showers,
+
+        snowfall:
+            data.current.snowfall,
 
 
-        weatherCode:         data.current.weather_code,
-        description:         getWeatherDescription(data.current.weather_code),
-        icon:                getWeatherIcon(
-                                 data.current.weather_code,
-                                 data.current.is_day === 1
-                             ),
+        //--------------------------------------------------
+        // Weather
+        //--------------------------------------------------
 
-        uvIndex:             data.current.uv_index,
+        weatherCode:
+            data.current.weather_code,
 
-        isDay:               data.current.is_day === 1
+        description:
+            getWeatherDescription(
+                data.current.weather_code
+            ),
+
+        icon:
+            getWeatherIcon(
+                data.current.weather_code,
+                data.current.is_day === 1
+            ),
+
+
+        //--------------------------------------------------
+        // UV
+        //--------------------------------------------------
+
+        uvIndex:
+            data.current.uv_index,
+
+        uvIndexMax:
+            data.daily.uv_index_max[0],
+
+
+        //--------------------------------------------------
+        // Daylight
+        //--------------------------------------------------
+
+        sunrise:
+            data.daily.sunrise[0],
+
+        sunset:
+            data.daily.sunset[0],
+
+
+        //--------------------------------------------------
+        // Moon
+        //--------------------------------------------------
+
+        moonPhase:
+            data.daily.moon_phase[0],
+
+
+        //--------------------------------------------------
+        // Day / Night
+        //--------------------------------------------------
+
+        isDay:
+            data.current.is_day === 1
 
     };
 
@@ -149,7 +252,7 @@ function getWeatherIcon(weatherCode, isDay) {
 
         case 2:
              return isDay ? "partly-cloudy-day" : "partly-cloudy-night";
-             
+
         case 3:
             return "cloudy";
 

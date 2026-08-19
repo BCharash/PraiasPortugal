@@ -101,6 +101,11 @@ function initializeConditions() {
 
 function updateConditions(dashboardData) {
 
+    console.log(
+        "WEATHER DATA:",
+        dashboardData.weather
+    );
+
     const weather =
         dashboardData.weather;
 
@@ -134,9 +139,63 @@ function updateConditions(dashboardData) {
 
         windElement.textContent =
             formatWind(weather);
-            
+
         uvElement.textContent =
             formatUV(weather);
+
+
+        //--------------------------------------------------
+        // Sunrise / Sunset
+        //--------------------------------------------------
+
+        const sunriseElement =
+            document.getElementById("dashboardSunrise");
+
+        const sunsetElement =
+            document.getElementById("dashboardSunset");
+
+        if (sunriseElement) {
+
+            sunriseElement.textContent =
+                formatSunTime(weather.sunrise);
+
+        }
+
+        if (sunsetElement) {
+
+            sunsetElement.textContent =
+                formatSunTime(weather.sunset);
+
+        }
+
+
+        //--------------------------------------------------
+        // Moon
+        //--------------------------------------------------
+
+        const moonPhaseElement =
+            document.getElementById("dashboardMoonPhase");
+
+        const moonIlluminationElement =
+            document.getElementById(
+                "dashboardMoonIllumination"
+            );
+
+        if (moonPhaseElement) {
+
+            moonPhaseElement.textContent =
+                formatMoonPhase(weather.moonPhase);
+
+        }
+
+        if (moonIlluminationElement) {
+
+            moonIlluminationElement.textContent =
+                formatMoonIllumination(
+                    weather.moonPhase
+                );
+
+        }
 
     }
 
@@ -167,5 +226,72 @@ function updateConditions(dashboardData) {
             `${formatTideTrend(tide)}`;
 
     }
+
+}
+
+
+//--------------------------------------------------
+// Conditions Formatting Helpers
+//--------------------------------------------------
+
+function formatSunTime(value) {
+
+    if (!value)
+        return "--";
+
+    const time =
+        value.split("T")[1];
+
+    if (!time)
+        return "--";
+
+    return time.substring(0, 5);
+
+}
+
+
+function formatMoonPhase(phase) {
+
+    if (phase == null)
+        return "--";
+
+    if (phase < 0.0625)
+        return "New Moon";
+
+    if (phase < 0.1875)
+        return "Waxing Crescent";
+
+    if (phase < 0.3125)
+        return "First Quarter";
+
+    if (phase < 0.4375)
+        return "Waxing Gibbous";
+
+    if (phase < 0.5625)
+        return "Full Moon";
+
+    if (phase < 0.6875)
+        return "Waning Gibbous";
+
+    if (phase < 0.8125)
+        return "Last Quarter";
+
+    if (phase < 0.9375)
+        return "Waning Crescent";
+
+    return "New Moon";
+
+}
+
+
+function formatMoonIllumination(phase) {
+
+    if (phase == null)
+        return "--";
+
+    const illumination =
+        (1 - Math.cos(2 * Math.PI * phase)) / 2;
+
+    return `${Math.round(illumination * 100)}% illuminated`;
 
 }
