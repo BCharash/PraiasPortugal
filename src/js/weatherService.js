@@ -23,6 +23,15 @@ async function getCurrentWeather(beach) {
         `wind_direction_10m,` +
         `wind_gusts_10m,` +
         `weather_code,` +
+        `cloud_cover,` +
+        `cloud_cover_low,` +
+        `cloud_cover_mid,` +
+        `cloud_cover_high,` +
+        `precipitation_probability,` +
+        `precipitation,` +
+        `rain,` +
+        `showers,` +
+        `snowfall,` +
         `uv_index,` +
         `is_day` +
         `&daily=` +
@@ -45,6 +54,20 @@ async function getCurrentWeather(beach) {
         windSpeed:           data.current.wind_speed_10m,
         windDirection:       data.current.wind_direction_10m,
         windGusts:           data.current.wind_gusts_10m,
+
+        cloudCover:          data.current.cloud_cover,
+        cloudCoverLow:       data.current.cloud_cover_low,
+        cloudCoverMid:       data.current.cloud_cover_mid,
+        cloudCoverHigh:      data.current.cloud_cover_high,
+
+        precipitationProbability:
+                             data.current.precipitation_probability,
+
+        precipitation:       data.current.precipitation,
+        rain:                data.current.rain,
+        showers:             data.current.showers,
+        snowfall:            data.current.snowfall,
+
 
         weatherCode:         data.current.weather_code,
         description:         getWeatherDescription(data.current.weather_code),
@@ -122,9 +145,11 @@ function getWeatherIcon(weatherCode, isDay) {
             return isDay ? "clear-day" : "clear-night";
 
         case 1:
-        case 2:
-            return isDay ? "partly-cloudy-day" : "partly-cloudy-night";
+            return isDay ? "mainly-clear-day" : "mainly-clear-night";
 
+        case 2:
+             return isDay ? "partly-cloudy-day" : "partly-cloudy-night";
+             
         case 3:
             return "cloudy";
 

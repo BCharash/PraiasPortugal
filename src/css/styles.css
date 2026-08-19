@@ -643,83 +643,137 @@ body {
 }
 
 
-#conditionsWidget table {
-
-    width:
-        calc(100% + 16px);
-
-    margin:
-        -8px;
-
-    border-collapse:
-        separate;
-
-    border-spacing:
-        8px;
-
-}
-
-
-#conditionsWidget td {
-
-    padding:
-        9px 10px;
-
-    vertical-align:
-        top;
-
-}
-
-
 /* ==========================================================
-   Condition Labels
+   Conditions Summary
    ========================================================== */
 
-#conditionsWidget td:nth-child(1),
-#conditionsWidget td:nth-child(3) {
+#conditionsWidget {
+
+    overflow:
+        hidden;
+
+    padding:
+        10px 14px;
+
+}
+
+
+/* ----------------------------------------------------------
+   Main Conditions Layout
+   ---------------------------------------------------------- */
+
+#conditionsWidget {
+
+    display:
+        grid;
+
+    grid-template-columns:
+        minmax(0, 1fr)
+        auto
+        auto;
+
+    grid-template-rows:
+        auto
+        auto;
+
+    column-gap:
+        18px;
+
+    row-gap:
+        4px;
+
+    align-items:
+        center;
+
+}
+
+
+/* ----------------------------------------------------------
+   Weather
+   ---------------------------------------------------------- */
+
+#conditionsWeather {
+
+    grid-column:
+        1;
+
+    grid-row:
+        1 / 3;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    gap:
+        12px;
+
+    min-width:
+        0;
+
+}
+
+
+#dashboardWeatherIcon {
+
+    flex:
+        0 0 72px;
 
     width:
-        12%;
+        72px;
 
-    color:
-        #8fa4c4;
+    height:
+        72px;
 
-    font-size:
-        var(--font-condition-label);
+    display:
+        flex;
 
-    font-weight:
-        700;
+    align-items:
+        center;
 
-    text-transform:
-        uppercase;
+    justify-content:
+        center;
+
+    overflow:
+        hidden;
 
     white-space:
         nowrap;
 
+    color:
+        #ffffff;
+
+    font-size:
+        14px;
+
+    line-height:
+        1;
+
 }
 
 
-/* ==========================================================
-   Condition Values
-   ========================================================== */
+#dashboardWeatherInfo {
 
-#conditionsWidget td:nth-child(2),
-#conditionsWidget td:nth-child(4) {
+    display:
+        flex;
 
-    width:
-        38%;
+    flex-direction:
+        column;
+
+    justify-content:
+        center;
 
     min-width:
-        120px;
+        0;
 
-    background:
-        #202d4e;
+    gap:
+        1px;
 
-    border:
-        1px solid #30405f;
+}
 
-    border-radius:
-        8px;
+
+#dashboardWeatherCondition {
 
     color:
         #ffffff;
@@ -728,16 +782,230 @@ body {
         var(--font-condition-value);
 
     font-weight:
+        600;
+
+}
+
+
+#dashboardAirTemp {
+
+    color:
+        #ffbf18;
+
+    font-size:
+        var(--font-primary-metric);
+
+    font-weight:
         700;
 
 }
 
 
+#dashboardAirFeelsLike,
+#dashboardAirHumidity {
+
+    color:
+        #a9c9e8;
+
+    font-size:
+        var(--font-secondary-metric);
+
+    font-weight:
+        400;
+
+}
+
+
+/* ----------------------------------------------------------
+   Sun
+   ---------------------------------------------------------- */
+
+#conditionsSun {
+
+    grid-column:
+        2;
+
+    grid-row:
+        1;
+
+    display:
+        flex;
+
+    flex-direction:
+        column;
+
+    justify-content:
+        center;
+
+    min-width:
+        72px;
+
+    color:
+        #a9c9e8;
+
+    font-size:
+        var(--font-secondary-metric);
+
+    line-height:
+        1.5;
+
+}
+
+
+/* ----------------------------------------------------------
+   Moon
+   ---------------------------------------------------------- */
+
+#conditionsMoon {
+
+    grid-column:
+        2;
+
+    grid-row:
+        2;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    gap:
+        5px;
+
+    min-width:
+        72px;
+
+    color:
+        #a9c9e8;
+
+    font-size:
+        var(--font-secondary-metric);
+
+}
+
+
+/* ----------------------------------------------------------
+   UV
+   ---------------------------------------------------------- */
+
+#conditionsUV {
+
+    grid-column:
+        3;
+
+    grid-row:
+        1 / 3;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    min-width:
+        50px;
+
+}
+
+
+/* ----------------------------------------------------------
+   Mobile
+   ---------------------------------------------------------- */
+
+@media (max-width: 700px) {
+
+    #conditionsWidget {
+
+        grid-template-columns:
+            minmax(0, 1fr)
+            auto;
+
+        column-gap:
+            8px;
+
+        padding:
+            8px 10px;
+
+    }
+
+
+    #conditionsWeather {
+
+        grid-column:
+            1;
+
+        grid-row:
+            1 / 3;
+
+        gap:
+            8px;
+
+    }
+
+
+    #dashboardWeatherIcon {
+
+        flex-basis:
+            56px;
+
+        width:
+            56px;
+
+        height:
+            56px;
+
+    }
+
+
+    #conditionsSun {
+
+        grid-column:
+            2;
+
+        grid-row:
+            1;
+
+        min-width:
+            62px;
+
+    }
+
+
+    #conditionsMoon {
+
+        grid-column:
+            2;
+
+        grid-row:
+            2;
+
+        min-width:
+            62px;
+
+    }
+
+
+    #conditionsUV {
+
+        display:
+            none;
+
+    }
+
+}
+
 /* ==========================================================
-   Primary Metric Values
+   Legacy Metric Styling
+   ==========================================================
+
+   These remain available while the dashboard cards
+   are being rebuilt.
    ========================================================== */
 
-#dashboardAirTemp,
 #dashboardSeaTemp,
 #dashboardSurf,
 #dashboardSwell,
@@ -757,21 +1025,13 @@ body {
 }
 
 
-/* ==========================================================
-   Air Temperature
-   ========================================================== */
-
-#dashboardAirTemp {
+#dashboardSeaTemp {
 
     color:
-        #ffbf18;
+        #4ac9e8;
 
 }
 
-
-/* ==========================================================
-   Wind
-   ========================================================== */
 
 #dashboardWind {
 
@@ -781,22 +1041,6 @@ body {
 }
 
 
-/* ==========================================================
-   Sea
-   ========================================================== */
-
-#dashboardSeaTemp {
-
-    color:
-        #4ac9e8;
-
-}
-
-
-/* ==========================================================
-   Surf
-   ========================================================== */
-
 #dashboardSurf {
 
     color:
@@ -804,10 +1048,6 @@ body {
 
 }
 
-
-/* ==========================================================
-   Swell
-   ========================================================== */
 
 #dashboardSwell {
 
@@ -817,10 +1057,6 @@ body {
 }
 
 
-/* ==========================================================
-   Tide
-   ========================================================== */
-
 #dashboardTide {
 
     color:
@@ -829,10 +1065,6 @@ body {
 }
 
 
-/* ==========================================================
-   UV
-   ========================================================== */
-
 #dashboardUV {
 
     color:
@@ -840,10 +1072,6 @@ body {
 
 }
 
-
-/* ==========================================================
-   Secondary Metric Values
-   ========================================================== */
 
 .metric-secondary {
 
@@ -858,6 +1086,36 @@ body {
 
     font-weight:
         400;
+
+}
+
+
+/* ==========================================================
+   Mobile Conditions
+   ========================================================== */
+
+@media (max-width: 700px) {
+
+    #conditionsWeather {
+
+        min-height:
+            64px;
+
+        gap:
+            10px;
+
+    }
+
+
+    #dashboardWeatherIcon {
+
+        width:
+            52px;
+
+        height:
+            52px;
+
+    }
 
 }
 

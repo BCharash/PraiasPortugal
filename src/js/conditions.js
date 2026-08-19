@@ -10,12 +10,13 @@
 let airTempElement;
 let airHumidityElement;
 let airFeelsLikeElement;
-let airHighLowElement;
+
+let weatherIconElement;
+let weatherConditionElement;
 
 let seaTempElement;
 let windElement;
 let surfElement;
-let swellElement;
 let tideElement;
 let uvElement;
 
@@ -26,31 +27,70 @@ let uvElement;
 
 function initializeConditions() {
 
-    airTempElement      = document.getElementById("dashboardAirTemp");
-    airHumidityElement  = document.getElementById("dashboardAirHumidity");
-    airFeelsLikeElement = document.getElementById("dashboardAirFeelsLike");
-    airHighLowElement   = document.getElementById("dashboardAirHighLow");
+    airTempElement =
+        document.getElementById("dashboardAirTemp");
 
-    seaTempElement = document.getElementById("dashboardSeaTemp");
-    windElement    = document.getElementById("dashboardWind");
-    surfElement    = document.getElementById("dashboardSurf");
-    swellElement   = document.getElementById("dashboardSwell");
-    tideElement    = document.getElementById("dashboardTide");
-    uvElement      = document.getElementById("dashboardUV");
+    airHumidityElement =
+        document.getElementById("dashboardAirHumidity");
 
-    airTempElement.textContent      = "--";
-    airHumidityElement.textContent  = "--";
-    airFeelsLikeElement.textContent = "--";
-    airHighLowElement.textContent   = "--";
+    airFeelsLikeElement =
+        document.getElementById("dashboardAirFeelsLike");
 
-    seaTempElement.textContent = "--";
-    windElement.textContent    = "--";
-    surfElement.textContent    = "--";
-    tideElement.textContent    = "--";
-    uvElement.textContent      = "--";
+    weatherIconElement =
+        document.getElementById("dashboardWeatherIcon");
 
-    if (swellElement)
-        swellElement.textContent = "--";
+    weatherConditionElement =
+        document.getElementById("dashboardWeatherCondition");
+
+    seaTempElement =
+        document.getElementById("dashboardSeaTemp");
+
+    windElement =
+        document.getElementById("dashboardWind");
+
+    surfElement =
+        document.getElementById("dashboardSurf");
+
+    tideElement =
+        document.getElementById("dashboardTide");
+
+    uvElement =
+        document.getElementById("dashboardUV");
+
+
+    //--------------------------------------------------
+    // Initial Values
+    //--------------------------------------------------
+
+    airTempElement.textContent =
+        "--";
+
+    airHumidityElement.textContent =
+        "--";
+
+    airFeelsLikeElement.textContent =
+        "--";
+
+    weatherIconElement.textContent =
+        "";
+
+    weatherConditionElement.textContent =
+        "--";
+
+    seaTempElement.textContent =
+        "--";
+
+    windElement.textContent =
+        "--";
+
+    surfElement.textContent =
+        "--";
+
+    tideElement.textContent =
+        "--";
+
+    uvElement.textContent =
+        "--";
 
 }
 
@@ -61,15 +101,27 @@ function initializeConditions() {
 
 function updateConditions(dashboardData) {
 
-    const weather = dashboardData.weather;
-    const marine  = dashboardData.marine;
-    const tide    = dashboardData.tide;
+    const weather =
+        dashboardData.weather;
+
+    const marine =
+        dashboardData.marine;
+
+    const tide =
+        dashboardData.tide;
+
 
     //--------------------------------------------------
     // Weather
     //--------------------------------------------------
 
     if (weather) {
+
+        weatherConditionElement.textContent =
+            weather.description;
+
+        weatherIconElement.textContent =
+            weather.icon;
 
         airTempElement.textContent =
             formatAirTemperature(weather);
@@ -80,16 +132,14 @@ function updateConditions(dashboardData) {
         airFeelsLikeElement.textContent =
             formatFeelsLike(weather);
 
-        airHighLowElement.textContent =
-            formatHighLow(weather);
-
         windElement.textContent =
             formatWind(weather);
-
+            
         uvElement.textContent =
             formatUV(weather);
 
     }
+
 
     //--------------------------------------------------
     // Marine
@@ -103,11 +153,8 @@ function updateConditions(dashboardData) {
         surfElement.textContent =
             formatSurf(marine);
 
-        if (swellElement)
-            swellElement.textContent =
-                formatSwell(marine);
-
     }
+
 
     //--------------------------------------------------
     // Tide
@@ -122,8 +169,3 @@ function updateConditions(dashboardData) {
     }
 
 }
-
-
-//--------------------------------------------------
-// Helper Functions
-//--------------------------------------------------

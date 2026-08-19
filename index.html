@@ -9,9 +9,9 @@
 
     <meta charset="UTF-8">
 
-<!-- ==========================================================
+    <!-- ==========================================================
      Icon Implementation
-=========================================================== -->
+    ========================================================== -->
 
     <link rel="icon"
           type="image/png"
@@ -142,139 +142,182 @@
 
             </div>
 
-
+ 
+            
             <!-- ==================================================
-                 Current Conditions
+                 Conditions Summary
             =================================================== -->
 
             <div id="conditionsWidget"
                  class="dashboard-widget">
 
-                <h3 data-i18n="currentConditions">
-                    Current Conditions
-                </h3>
 
+                <!-- ==================================================
+                     Current Weather
+                =================================================== -->
 
-                <table>
+                <div id="conditionsWeather">
 
+                    <div id="dashboardWeatherIcon"
+                         aria-hidden="true">
+                        ☁️
+                    </div>
 
-                    <!-- Air / Sea -->
+                    <div id="dashboardWeatherInfo">
 
-                    <tr>
-
-                        <td data-i18n="airLabel">
-                            🌡 Air
-                        </td>
-
-                        <td>
-
-                            <div id="dashboardAirTemp">
-                                --
-                            </div>
-
-                            <div id="dashboardAirHumidity"
-                                 class="metric-secondary">
-                                --
-                            </div>
-
-                            <div id="dashboardAirFeelsLike"
-                                 class="metric-secondary">
-                                --
-                            </div>
-
-                            <div id="dashboardAirHighLow"
-                                 class="metric-secondary">
-                                --
-                            </div>
-
-                        </td>
-
-
-                        <td data-i18n="seaLabel">
-                            🌊 Sea
-                        </td>
-
-                        <td id="dashboardSeaTemp">
+                        <div id="dashboardWeatherCondition">
                             --
-                        </td>
+                        </div>
 
-                    </tr>
-
-
-                    <!-- Wind / Surf -->
-
-                    <tr>
-
-                        <td data-i18n="windLabel">
-                            🌬 Wind
-                        </td>
-
-                        <td id="dashboardWind">
+                        <div id="dashboardAirTemp">
                             --
-                        </td>
+                        </div>
 
-
-                        <td data-i18n="surfLabel">
-                            🏄 Surf
-                        </td>
-
-                        <td id="dashboardSurf">
+                        <div id="dashboardAirFeelsLike"
+                             class="metric-secondary">
                             --
-                        </td>
+                        </div>
 
-                    </tr>
-
-
-                    <!-- Swell / Tide -->
-
-                    <tr>
-
-                        <td data-i18n="swellLabel">
-                            🌊 Swell
-                        </td>
-
-                        <td id="dashboardSwell">
+                        <div id="dashboardAirHumidity"
+                             class="metric-secondary">
                             --
-                        </td>
+                        </div>
+
+                    </div>
+
+                </div>
 
 
-                        <td data-i18n="tideLabel">
-                            🌙 Tide
-                        </td>
+                <!-- ==================================================
+                     Sun
+                =================================================== -->
 
-                        <td id="dashboardTide">
-                            --
-                        </td>
+                <div id="conditionsSun">
 
-                    </tr>
+                    <div id="dashboardSunrise">
+                        --
+                    </div>
 
+                    <div id="dashboardSunset">
+                        --
+                    </div>
 
-                    <!-- UV -->
-
-                    <tr>
-
-                        <td data-i18n="uvLabel">
-                            ☀ UV
-                        </td>
-
-                        <td id="dashboardUV">
-                            --
-                        </td>
-
-                        <td></td>
-
-                        <td></td>
-
-                    </tr>
+                </div>
 
 
-                </table>
+                <!-- ==================================================
+                     Moon
+                =================================================== -->
+
+                <div id="conditionsMoon">
+
+                    <div id="dashboardMoonPhase">
+                        --
+                    </div>
+
+                    <div id="dashboardMoonIllumination"
+                         class="metric-secondary">
+                        --
+                    </div>
+
+                </div>
+
+
+                <!-- ==================================================
+                     UV
+                =================================================== -->
+
+                <div id="conditionsUV">
+
+                    <div id="dashboardUV">
+                        --
+                    </div>
+
+                </div>
 
             </div>
 
-        </div>
 
-    </main>
+            <!-- ==================================================
+                 Dashboard Data Cards
+            =================================================== -->
+
+            <div id="dashboardDataCards">
+
+
+                <!-- ==================================================
+                     Wind
+                =================================================== -->
+
+                <div id="windCard"
+                     class="dashboard-data-card">
+
+                    <div class="dashboard-card-label">
+                        WIND
+                    </div>
+
+                    <div id="dashboardWind">
+                        --
+                    </div>
+
+                </div>
+
+
+                <!-- ==================================================
+                     Sea
+                =================================================== -->
+
+                <div id="seaCard"
+                     class="dashboard-data-card">
+
+                    <div class="dashboard-card-label">
+                        SEA
+                    </div>
+
+                    <div id="dashboardSeaTemp">
+                        --
+                    </div>
+
+                </div>
+
+
+                <!-- ==================================================
+                     Surf
+                =================================================== -->
+
+                <div id="surfCard"
+                     class="dashboard-data-card">
+
+                    <div class="dashboard-card-label">
+                        SURF
+                    </div>
+
+                    <div id="dashboardSurf">
+                        --
+                    </div>
+
+                </div>
+
+
+                <!-- ==================================================
+                     Tide
+                =================================================== -->
+
+                <div id="tideCard"
+                     class="dashboard-data-card">
+
+                    <div class="dashboard-card-label">
+                        TIDE
+                    </div>
+
+                    <div id="dashboardTide">
+                        --
+                    </div>
+
+                </div>
+
+
+            </div>            
 
 
     <!-- ==========================================================
