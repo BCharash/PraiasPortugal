@@ -160,13 +160,8 @@ function updateConditions(dashboardData) {
                 currentCoastalCondition.label;
 
         }
-        else if (coastalFogForecast) {
-
-            coastalConditionElement.textContent =
-                `${coastalFogForecast.label} ` +
-                `${formatSunTime(coastalFogForecast.time)}`;
-
-        }
+        
+        
         else if (coastalFogRisk) {
 
             coastalConditionElement.textContent =
