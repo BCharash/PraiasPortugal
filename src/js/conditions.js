@@ -13,6 +13,7 @@ let airFeelsLikeElement;
 
 let weatherIconElement;
 let weatherConditionElement;
+let coastalConditionElement;
 
 let seaTempElement;
 let windElement;
@@ -41,6 +42,9 @@ function initializeConditions() {
 
     weatherConditionElement =
         document.getElementById("dashboardWeatherCondition");
+
+    coastalConditionElement =
+        document.getElementById("dashboardCoastalCondition");
 
     seaTempElement =
         document.getElementById("dashboardSeaTemp");
@@ -76,6 +80,9 @@ function initializeConditions() {
 
     weatherConditionElement.textContent =
         "--";
+
+    coastalConditionElement.textContent =
+        "";
 
     seaTempElement.textContent =
         "--";
@@ -162,7 +169,7 @@ function updateConditions(dashboardData) {
     coastalFogForecast
     );
 
-    
+
         const celestial =
             getCelestialState(weather);
 
