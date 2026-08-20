@@ -151,9 +151,7 @@ function updateConditions(dashboardData) {
     const coastalFogRisk =
         getCoastalFogRisk(weather);
 
-    const coastalFogForecast =
-        getCoastalFogForecast(weather);
-
+    
     if (coastalConditionElement) {
 
         if (currentCoastalCondition) {
