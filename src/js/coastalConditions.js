@@ -3,6 +3,14 @@
 //
 // Interprets weather data for beach-specific
 // coastal conditions such as mist and fog risk.
+//
+// IMPORTANT:
+// Current fog is only confirmed by the CURRENT
+// weather code 45 or 48.
+//
+// Forecast fog codes are NOT treated as confirmed
+// future fog. Forecast atmospheric conditions are
+// used to estimate fog risk.
 //--------------------------------------------------
 
 
@@ -34,7 +42,15 @@ const COASTAL_FOG_THRESHOLDS = {
         10,
 
     veryReducedVisibility:
-        5
+        5,
+
+
+    // Low cloud cover
+    //
+    // Used only as supporting evidence.
+    // Low cloud by itself is NOT fog.
+    lowCloudSupport:
+        70
 
 };
 
@@ -122,6 +138,21 @@ function getCoastalFogRisk(weather) {
 
 
     //--------------------------------------------------
+    // If fog is already confirmed, do not also call it
+    // "fog risk."
+    //--------------------------------------------------
+
+    if (
+        weather.weatherCode === 45 ||
+        weather.weatherCode === 48
+    ) {
+
+        return null;
+
+    }
+
+
+    //--------------------------------------------------
     // Required atmospheric data
     //--------------------------------------------------
 
@@ -182,8 +213,10 @@ function getCoastalFogRisk(weather) {
     //--------------------------------------------------
     // High risk
     //
-    // Requires strong evidence from several independent
-    // atmospheric variables.
+    // Requires:
+    // - very small temperature/dew-point spread
+    // - high humidity
+    // - very reduced visibility
     //--------------------------------------------------
 
     if (
@@ -194,6 +227,7 @@ function getCoastalFogRisk(weather) {
 
         return {
             level: "high",
+            type: "mist",
             label: "Coastal fog risk: High"
         };
 
@@ -203,7 +237,10 @@ function getCoastalFogRisk(weather) {
     //--------------------------------------------------
     // Moderate risk
     //
-    // Requires near-saturation plus reduced visibility.
+    // Requires:
+    // - small temperature/dew-point spread
+    // - high humidity
+    // - reduced visibility
     //--------------------------------------------------
 
     if (
@@ -214,6 +251,7 @@ function getCoastalFogRisk(weather) {
 
         return {
             level: "moderate",
+            type: "mist",
             label: "Coastal mist possible"
         };
 
@@ -234,11 +272,16 @@ function getCoastalFogRisk(weather) {
 //
 // Examines future hourly conditions.
 //
-// Forecast fog codes (45/48) are reported as
-// forecast fog. They do NOT establish current fog.
+// IMPORTANT:
 //
-// Calculated risk is used when the forecast model
-// has not explicitly predicted fog.
+// A forecast weather code of 45/48 is NOT treated
+// as confirmed fog.
+//
+// We only use the forecast atmospheric variables
+// to estimate risk.
+//
+// Low cloud is supporting evidence only. It cannot
+// create a fog-risk classification by itself.
 //--------------------------------------------------
 
 function getCoastalFogForecast(weather) {
@@ -293,25 +336,6 @@ function getCoastalFogForecast(weather) {
 
 
         //--------------------------------------------------
-        // Explicit forecast fog
-        //--------------------------------------------------
-
-        if (
-            weatherCode === 45 ||
-            weatherCode === 48
-        ) {
-
-            return {
-                level: "forecast",
-                type: "fog",
-                time: hourly.time[i],
-                label: "Fog forecast"
-            };
-
-        }
-
-
-        //--------------------------------------------------
         // Ignore precipitation / storm conditions.
         //--------------------------------------------------
 
@@ -339,7 +363,7 @@ function getCoastalFogForecast(weather) {
 
 
         //--------------------------------------------------
-        // Atmospheric indicators
+        // Atmospheric data
         //--------------------------------------------------
 
         const temperature =
@@ -355,24 +379,108 @@ function getCoastalFogForecast(weather) {
             hourly.visibility[i] / 1000;
 
 
+        //--------------------------------------------------
+        // Make sure values are usable.
+        //--------------------------------------------------
+
+        if (
+            temperature == null ||
+            dewPoint == null ||
+            humidity == null ||
+            hourly.visibility[i] == null
+        ) {
+
+            continue;
+
+        }
+
+
+        //--------------------------------------------------
+        // Temperature / dew-point spread
+        //--------------------------------------------------
+
         const spread =
             temperature -
             dewPoint;
 
 
         //--------------------------------------------------
-        // High calculated risk
+        // Atmospheric indicators
+        //--------------------------------------------------
+
+        const verySmallSpread =
+            spread <=
+            COASTAL_FOG_THRESHOLDS.verySmallSpread;
+
+        const smallSpread =
+            spread <=
+            COASTAL_FOG_THRESHOLDS.smallSpread;
+
+        const highHumidity =
+            humidity >=
+            COASTAL_FOG_THRESHOLDS.highHumidity;
+
+        const reducedVisibility =
+            visibilityKm <=
+            COASTAL_FOG_THRESHOLDS.reducedVisibility;
+
+        const veryReducedVisibility =
+            visibilityKm <=
+            COASTAL_FOG_THRESHOLDS.veryReducedVisibility;
+
+
+        //--------------------------------------------------
+        // Forecast cloud condition
+        //
+        // Codes:
+        // 0 = clear
+        // 1 = mainly clear
+        // 2 = partly cloudy
+        // 3 = overcast
+        //
+        // We do not use low cloud as an independent
+        // indicator here. Atmospheric conditions must
+        // already indicate fog/mist risk.
+        //--------------------------------------------------
+
+        const otherwiseClear =
+            weatherCode === 0 ||
+            weatherCode === 1 ||
+            weatherCode === 2;
+
+
+        //--------------------------------------------------
+        // Low-cloud supporting evidence
+        //--------------------------------------------------
+
+        let lowCloudSupportsFog =
+            false;
+
+        if (
+            hourly.cloud_cover_low &&
+            hourly.cloud_cover_low[i] != null
+        ) {
+
+            lowCloudSupportsFog =
+                hourly.cloud_cover_low[i] >=
+                COASTAL_FOG_THRESHOLDS.lowCloudSupport;
+
+        }
+
+
+        //--------------------------------------------------
+        // High forecast risk
+        //
+        // Strong atmospheric evidence is sufficient.
+        //
+        // We deliberately do NOT require the forecast
+        // model itself to say fog.
         //--------------------------------------------------
 
         if (
-            spread <=
-                COASTAL_FOG_THRESHOLDS.verySmallSpread &&
-
-            humidity >=
-                COASTAL_FOG_THRESHOLDS.highHumidity &&
-
-            visibilityKm <=
-                COASTAL_FOG_THRESHOLDS.veryReducedVisibility
+            verySmallSpread &&
+            highHumidity &&
+            veryReducedVisibility
         ) {
 
             return {
@@ -386,18 +494,51 @@ function getCoastalFogForecast(weather) {
 
 
         //--------------------------------------------------
-        // Moderate calculated risk
+        // Moderate forecast risk
+        //
+        // For moderate risk, require:
+        //
+        // - near saturation
+        // - reduced visibility
+        // - otherwise clear conditions
+        //
+        // Low cloud may support the interpretation,
+        // but is not sufficient by itself.
         //--------------------------------------------------
 
         if (
-            spread <=
-                COASTAL_FOG_THRESHOLDS.smallSpread &&
+            smallSpread &&
+            highHumidity &&
+            reducedVisibility &&
+            otherwiseClear
+        ) {
 
-            humidity >=
-                COASTAL_FOG_THRESHOLDS.highHumidity &&
+            return {
+                level: "moderate",
+                type: "mist",
+                time: hourly.time[i],
+                label: "Coastal mist possible"
+            };
 
+        }
+
+
+        //--------------------------------------------------
+        // If conditions are otherwise clear and the
+        // atmospheric indicators are approaching
+        // saturation, low cloud can support a moderate
+        // fog-risk interpretation.
+        //
+        // Again, low cloud alone is never sufficient.
+        //--------------------------------------------------
+
+        if (
+            verySmallSpread &&
+            highHumidity &&
+            lowCloudSupportsFog &&
             visibilityKm <=
-                COASTAL_FOG_THRESHOLDS.reducedVisibility
+                COASTAL_FOG_THRESHOLDS.reducedVisibility &&
+            otherwiseClear
         ) {
 
             return {
