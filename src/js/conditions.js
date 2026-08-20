@@ -154,6 +154,36 @@ function updateConditions(dashboardData) {
     const coastalFogForecast =
         getCoastalFogForecast(weather);
 
+    if (coastalConditionElement) {
+
+        if (currentCoastalCondition) {
+
+            coastalConditionElement.textContent =
+                currentCoastalCondition.label;
+
+        }
+        else if (coastalFogForecast) {
+
+            coastalConditionElement.textContent =
+                `${coastalFogForecast.label} ` +
+                `${formatSunTime(coastalFogForecast.time)}`;
+
+        }
+        else if (coastalFogRisk) {
+
+            coastalConditionElement.textContent =
+                coastalFogRisk.label;
+
+        }
+        else {
+
+            coastalConditionElement.textContent =
+                "";
+
+        }
+
+    }
+
     console.log(
         "COASTAL CONDITION:",
         currentCoastalCondition
