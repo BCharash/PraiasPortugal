@@ -144,6 +144,9 @@ function updateConditions(dashboardData) {
     const coastalFogRisk =
         getCoastalFogRisk(weather);
 
+    const coastalFogForecast =
+        getCoastalFogForecast(weather);
+
     console.log(
         "COASTAL CONDITION:",
         currentCoastalCondition
