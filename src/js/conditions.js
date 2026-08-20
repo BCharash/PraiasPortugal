@@ -127,6 +127,26 @@ function updateConditions(dashboardData) {
         weatherConditionElement.textContent =
             weather.description;
 
+    //--------------------------------------------------
+    // Coastal Conditions
+    //--------------------------------------------------
+
+    const currentCoastalCondition =
+        getCurrentCoastalCondition(weather);
+
+    const coastalFogRisk =
+        getCoastalFogRisk(weather);
+
+    console.log(
+        "COASTAL CONDITION:",
+        currentCoastalCondition
+    );
+
+    console.log(
+        "COASTAL FOG RISK:",
+        coastalFogRisk
+    );
+
         const celestial =
             getCelestialState(weather);
 
