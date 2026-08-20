@@ -111,6 +111,8 @@ function updateConditions(dashboardData) {
     const weather =
         dashboardData.weather;
 
+    window.testWeather = weather;
+
     const marine =
         dashboardData.marine;
 
