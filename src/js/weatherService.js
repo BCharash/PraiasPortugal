@@ -65,15 +65,6 @@ async function getCurrentWeather(beach) {
         await response.json();
 
 
-        window.hourlyWeatherData =
-            data.hourly;
-
-
-        console.log(
-            "HOURLY WEATHER DATA:",
-            data.hourly
-    );
-
     return {
 
         //--------------------------------------------------
@@ -173,6 +164,15 @@ async function getCurrentWeather(beach) {
                 data.current.weather_code,
                 data.current.is_day === 1
             ),
+
+            
+        //--------------------------------------------------
+        // Hourly Forecast
+        //--------------------------------------------------
+
+        hourly:
+            data.hourly,
+
 
 
         //--------------------------------------------------
