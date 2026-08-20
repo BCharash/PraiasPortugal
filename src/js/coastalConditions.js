@@ -44,6 +44,10 @@ const COASTAL_FOG_THRESHOLDS = {
 //--------------------------------------------------
 
 
+//--------------------------------------------------
+// Current Coastal Condition
+//--------------------------------------------------
+
 function getCurrentCoastalCondition(weather) {
 
     if (!weather)
@@ -80,7 +84,7 @@ function getCurrentCoastalCondition(weather) {
 
 
 //--------------------------------------------------
-// Forecast Coastal Fog Risk
+// Current Coastal Fog Risk
 //--------------------------------------------------
 
 function getCoastalFogRisk(weather) {
@@ -151,7 +155,7 @@ function getCoastalFogRisk(weather) {
 
 
     //--------------------------------------------------
-    // Strong atmospheric indicators
+    // Atmospheric indicators
     //--------------------------------------------------
 
     const verySmallSpread =
@@ -218,6 +222,198 @@ function getCoastalFogRisk(weather) {
 
     //--------------------------------------------------
     // No significant coastal fog risk
+    //--------------------------------------------------
+
+    return null;
+
+}
+
+
+//--------------------------------------------------
+// Forecast Coastal Fog / Mist
+//
+// Examines future hourly conditions.
+//
+// Forecast fog codes (45/48) are reported as
+// forecast fog. They do NOT establish current fog.
+//
+// Calculated risk is used when the forecast model
+// has not explicitly predicted fog.
+//--------------------------------------------------
+
+function getCoastalFogForecast(weather) {
+
+    if (
+        !weather ||
+        !weather.hourly
+    ) {
+
+        return null;
+
+    }
+
+
+    const hourly =
+        weather.hourly;
+
+
+    //--------------------------------------------------
+    // Make sure required hourly arrays exist.
+    //--------------------------------------------------
+
+    if (
+        !hourly.time ||
+        !hourly.temperature_2m ||
+        !hourly.dew_point_2m ||
+        !hourly.relative_humidity_2m ||
+        !hourly.visibility ||
+        !hourly.weather_code
+    ) {
+
+        return null;
+
+    }
+
+
+    //--------------------------------------------------
+    // Examine future hours.
+    //
+    // Start with the next hour rather than the current
+    // hour. Current conditions are handled separately.
+    //--------------------------------------------------
+
+    for (
+        let i = 1;
+        i < hourly.time.length;
+        i++
+    ) {
+
+        const weatherCode =
+            hourly.weather_code[i];
+
+
+        //--------------------------------------------------
+        // Explicit forecast fog
+        //--------------------------------------------------
+
+        if (
+            weatherCode === 45 ||
+            weatherCode === 48
+        ) {
+
+            return {
+                level: "forecast",
+                type: "fog",
+                time: hourly.time[i],
+                label: "Fog forecast"
+            };
+
+        }
+
+
+        //--------------------------------------------------
+        // Ignore precipitation / storm conditions.
+        //--------------------------------------------------
+
+        if (
+            weatherCode === 51 ||
+            weatherCode === 53 ||
+            weatherCode === 55 ||
+            weatherCode === 61 ||
+            weatherCode === 63 ||
+            weatherCode === 65 ||
+            weatherCode === 71 ||
+            weatherCode === 73 ||
+            weatherCode === 75 ||
+            weatherCode === 80 ||
+            weatherCode === 81 ||
+            weatherCode === 82 ||
+            weatherCode === 95 ||
+            weatherCode === 96 ||
+            weatherCode === 99
+        ) {
+
+            continue;
+
+        }
+
+
+        //--------------------------------------------------
+        // Atmospheric indicators
+        //--------------------------------------------------
+
+        const temperature =
+            hourly.temperature_2m[i];
+
+        const dewPoint =
+            hourly.dew_point_2m[i];
+
+        const humidity =
+            hourly.relative_humidity_2m[i];
+
+        const visibilityKm =
+            hourly.visibility[i] / 1000;
+
+
+        const spread =
+            temperature -
+            dewPoint;
+
+
+        //--------------------------------------------------
+        // High calculated risk
+        //--------------------------------------------------
+
+        if (
+            spread <=
+                COASTAL_FOG_THRESHOLDS.verySmallSpread &&
+
+            humidity >=
+                COASTAL_FOG_THRESHOLDS.highHumidity &&
+
+            visibilityKm <=
+                COASTAL_FOG_THRESHOLDS.veryReducedVisibility
+        ) {
+
+            return {
+                level: "high",
+                type: "mist",
+                time: hourly.time[i],
+                label: "Coastal fog risk: High"
+            };
+
+        }
+
+
+        //--------------------------------------------------
+        // Moderate calculated risk
+        //--------------------------------------------------
+
+        if (
+            spread <=
+                COASTAL_FOG_THRESHOLDS.smallSpread &&
+
+            humidity >=
+                COASTAL_FOG_THRESHOLDS.highHumidity &&
+
+            visibilityKm <=
+                COASTAL_FOG_THRESHOLDS.reducedVisibility
+        ) {
+
+            return {
+                level: "moderate",
+                type: "mist",
+                time: hourly.time[i],
+                label: "Coastal mist possible"
+            };
+
+        }
+
+    }
+
+
+    //--------------------------------------------------
+    // No significant forecast risk
     //--------------------------------------------------
 
     return null;

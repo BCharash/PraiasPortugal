@@ -127,6 +127,11 @@ function updateConditions(dashboardData) {
         weatherConditionElement.textContent =
             weather.description;
 
+    console.log(
+    "WEATHER HOURLY:",
+    weather.hourly
+);
+
     //--------------------------------------------------
     // Coastal Conditions
     //--------------------------------------------------
