@@ -161,7 +161,7 @@ function updateConditions(dashboardData) {
 
         }
         
-        
+
         else if (coastalFogRisk) {
 
             coastalConditionElement.textContent =
@@ -187,11 +187,7 @@ function updateConditions(dashboardData) {
         coastalFogRisk
     );
 
-    console.log(
-    "COASTAL FOG FORECAST:",
-    coastalFogForecast
-    );
-
+    
 
         const celestial =
             getCelestialState(weather);
