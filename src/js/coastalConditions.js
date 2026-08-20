@@ -10,8 +10,7 @@
 // Public Functions
 //--------------------------------------------------
 
-function getCoastalConditions(weather) {
-
+function getCurrentCoastalCondition(weather) {
     if (!weather)
         return null;
 
