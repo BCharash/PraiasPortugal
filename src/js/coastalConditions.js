@@ -303,6 +303,41 @@ function getCoastalFogForecast(weather) {
 
 
     //--------------------------------------------------
+    // First look for an explicit forecast of fog.
+    //
+    // Weather codes 45 and 48 are the forecast
+    // service's explicit fog indication.
+    //
+    // This takes priority over calculated risk.
+    //--------------------------------------------------
+
+    for (
+        let i = 1;
+        i < hourly.time.length;
+        i++
+    ) {
+
+        const weatherCode =
+            hourly.weather_code[i];
+
+        if (
+            weatherCode === 45 ||
+            weatherCode === 48
+        ) {
+
+            return {
+                level: "forecast",
+                type: "fog",
+                time: hourly.time[i],
+                label: "Fog forecast"
+            };
+
+        }
+
+    }
+
+
+    //--------------------------------------------------
     // Make sure required hourly arrays exist.
     //--------------------------------------------------
 
