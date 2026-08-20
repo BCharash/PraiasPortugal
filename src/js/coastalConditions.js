@@ -311,6 +311,14 @@ function getCoastalFogForecast(weather) {
     // This takes priority over calculated risk.
     //--------------------------------------------------
 
+    const currentHourIndex =
+        hourly.time.findIndex(
+        time => time === weather.time
+         );
+
+    if (currentHourIndex < 0)
+        return null;
+
     for (
         let i = 1;
         i < hourly.time.length;
