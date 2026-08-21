@@ -1,0 +1,97 @@
+/* ==========================================================
+   Praias de Portugal
+   Dashboard
+   ========================================================== */
+
+
+/* ==========================================================
+   Legacy Metric Styling
+   ==========================================================
+
+   These remain available while the dashboard cards
+   are being rebuilt.
+   ========================================================== */
+
+#dashboardSeaTemp,
+#dashboardSurf,
+#dashboardSwell,
+#dashboardWind,
+#dashboardTide,
+#dashboardUV {
+
+    color:
+        #45c9e8;
+
+    font-size:
+        var(--font-primary-metric);
+
+    font-weight:
+        700;
+
+}
+
+
+#dashboardSeaTemp {
+
+    color:
+        #4ac9e8;
+
+}
+
+
+#dashboardWind {
+
+    color:
+        #13c4df;
+
+}
+
+
+#dashboardSurf {
+
+    color:
+        #ff2389;
+
+}
+
+
+#dashboardSwell {
+
+    color:
+        #ff2389;
+
+}
+
+
+#dashboardTide {
+
+    color:
+        #4ac9e8;
+
+}
+
+
+#dashboardUV {
+
+    color:
+        #ffffff;
+
+}
+
+
+.metric-secondary {
+
+    margin-top:
+        2px;
+
+    color:
+        #a9c9e8;
+
+    font-size:
+        var(--font-secondary-metric);
+
+    font-weight:
+        400;
+
+}
+
