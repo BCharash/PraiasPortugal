@@ -2284,3 +2284,154 @@ hr {
 
 }
 
+/* ==========================================================
+   CONDITIONS — TEMPERATURE RANGE GRAPHIC
+   ----------------------------------------------------------
+   Layout only. Data will be connected later.
+   ========================================================== */
+
+#dashboardTemperatureRange {
+
+    position: absolute;
+
+    top: 8px;
+    left: 4%;
+
+    width: 22%;
+
+    height: 32px;
+
+}
+
+
+#dashboardTempMin,
+#dashboardTempMax {
+
+    position: absolute;
+
+    top: 0;
+
+    font-size: 0.72rem;
+
+    line-height: 1;
+
+}
+
+
+#dashboardTempMin {
+
+    left: 0;
+
+}
+
+
+#dashboardTempMax {
+
+    right: 0;
+
+}
+
+
+/* ----------------------------------------------------------
+   Temperature Track
+   ---------------------------------------------------------- */
+
+#dashboardTempTrack {
+
+    position: absolute;
+
+    left: 12%;
+    right: 12%;
+
+    top: 17px;
+
+    height: 4px;
+
+    border-radius: 4px;
+
+    background:
+        linear-gradient(
+            to right,
+            #4da6ff,
+            #f5d76e,
+            #ff7043
+        );
+
+}
+
+
+/* ----------------------------------------------------------
+   Current Temperature Marker
+   ---------------------------------------------------------- */
+
+#dashboardTempMarker {
+
+    position: absolute;
+
+    left: 50%;
+    top: 50%;
+
+    width: 12px;
+    height: 12px;
+
+    border-radius: 50%;
+
+    background: white;
+
+    border: 2px solid #f5b942;
+
+    box-sizing: border-box;
+
+    transform:
+        translate(-50%, -50%);
+
+}
+
+
+/* ----------------------------------------------------------
+   Mobile
+   ---------------------------------------------------------- */
+
+@media (max-width: 700px) {
+
+    #dashboardTemperatureRange {
+
+        top: 6px;
+        left: 3%;
+
+        width: 23%;
+
+    }
+
+
+    #dashboardTempMin,
+    #dashboardTempMax {
+
+        font-size: 0.62rem;
+
+    }
+
+
+    #dashboardTempTrack {
+
+        left: 14%;
+        right: 14%;
+
+        top: 15px;
+
+        height: 3px;
+
+    }
+
+
+    #dashboardTempMarker {
+
+        width: 10px;
+        height: 10px;
+
+        border-width: 2px;
+
+    }
+
+}
+
