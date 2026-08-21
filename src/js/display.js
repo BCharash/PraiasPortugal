@@ -149,13 +149,12 @@ async function displayBeach(beachId) {
 
     }
 
-
+    
+        //--------------------------------------------------
+    // Dashboard Data
     //--------------------------------------------------
-    // Dashboard
-    //--------------------------------------------------
 
-    updateDashboard(
-        dashboardData
-    );
+    currentDashboardData =
+        dashboardData;
 
 }
