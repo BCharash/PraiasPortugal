@@ -499,11 +499,6 @@
 
 /* ==========================================================
    TEMPERATURE RANGE GRAPHIC
-   ==========================================================
-
-   Layout only.
-
-   Data will be connected later.
    ========================================================== */
 
 #dashboardTemperatureRange {
@@ -521,7 +516,7 @@
         22%;
 
     height:
-        32px;
+        58px;
 
 }
 
@@ -580,7 +575,7 @@
         12%;
 
     top:
-        17px;
+        14px;
 
     height:
         4px;
@@ -589,12 +584,7 @@
         4px;
 
     background:
-        linear-gradient(
-            to right,
-            #4da6ff,
-            #f5d76e,
-            #ff7043
-        );
+        #6fa8c9;
 
 }
 
@@ -612,28 +602,114 @@
         50%;
 
     top:
-        50%;
+        9px;
 
     width:
-        12px;
+        2px;
 
     height:
-        12px;
-
-    border-radius:
-        50%;
-
-    background:
-        white;
+        14px;
 
     border:
-        2px solid #f5b942;
+        none;
 
-    box-sizing:
-        border-box;
+    border-radius:
+        0;
+
+    background:
+        #ffffff;
 
     transform:
-        translate(-50%, -50%);
+        translateX(-50%);
+
+}
+
+
+/* ----------------------------------------------------------
+   Current Temperature
+   ---------------------------------------------------------- */
+
+#dashboardAirTemp {
+
+    position:
+        absolute;
+
+    top:
+        20px;
+
+    left:
+        0;
+
+    width:
+        100%;
+
+    text-align:
+        center;
+
+    font-size:
+        var(--font-primary-metric);
+
+    font-weight:
+        700;
+
+    line-height:
+        1;
+
+}
+
+
+/* ----------------------------------------------------------
+   Feels Like + Relative Humidity
+   ---------------------------------------------------------- */
+
+#dashboardAirFeelsLike,
+#dashboardAirHumidity {
+
+    position:
+        absolute;
+
+    top:
+        43px;
+
+    font-size:
+        var(--font-secondary-metric);
+
+    line-height:
+        1;
+
+}
+
+
+#dashboardAirFeelsLike {
+
+    left:
+        0;
+
+    width:
+        50%;
+
+    text-align:
+        right;
+
+    padding-right:
+        3px;
+
+}
+
+
+#dashboardAirHumidity {
+
+    right:
+        0;
+
+    width:
+        50%;
+
+    text-align:
+        left;
+
+    padding-left:
+        3px;
 
 }
 

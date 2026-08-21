@@ -590,3 +590,48 @@ Rejected because changing the entire application layout repeatedly during touch 
 ## Status
 
 Accepted
+
+# DJ008 — Conditions Panel CSS Refactor and Temperature Graphic
+
+**Date:** 2026-08-21  
+**Project:** Praias de Portugal  
+**Focus:** Conditions panel architecture, CSS modularization, typography scaling, temperature-range graphic
+
+---
+
+## 1. Purpose of today's work
+
+We returned to the Conditions panel work and first addressed the growing size of `styles.css`.
+
+The original `styles.css` had grown to approximately 2,400 lines, making it increasingly difficult to manage safely. We decided to divide the CSS into functional modules before continuing visual refinement.
+
+The Conditions panel itself is intended to be the dominant visual element of the Dashboard and eventually will contain:
+
+- Current weather condition text
+- Temperature range/current temperature
+- Feels-like temperature
+- Relative humidity
+- UV index/current and daily maximum
+- Celestial/weather graphic
+- Sunrise
+- Sunset
+- Moon phase and illumination
+- Eventually solar and lunar celestial arcs
+- Eventually cloud-layer and fog/mist representation
+
+The four lower Dashboard tiles (Wind, Sea, Tide, Surf) are **not being refined yet**.
+
+---
+
+## 2. Current CSS architecture
+
+The CSS is now divided as follows:
+
+```text
+src/css/
+├── base.css
+├── layout.css
+├── components.css
+├── conditions.css
+├── dashboard.css
+└── styles.css
