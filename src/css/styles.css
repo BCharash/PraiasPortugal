@@ -1550,47 +1550,6 @@ hr {
     }
 
 
-    #conditionsWidget table {
-
-        border-spacing:
-            5px;
-
-    }
-
-
-    #conditionsWidget td {
-
-        padding:
-            8px;
-
-    }
-
-
-    #conditionsWidget td:nth-child(1),
-    #conditionsWidget td:nth-child(3) {
-
-    }
-
-
-    #conditionsWidget td:nth-child(2),
-    #conditionsWidget td:nth-child(4) {
-
-        min-width:
-            90px;
-
-    }
-
-
-    #dashboardAirTemp,
-    #dashboardSeaTemp,
-    #dashboardSurf,
-    #dashboardSwell,
-    #dashboardWind,
-    #dashboardTide,
-    #dashboardUV {
-
-    }
-
 
     /* --------------------------------------------------
        Mobile text-size adjustments
@@ -1766,6 +1725,562 @@ hr {
 
     z-index:
         1;
+
+}
+
+
+/* ==========================================================
+   CONDITIONS TILE — CELESTIAL LAYOUT
+   ----------------------------------------------------------
+   Current design:
+       • Temperature information — upper left
+       • Current condition — upper center
+       • UV information — upper right
+       • Celestial graphic — dominant central area
+       • Sunrise — lower left
+       • Sunset — lower right
+       • Moon information — lower center
+
+   This is a layout layer only.
+   Celestial rendering itself is not changed here.
+   ========================================================== */
+
+
+/* ----------------------------------------------------------
+   Conditions Widget
+   ---------------------------------------------------------- */
+
+#conditionsWidget {
+
+    display: block;
+
+    width: 100%;
+
+    box-sizing: border-box;
+
+}
+
+
+/* ----------------------------------------------------------
+   Celestial Sky
+   ---------------------------------------------------------- */
+
+#celestialSky {
+
+    position: relative;
+
+    width: 100%;
+
+    height: 360px;
+
+    box-sizing: border-box;
+
+    overflow: hidden;
+
+}
+
+
+/* ----------------------------------------------------------
+   Celestial Graphic
+   ---------------------------------------------------------- */
+
+#celestialGraphic {
+
+    position: absolute;
+
+    left: 0;
+    right: 0;
+
+    top: 55px;
+    bottom: 48px;
+
+    width: 100%;
+    height: auto;
+
+}
+
+
+/* ----------------------------------------------------------
+   Conditions Overlay
+   ---------------------------------------------------------- */
+
+#conditionsOverlay {
+
+    position: absolute;
+
+    inset: 0;
+
+    pointer-events: none;
+
+}
+
+
+/* ==========================================================
+   WEATHER INFORMATION
+   ========================================================== */
+
+
+/* ----------------------------------------------------------
+   Weather Container
+   ---------------------------------------------------------- */
+
+#conditionsWeather {
+
+    position: absolute;
+
+    inset: 0;
+
+    display: block;
+
+}
+
+
+/* ----------------------------------------------------------
+   Current Condition
+   ---------------------------------------------------------- */
+
+#dashboardWeatherCondition {
+
+    position: absolute;
+
+    top: 12px;
+    left: 30%;
+
+    width: 40%;
+
+    text-align: center;
+
+    font-size: 1.35rem;
+
+    font-weight: 600;
+
+    line-height: 1.2;
+
+}
+
+
+/* ----------------------------------------------------------
+   Coastal Condition
+   ---------------------------------------------------------- */
+
+#dashboardCoastalCondition {
+
+    position: absolute;
+
+    top: 40px;
+    left: 30%;
+
+    width: 40%;
+
+    text-align: center;
+
+    font-size: 0.8rem;
+
+}
+
+
+/* ----------------------------------------------------------
+   Weather Icon
+   ----------------------------------------------------------
+   The celestial graphic itself is the visual weather
+   representation, so the separate weather icon is hidden.
+   ---------------------------------------------------------- */
+
+#dashboardWeatherIcon {
+
+    display: none;
+
+}
+
+
+/* ==========================================================
+   TEMPERATURE — UPPER LEFT
+   ========================================================== */
+
+
+/* ----------------------------------------------------------
+   Current Temperature
+   ---------------------------------------------------------- */
+
+#dashboardAirTemp {
+
+    position: absolute;
+
+    top: 12px;
+    left: 4%;
+
+    width: 22%;
+
+    text-align: center;
+
+    font-size: 2.4rem;
+
+    font-weight: 700;
+
+    line-height: 1;
+
+}
+
+
+/* ----------------------------------------------------------
+   Feels Like
+   ---------------------------------------------------------- */
+
+#dashboardAirFeelsLike {
+
+    position: absolute;
+
+    top: 52px;
+    left: 4%;
+
+    width: 22%;
+
+    text-align: center;
+
+    font-size: 0.8rem;
+
+}
+
+
+/* ----------------------------------------------------------
+   Relative Humidity
+   ---------------------------------------------------------- */
+
+#dashboardAirHumidity {
+
+    position: absolute;
+
+    top: 75px;
+    left: 4%;
+
+    width: 22%;
+
+    text-align: center;
+
+    font-size: 0.8rem;
+
+}
+
+
+/* ==========================================================
+   UV — UPPER RIGHT
+   ========================================================== */
+
+
+/* ----------------------------------------------------------
+   UV Container
+   ---------------------------------------------------------- */
+
+#conditionsUV {
+
+    position: absolute;
+
+    top: 10px;
+    right: 4%;
+
+    width: 22%;
+
+    text-align: center;
+
+}
+
+
+/* ----------------------------------------------------------
+   UV Value
+   ---------------------------------------------------------- */
+
+#dashboardUV {
+
+    font-size: 1.8rem;
+
+    font-weight: 700;
+
+    line-height: 1.1;
+
+}
+
+
+/* ==========================================================
+   SUN
+   ========================================================== */
+
+
+/* ----------------------------------------------------------
+   Sun Information Container
+   ---------------------------------------------------------- */
+
+#conditionsSun {
+
+    position: absolute;
+
+    left: 0;
+    right: 0;
+
+    bottom: 0;
+
+    height: 52px;
+
+}
+
+
+/* ----------------------------------------------------------
+   Sunrise
+   ---------------------------------------------------------- */
+
+#dashboardSunrise {
+
+    position: absolute;
+
+    left: 3%;
+
+    bottom: 8px;
+
+    width: 20%;
+
+    text-align: left;
+
+    font-size: 0.75rem;
+
+}
+
+
+/* ----------------------------------------------------------
+   Sunset
+   ---------------------------------------------------------- */
+
+#dashboardSunset {
+
+    position: absolute;
+
+    right: 3%;
+
+    bottom: 8px;
+
+    width: 20%;
+
+    text-align: right;
+
+    font-size: 0.75rem;
+
+}
+
+
+/* ==========================================================
+   MOON
+   ========================================================== */
+
+
+/* ----------------------------------------------------------
+   Moon Information Container
+   ---------------------------------------------------------- */
+
+#conditionsMoon {
+
+    position: absolute;
+
+    left: 30%;
+    right: 30%;
+
+    bottom: 4px;
+
+    height: 52px;
+
+    text-align: center;
+
+}
+
+
+/* ----------------------------------------------------------
+   Moon Phase
+   ---------------------------------------------------------- */
+
+#dashboardMoonPhase {
+
+    font-size: 0.85rem;
+
+    line-height: 1.2;
+
+}
+
+
+/* ----------------------------------------------------------
+   Moon Illumination
+   ---------------------------------------------------------- */
+
+#dashboardMoonIllumination {
+
+    font-size: 0.75rem;
+
+    line-height: 1.2;
+
+}
+
+
+/* ==========================================================
+   MOBILE
+   ========================================================== */
+
+@media (max-width: 700px) {
+
+    #celestialSky {
+
+        height: 300px;
+
+    }
+
+
+    #celestialGraphic {
+
+        top: 52px;
+
+        bottom: 42px;
+
+    }
+
+
+    /* ------------------------------------------------------
+       Condition
+       ------------------------------------------------------ */
+
+    #dashboardWeatherCondition {
+
+        top: 8px;
+
+        left: 28%;
+
+        width: 44%;
+
+        font-size: 1rem;
+
+    }
+
+
+    #dashboardCoastalCondition {
+
+        top: 32px;
+
+        left: 28%;
+
+        width: 44%;
+
+        font-size: 0.7rem;
+
+    }
+
+
+    /* ------------------------------------------------------
+       Temperature
+       ------------------------------------------------------ */
+
+    #dashboardAirTemp {
+
+        top: 8px;
+
+        left: 3%;
+
+        width: 23%;
+
+        font-size: 1.8rem;
+
+    }
+
+
+    #dashboardAirFeelsLike {
+
+        top: 40px;
+
+        left: 3%;
+
+        width: 23%;
+
+        font-size: 0.68rem;
+
+    }
+
+
+    #dashboardAirHumidity {
+
+        top: 59px;
+
+        left: 3%;
+
+        width: 23%;
+
+        font-size: 0.68rem;
+
+    }
+
+
+    /* ------------------------------------------------------
+       UV
+       ------------------------------------------------------ */
+
+    #conditionsUV {
+
+        top: 7px;
+
+        right: 3%;
+
+        width: 23%;
+
+    }
+
+
+    #dashboardUV {
+
+        font-size: 1.35rem;
+
+    }
+
+
+    /* ------------------------------------------------------
+       Sun
+       ------------------------------------------------------ */
+
+    #conditionsSun {
+
+        height: 42px;
+
+    }
+
+
+    #dashboardSunrise,
+    #dashboardSunset {
+
+        bottom: 5px;
+
+        font-size: 0.68rem;
+
+    }
+
+
+    /* ------------------------------------------------------
+       Moon
+       ------------------------------------------------------ */
+
+    #conditionsMoon {
+
+        left: 25%;
+
+        right: 25%;
+
+        height: 42px;
+
+    }
+
+
+    #dashboardMoonPhase {
+
+        font-size: 0.72rem;
+
+    }
+
+
+    #dashboardMoonIllumination {
+
+        font-size: 0.65rem;
+
+    }
 
 }
 
