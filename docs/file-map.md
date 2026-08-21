@@ -2,16 +2,17 @@
 
 ## Purpose
 
-This document provides a practical map of the Praias de Portugal
-codebase.
+This document provides a practical map of the current **Praias de Portugal** codebase.
 
-`architecture.md` describes the conceptual architecture of the
-application.
+`architecture.md` describes the conceptual architecture of the application.
 
-This document describes where those responsibilities are implemented.
+`file-map.md` describes where the major responsibilities are implemented and provides a quick way to locate the relevant part of the project.
 
-The map should be updated whenever a new module is added or an existing
-module changes responsibility.
+`module-guide.md` describes the detailed responsibilities and boundaries of the JavaScript modules.
+
+`design-journal.md` records important design decisions and the reasoning behind them.
+
+This file should be updated whenever the project structure changes or an existing file changes its primary responsibility.
 
 ---
 
@@ -19,9 +20,11 @@ module changes responsibility.
 
 ```text
 PraiasPortugal/
+
 │
 ├── data/
-│   └── Application data
+│   ├── areas.json
+│   └── beaches.json
 │
 ├── docs/
 │   ├── application-navigation.md
@@ -29,8 +32,10 @@ PraiasPortugal/
 │   ├── architecture.md
 │   ├── data-sources.md
 │   ├── design-journal.md
+│   ├── development-rules.md
 │   ├── domain-model.md
 │   ├── file-map.md
+│   ├── module-guide.md
 │   └── vision.md
 │
 ├── icons/
@@ -42,6 +47,11 @@ PraiasPortugal/
 ├── src/
 │   │
 │   ├── css/
+│   │   ├── base.css
+│   │   ├── components.css
+│   │   ├── conditions.css
+│   │   ├── dashboard.css
+│   │   ├── layout.css
 │   │   └── styles.css
 │   │
 │   ├── images/
@@ -68,8 +78,10 @@ PraiasPortugal/
 │   │   └── weatherService.js
 │   │
 │   └── ui/
+│       └── dashboard.html
 │
 ├── .gitignore
 ├── index.html
 ├── manifest.json
 └── README.md
+
