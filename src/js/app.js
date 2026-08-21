@@ -1914,6 +1914,7 @@ favoriteBeachSelect.addEventListener(
                 beachId
             );
 
+            showDashboard();
 
             //--------------------------------------------------
             // Clear Favorite Selection
