@@ -159,7 +159,7 @@
         center;
 
     font-size:
-        1.35rem;
+        var(--font-condition-value);
 
     font-weight:
         600;
@@ -192,7 +192,7 @@
         center;
 
     font-size:
-        0.8rem;
+        var(--font-secondary-metric);
 
 }
 
@@ -240,7 +240,7 @@
         center;
 
     font-size:
-        2.4rem;
+        var(--font-primary-metric);
 
     font-weight:
         700;
@@ -273,7 +273,7 @@
         center;
 
     font-size:
-        0.8rem;
+        var(--font-secondary-metric);
 
 }
 
@@ -300,7 +300,7 @@
         center;
 
     font-size:
-        0.8rem;
+        var(--font-secondary-metric);
 
 }
 
@@ -341,7 +341,7 @@
 #dashboardUV {
 
     font-size:
-        1.8rem;
+        var(--font-primary-metric);
 
     font-weight:
         700;
@@ -403,7 +403,7 @@
         left;
 
     font-size:
-        0.75rem;
+        var(--font-secondary-metric);
 
 }
 
@@ -430,7 +430,7 @@
         right;
 
     font-size:
-        0.75rem;
+        var(--font-secondary-metric);
 
 }
 
@@ -474,7 +474,7 @@
 #dashboardMoonPhase {
 
     font-size:
-        0.85rem;
+        var(--font-condition-value);
 
     line-height:
         1.2;
@@ -489,7 +489,7 @@
 #dashboardMoonIllumination {
 
     font-size:
-        0.75rem;
+        var(--font-secondary-metric);
 
     line-height:
         1.2;
@@ -540,7 +540,7 @@
         0;
 
     font-size:
-        0.72rem;
+        var(--font-condition-label);
 
     line-height:
         1;
@@ -684,7 +684,7 @@
             44%;
 
         font-size:
-            1rem;
+            var(--font-condition-value);
 
     }
 
@@ -701,7 +701,7 @@
             44%;
 
         font-size:
-            0.7rem;
+            var(--font-secondary-metric);
 
     }
 
@@ -722,7 +722,7 @@
             23%;
 
         font-size:
-            1.8rem;
+            var(--font-primary-metric);
 
     }
 
@@ -739,7 +739,7 @@
             23%;
 
         font-size:
-            0.68rem;
+            var(--font-secondary-metric);
 
     }
 
@@ -756,7 +756,7 @@
             23%;
 
         font-size:
-            0.68rem;
+            var(--font-secondary-metric);
 
     }
 
@@ -782,7 +782,7 @@
     #dashboardUV {
 
         font-size:
-            1.35rem;
+            var(--font-primary-metric);
 
     }
 
@@ -806,7 +806,7 @@
             5px;
 
         font-size:
-            0.68rem;
+            var(--font-secondary-metric);
 
     }
 
@@ -832,7 +832,7 @@
     #dashboardMoonPhase {
 
         font-size:
-            0.72rem;
+            var(--font-condition-value);
 
     }
 
@@ -840,7 +840,7 @@
     #dashboardMoonIllumination {
 
         font-size:
-            0.65rem;
+            var(--font-secondary-metric);
 
     }
 
@@ -867,7 +867,7 @@
     #dashboardTempMax {
 
         font-size:
-            0.62rem;
+            var(--font-condition-label);
 
     }
 
