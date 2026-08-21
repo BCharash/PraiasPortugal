@@ -1609,6 +1609,19 @@ function showDashboard() {
         "dashboard"
     );
 
+
+    //--------------------------------------------------
+    // Refresh Dashboard After It Becomes Visible
+    //--------------------------------------------------
+
+    if (currentDashboardData) {
+
+        updateDashboard(
+            currentDashboardData
+        );
+
+    }
+
 }
 
 
