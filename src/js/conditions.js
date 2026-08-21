@@ -204,7 +204,11 @@ function updateConditions(dashboardData) {
                 celestialGraphicElement.clientHeight;
 
             
-
+            console.log(
+                "CELESTIAL GRAPHIC SIZE:",
+                graphicWidth,
+                graphicHeight
+);
 
             celestialGraphicElement.innerHTML =
                 renderCelestialGraphic(
