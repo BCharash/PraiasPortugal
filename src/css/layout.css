@@ -1,0 +1,252 @@
+/* ==========================================================
+   Praias de Portugal
+   Layout
+   ========================================================== */
+
+
+/* ==========================================================
+   Application Navigation
+   ========================================================== */
+
+#applicationHeader {
+
+    max-width:
+        1000px;
+
+    margin:
+        0 auto 6px auto;
+
+    padding:
+        0 0 5px 0;
+
+    border-bottom:
+        1px solid #30405f;
+
+}
+
+
+#mainNavigation {
+
+    display:
+        flex;
+
+    justify-content:
+        flex-end;
+
+    align-items:
+        center;
+
+    gap:
+        5px;
+
+}
+
+
+#mainNavigation button {
+
+    padding:
+        5px 10px;
+
+    color:
+        #aebdd2;
+
+    background:
+        transparent;
+
+    border:
+        1px solid transparent;
+
+    border-radius:
+        6px;
+
+    font-family:
+        inherit;
+
+    font-size:
+        var(--font-navigation);
+
+    font-weight:
+        600;
+
+    cursor:
+        pointer;
+
+}
+
+
+#mainNavigation button:hover {
+
+    color:
+        #ffffff;
+
+    background:
+        #1b2747;
+
+    border-color:
+        #30405f;
+
+}
+
+
+#mainNavigation button:focus {
+
+    outline:
+        none;
+
+    border-color:
+        #35c7e8;
+
+}
+
+
+/* ==========================================================
+   Main Pages
+   ========================================================== */
+
+#dashboardPage,
+#beachesPage,
+#settingsPage {
+
+    max-width:
+        1000px;
+
+    margin:
+        0 auto;
+
+}
+
+
+/* ==========================================================
+   Dashboard
+   ========================================================== */
+
+#dashboard {
+
+    width:
+        100%;
+
+}
+
+
+/* ==========================================================
+   Dashboard Status
+   ========================================================== */
+
+#dashboardStatus {
+
+    display:
+        flex;
+
+    justify-content:
+        space-between;
+
+    align-items:
+        center;
+
+    min-height:
+        32px;
+
+    margin:
+        0 0 6px 0;
+
+    padding:
+        2px 2px 5px 2px;
+
+    border-bottom:
+        1px solid #30405f;
+
+}
+
+
+#dashboardBeachName {
+
+    color:
+        #35c7e8;
+
+    font-size:
+        var(--font-dashboard-beach);
+
+    font-weight:
+        700;
+
+}
+
+
+#dashboardAlerts {
+
+    color:
+        #aebdd2;
+
+    font-size:
+        var(--font-dashboard-alert);
+
+    font-weight:
+        600;
+
+}
+
+
+/* ==========================================================
+   View on Map Link
+   ========================================================== */
+
+#viewOnMapLink {
+
+    color:
+        #48cae4;
+
+    font-weight:
+        600;
+
+    text-decoration:
+        underline;
+
+}
+
+
+/* ==========================================================
+   Responsive Layout
+   ========================================================== */
+
+@media (max-width: 700px) {
+
+    body {
+
+        padding:
+            8px 14px;
+
+    }
+
+
+    #applicationHeader {
+
+        margin-bottom:
+            5px;
+
+    }
+
+
+    #mainNavigation {
+
+        justify-content:
+            flex-start;
+
+    }
+
+
+    #mainNavigation button {
+
+        padding:
+            5px 8px;
+
+    }
+
+
+    #dashboardStatus {
+
+        min-height:
+            30px;
+
+    }
+
+}
