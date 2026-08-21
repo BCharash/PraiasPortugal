@@ -3,6 +3,9 @@
 // Application State
 //--------------------------------------------------
 
+
+let currentDashboardData = null;
+
 const appState = {
 
     currentPage: "dashboard",
