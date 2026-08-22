@@ -181,9 +181,7 @@
    Upper Conditions Columns
    ---------------------------------------------------------- */
 
-#temperaturePanel,
-#currentConditionsPanel,
-#uvPanel {
+#temperaturePanel {
 
     position:
         relative;
@@ -193,6 +191,25 @@
 
 }
 
+#currentConditionsPanel {
+
+    position:
+        relative;
+
+    min-width:
+        0;
+
+}
+
+#uvPanel {
+
+    position:
+        relative;
+
+    min-width:
+        0;
+
+}
 
 
 /* ==========================================================
