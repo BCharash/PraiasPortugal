@@ -719,37 +719,55 @@
    Current Temperature
    ---------------------------------------------------------- */
 
+#dashboardAirTempAnchor {
+
+    position:
+        absolute;
+
+    top:
+        30px;
+
+    left:
+        var(--temperature-position, 50%);
+
+    width:
+        0;
+
+    height:
+        0;
+
+}
+
 #dashboardAirTemp {
 
     position:
         absolute;
 
-        top:
-        30px;
+    top:
+        0;
 
-        left:
-            var(--temperature-position, 50%);
+    left:
+        0;
 
-        width:
-            auto;
+    width:
+        max-content;
 
-        text-align:
-            center;
+    text-align:
+        center;
 
-        transform:
-            translateX(-50%);
+    transform:
+        translateX(-50%);
 
-        font-size:
-            var(--font-primary-metric);
+    font-size:
+        var(--font-primary-metric);
 
-        font-weight:
-            700;
+    font-weight:
+        700;
 
-        line-height:
-            1;
+    line-height:
+        1;
 
 }
-
 
 /* ----------------------------------------------------------
    Feels Like + Relative Humidity
