@@ -724,26 +724,29 @@
     position:
         absolute;
 
-    top:
-        20px;
+        top:
+        30px;
 
-   left:
-    var(--temperature-position, 50%);
+        left:
+            var(--temperature-position, 50%);
 
-    width:
-        auto;
+        width:
+            auto;
 
-    text-align:
-        center;
+        text-align:
+            center;
 
-    font-size:
-        var(--font-primary-metric);
+        transform:
+            translateX(-50%);
 
-    font-weight:
-        700;
+        font-size:
+            var(--font-primary-metric);
 
-    line-height:
-        1;
+        font-weight:
+            700;
+
+        line-height:
+            1;
 
 }
 
