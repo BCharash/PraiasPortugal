@@ -979,19 +979,15 @@
 
     }
 
-
     #dashboardTempMarker {
 
         width:
-            10px;
-
-        height:
-            10px;
-
-        border-width:
             2px;
 
-    }
+        height:
+            14px;
+
+        border:
+            none;
 
 }
-
