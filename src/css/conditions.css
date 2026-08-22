@@ -727,11 +727,11 @@
     top:
         20px;
 
-    left:
-        0;
+   left:
+    var(--temperature-position, 50%);
 
     width:
-        100%;
+        auto;
 
     text-align:
         center;
