@@ -177,6 +177,23 @@
 
 }
 
+/* ----------------------------------------------------------
+   Upper Conditions Columns
+   ---------------------------------------------------------- */
+
+#temperaturePanel,
+#currentConditionsPanel,
+#uvPanel {
+
+    position:
+        relative;
+
+    min-width:
+        0;
+
+}
+
+
 
 /* ==========================================================
    WEATHER INFORMATION
