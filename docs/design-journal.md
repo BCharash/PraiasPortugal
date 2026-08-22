@@ -692,3 +692,13 @@ minimum ───────────●────────── maxim
                     Relative humidity
 
 
+
+I think this is the right level for the **design journal**: it captures the design decision and its consequences without trying to specify implementation details prematurely.
+
+One thing I deliberately **did not specify** is exactly how we will implement the solar/lunar arcs, cloud layers, or the upper-panel grid. Those are implementation decisions we'll make later. The journal should preserve **what we want the application to mean and communicate**, without prematurely locking us into a particular CSS or JavaScript solution.
+
+And this gives us a much better foundation for the next step: **we can redesign the Conditions Section around this architecture rather than continuing to repair the current positioning system.**
+
+## Status
+
+Accepted
