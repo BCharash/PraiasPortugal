@@ -684,8 +684,9 @@
     position:
         absolute;
 
+  
     left:
-        50%;
+        var(--temperature-position, 50%);
 
     top:
         50%;

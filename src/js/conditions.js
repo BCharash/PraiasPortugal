@@ -224,53 +224,74 @@ function updateConditions(dashboardData) {
         airTempElement.textContent =
             formatAirTemperature(weather);
 
-        airTempElement.textContent =
-        formatAirTemperature(weather);
+    airTempElement.textContent =
+    formatAirTemperature(weather);
 
 
-            //--------------------------------------------------
-            // Temperature Range Position
-            //--------------------------------------------------
+        //--------------------------------------------------
+        // Temperature Range Position
+        //--------------------------------------------------
 
-            const temperatureRangeElement =
-                document.getElementById(
-                    "dashboardTemperatureRange"
+        const temperatureRangeElement =
+            document.getElementById(
+                "dashboardTemperatureRange"
+            );
+
+        if (
+            temperatureRangeElement &&
+            weather.airTemperature != null &&
+            weather.lowTemperature != null &&
+            weather.highTemperature != null &&
+            weather.highTemperature !==
+                weather.lowTemperature
+        ) {
+
+            const position =
+                (
+                    weather.airTemperature -
+                    weather.lowTemperature
+                ) /
+                (
+                    weather.highTemperature -
+                    weather.lowTemperature
                 );
 
-            if (
-                temperatureRangeElement &&
-                weather.airTemperature != null &&
-                weather.lowTemperature != null &&
-                weather.highTemperature != null &&
-                weather.highTemperature !==
-                    weather.lowTemperature
-            ) {
+        const clampedPosition =
+            Math.max(
+                0,
+                Math.min(
+                    1,
+                    position
+                )
+            );
 
-                const position =
+
+                //--------------------------------------------------
+                // Match the visible temperature track.
+                //
+                // The track begins at 12% and ends at 88%
+                // of the temperature range container.
+                //--------------------------------------------------
+
+                const trackStart =
+                    12;
+
+                const trackEnd =
+                    88;
+
+                const trackPosition =
+                    trackStart +
                     (
-                        weather.airTemperature -
-                        weather.lowTemperature
-                    ) /
-                    (
-                        weather.highTemperature -
-                        weather.lowTemperature
+                        clampedPosition *
+                        (trackEnd - trackStart)
                     );
 
-                const clampedPosition =
-                    Math.max(
-                        0,
-                        Math.min(
-                            1,
-                            position
-                        )
-                    );
 
                 temperatureRangeElement.style.setProperty(
                     "--temperature-position",
-                    `${clampedPosition * 100}%`
+                    `${trackPosition}%`
                 );
-
-            }
+        }
 
 
 
