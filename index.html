@@ -158,140 +158,167 @@
             </div>
 
  
-            
-            <!-- ==================================================
-                 Conditions Summary
+        <!-- ==================================================
+                Conditions Section
             =================================================== -->
 
             <div id="conditionsWidget"
                 class="dashboard-widget">
 
-            <div id="celestialSky">
+                <div id="celestialSky">
 
-                <div id="celestialGraphic"></div>
-
-
-                <div id="conditionsOverlay">
+                    <div id="celestialGraphic"></div>
 
 
-                <!-- ==================================================
-                     Current Weather
-                =================================================== -->
+                    <div id="conditionsOverlay">
 
-                <div id="conditionsWeather">
 
-                    <div id="dashboardWeatherIcon"
-                         aria-hidden="true">
-                        ☁️
-                    </div>
+                        <!-- ==================================================
+                            Upper Conditions Panel
+                        =================================================== -->
 
-                    <div id="dashboardWeatherInfo">
+                        <div id="upperConditionsPanel">
 
-                        <div id="dashboardWeatherCondition">
-                            --
-                        </div>
 
-                        <div id="dashboardCoastalCondition"
-                            class="metric-secondary">
-                            --
-                        </div>
+                            <!-- ==============================================
+                                Temperature
+                            =============================================== -->
 
-                    <!-- ==================================================
-                        Temperature Range
-                    =================================================== -->
+                            <div id="temperaturePanel">
 
-                        <div id="dashboardTemperatureRange">
+                                <div id="dashboardTemperatureRange">
 
-                            <div id="dashboardTempMin">
-                                --
+                                    <div id="dashboardTempMin">
+                                        --
+                                    </div>
+
+                                    <div id="dashboardTempTrack">
+
+                                        <div id="dashboardTempMarker"></div>
+
+                                    </div>
+
+                                    <div id="dashboardTempMax">
+                                        --
+                                    </div>
+
+                                </div>
+
+
+                                <div id="dashboardAirTemp">
+                                    --
+                                </div>
+
+
+                                <div id="dashboardAirFeelsLike"
+                                    class="metric-secondary">
+                                    --
+                                </div>
+
+
+                                <div id="dashboardAirHumidity"
+                                    class="metric-secondary">
+                                    --
+                                </div>
+
                             </div>
 
-                            <div id="dashboardTempTrack">
 
-                                <div id="dashboardTempMarker"></div>
+                            <!-- ==============================================
+                                Current Conditions
+                            =============================================== -->
+
+                            <div id="currentConditionsPanel">
+
+                                <div id="dashboardWeatherIcon"
+                                    aria-hidden="true">
+                                    ☁️
+                                </div>
+
+                                <div id="dashboardWeatherCondition">
+                                    --
+                                </div>
+
+                                <div id="dashboardCoastalCondition"
+                                    class="metric-secondary">
+                                    --
+                                </div>
 
                             </div>
 
-                            <div id="dashboardTempMax">
-                                --
+
+                            <!-- ==============================================
+                                UV
+                            =============================================== -->
+
+                            <div id="uvPanel">
+
+                                <div id="conditionsUV">
+
+                                    <div id="dashboardUV">
+                                        --
+                                    </div>
+
+                                </div>
+
                             </div>
 
-                        </div>    
 
-                        <div id="dashboardAirTemp">
-                            --
                         </div>
 
-                        <div id="dashboardAirFeelsLike"
-                             class="metric-secondary">
-                            --
+
+                        <!-- ==================================================
+                            Lower Weather / Celestial Panel
+                        =================================================== -->
+
+                        <div id="lowerWeatherCelestialPanel">
+
+
+                            <!-- ==================================================
+                                Sun
+                            =================================================== -->
+
+                            <div id="conditionsSun">
+
+                                <div id="dashboardSunrise">
+                                    --
+                                </div>
+
+                                <div id="dashboardSunset">
+                                    --
+                                </div>
+
+                            </div>
+
+
+                            <!-- ==================================================
+                                Moon
+                            =================================================== -->
+
+                            <div id="conditionsMoon">
+
+                                <div id="dashboardMoonPhase">
+                                    --
+                                </div>
+
+                                <div id="dashboardMoonIllumination"
+                                    class="metric-secondary">
+                                    --
+                                </div>
+
+                            </div>
+
+
                         </div>
 
-                        <div id="dashboardAirHumidity"
-                             class="metric-secondary">
-                            --
-                        </div>
 
-                    </div>
-
-                </div>
-
-                <!-- ==================================================
-                     Sun
-                =================================================== -->
-
-                <div id="conditionsSun">
-
-                    <div id="dashboardSunrise">
-                        --
-                    </div>
-
-                    <div id="dashboardSunset">
-                        --
-                    </div>
-
-                </div>
+                    </div>  <!-- conditionsOverlay -->
 
 
-                <!-- ==================================================
-                     Moon
-                =================================================== -->
-
-                <div id="conditionsMoon">
-
-                    <div id="dashboardMoonPhase">
-                        --
-                    </div>
-
-                    <div id="dashboardMoonIllumination"
-                         class="metric-secondary">
-                        --
-                    </div>
-
-                </div>
+                </div>      <!-- celestialSky -->
 
 
-                <!-- ==================================================
-                     UV
-                =================================================== -->
-
-                <div id="conditionsUV">
-
-                    <div id="dashboardUV">
-                        --
-                    </div>
-
-                </div>
-
-                </div>  <!-- conditionsOverlay -->
-
-
-            </div>      <!-- celestialSky -->
-
-
-        </div>          <!-- conditionsWidget -->
-
-
+            </div>          <!-- conditionsWidget -->
 
             <!-- ==================================================
                  Dashboard Data Cards

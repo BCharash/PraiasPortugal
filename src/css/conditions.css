@@ -113,6 +113,70 @@
 
 }
 
+/* ==========================================================
+   CONDITIONS PANELS
+   ========================================================== */
+
+
+/* ----------------------------------------------------------
+   Upper Conditions Panel
+   ---------------------------------------------------------- */
+
+#upperConditionsPanel {
+
+    position:
+        absolute;
+
+    top:
+        0;
+
+    left:
+        0;
+
+    right:
+        0;
+
+    height:
+        90px;
+
+    display:
+        grid;
+
+    grid-template-columns:
+        1fr 1fr 1fr;
+
+    box-sizing:
+        border-box;
+
+}
+
+
+/* ----------------------------------------------------------
+   Lower Weather / Celestial Panel
+   ---------------------------------------------------------- */
+
+#lowerWeatherCelestialPanel {
+
+    position:
+        absolute;
+
+    top:
+        90px;
+
+    left:
+        0;
+
+    right:
+        0;
+
+    bottom:
+        0;
+
+    box-sizing:
+        border-box;
+
+}
+
 
 /* ==========================================================
    WEATHER INFORMATION
