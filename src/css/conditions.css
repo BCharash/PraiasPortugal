@@ -332,33 +332,9 @@
    Current Temperature
    ---------------------------------------------------------- */
 
-#dashboardAirTemp {
+/* Current temperature is positioned
+   by the Temperature Range section below. */
 
-    position:
-        absolute;
-
-    top:
-        12px;
-
-    left:
-        4%;
-
-    width:
-        22%;
-
-    text-align:
-        center;
-
-    font-size:
-        var(--font-primary-metric);
-
-    font-weight:
-        700;
-
-    line-height:
-        1;
-
-}
 
 
 /* ----------------------------------------------------------
@@ -620,10 +596,10 @@
         8px;
 
     left:
-        4%;
+        0;
 
     width:
-        22%;
+        100%;
 
     height:
         58px;

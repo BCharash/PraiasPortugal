@@ -224,6 +224,57 @@ function updateConditions(dashboardData) {
         airTempElement.textContent =
             formatAirTemperature(weather);
 
+        airTempElement.textContent =
+        formatAirTemperature(weather);
+
+
+            //--------------------------------------------------
+            // Temperature Range Position
+            //--------------------------------------------------
+
+            const temperatureRangeElement =
+                document.getElementById(
+                    "dashboardTemperatureRange"
+                );
+
+            if (
+                temperatureRangeElement &&
+                weather.airTemperature != null &&
+                weather.lowTemperature != null &&
+                weather.highTemperature != null &&
+                weather.highTemperature !==
+                    weather.lowTemperature
+            ) {
+
+                const position =
+                    (
+                        weather.airTemperature -
+                        weather.lowTemperature
+                    ) /
+                    (
+                        weather.highTemperature -
+                        weather.lowTemperature
+                    );
+
+                const clampedPosition =
+                    Math.max(
+                        0,
+                        Math.min(
+                            1,
+                            position
+                        )
+                    );
+
+                temperatureRangeElement.style.setProperty(
+                    "--temperature-position",
+                    `${clampedPosition * 100}%`
+                );
+
+            }
+
+
+
+
         airHumidityElement.textContent =
             formatHumidity(weather);
 
