@@ -635,3 +635,60 @@ src/css/
 ├── conditions.css
 ├── dashboard.css
 └── styles.css
+
+# DJ009 — Conditions Section Divided into Upper and Lower Panels
+
+**Date:** 2026-08-22
+
+**Project:** Praias de Portugal
+
+**Focus:** Conditions Section architecture, Upper Conditions Panel, Lower Weather/Celestial Panel
+
+---
+
+## 1. Decision
+
+The Dashboard Conditions Section is defined as two distinct visual panels:
+
+1. **Upper Conditions Panel**
+2. **Lower Weather/Celestial Panel**
+
+The two panels are conceptually and architecturally independent.
+
+The term **Conditions Section** refers to the complete combined area.
+
+The term **Upper Conditions Panel** refers specifically to the compact environmental metrics displayed above the graphical weather/celestial area.
+
+The term **Lower Weather/Celestial Panel** refers specifically to the graphical representation of the current sky, weather, sun, and moon.
+
+This terminology should be used consistently in future design and development discussions.
+
+---
+
+## 2. Upper Conditions Panel
+
+The Upper Conditions Panel uses a three-column layout.
+
+### Left — Temperature
+
+The temperature area contains:
+
+- Daily minimum temperature
+- Horizontal temperature-range bar
+- Current temperature marker
+- Daily maximum temperature
+- Feels-like temperature below the range
+- Relative humidity below the range
+
+The current temperature marker should represent the current temperature's actual position within the daily minimum/maximum range.
+
+Conceptually:
+
+```text
+minimum ───────────●────────── maximum
+                         current temperature
+
+                    Feels like
+                    Relative humidity
+
+
