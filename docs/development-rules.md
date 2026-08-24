@@ -104,3 +104,44 @@ Replace the section beginning with:
 
 and ending with:
     ...
+
+    ---
+
+# 5. Separate Data from Presentation
+
+Data and presentation should remain separate.
+
+Domain and service data should describe what the application knows.
+
+Presentation code should determine how that information is displayed.
+
+For example:
+
+- Temperature data should contain the temperature value.
+- A temperature formatter should determine the user's preferred unit.
+- A graph should determine where and how the value is displayed.
+
+Do not store presentation-specific positions, dimensions, or CSS values as part of domain or service data unless the value is genuinely part of the domain.
+
+This separation prevents changes to the visual presentation from unnecessarily affecting data services or application state.
+
+---
+
+# 6. Normalize External Data at the Service Boundary
+
+External providers may use their own field names, units, structures, and terminology.
+
+Provider-specific representations should be converted into the application's normalized data structures within the appropriate service.
+
+The User Interface should not depend directly on the structure of an external provider.
+
+Prefer:
+
+```text
+External Provider
+       ↓
+Application Service
+       ↓
+Normalized Application Data
+       ↓
+User Interface
