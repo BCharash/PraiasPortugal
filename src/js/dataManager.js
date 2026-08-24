@@ -30,7 +30,8 @@ This module should not:
 IMPORTANT:
 
     This implementation establishes the request
-    safety architecture.
+    safety, pending-refresh, and failure/backoff
+    architecture.
 
     It does not yet fetch data or create
     automatic refresh timers.
@@ -59,6 +60,19 @@ const DATASETS = {
     alerts: {
         name: "alerts"
     }
+
+};
+
+
+//--------------------------------------------------
+// Retry Policy
+//--------------------------------------------------
+
+const RETRY_POLICY = {
+
+    initialDelay: 60 * 1000,
+
+    maximumDelay: 30 * 60 * 1000
 
 };
 
@@ -94,9 +108,15 @@ function createDatasetStatus() {
 
             nextUpdate: null,
 
+            retryAt: null,
+
             status: "unknown",
 
             refreshing: false,
+
+            pendingRefresh: false,
+
+            failureCount: 0,
 
             error: null
 
@@ -147,6 +167,19 @@ function canRefreshDataset(name) {
     if (dataset.refreshing)
         return false;
 
+    //--------------------------------------------------
+    // Do not retry before the retry time.
+    //--------------------------------------------------
+
+    if (
+        dataset.retryAt !== null &&
+        Date.now() < dataset.retryAt
+    ) {
+
+        return false;
+
+    }
+
     return true;
 
 }
@@ -161,16 +194,39 @@ function beginDatasetRefresh(name) {
     if (!canRefreshDataset(name))
         return false;
 
-    dataManagerState.datasets[name].refreshing =
-        true;
+    const dataset =
+        dataManagerState.datasets[name];
 
-    dataManagerState.datasets[name].status =
-        "updating";
+    dataset.refreshing = true;
 
-    dataManagerState.datasets[name].error =
-        null;
+    dataset.pendingRefresh = false;
+
+    dataset.status = "updating";
+
+    dataset.error = null;
 
     return true;
+
+}
+
+
+//--------------------------------------------------
+// Calculate Retry Delay
+//--------------------------------------------------
+
+function getRetryDelay(failureCount) {
+
+    if (failureCount <= 0)
+        return RETRY_POLICY.initialDelay;
+
+    const delay =
+        RETRY_POLICY.initialDelay *
+        Math.pow(2, failureCount - 1);
+
+    return Math.min(
+        delay,
+        RETRY_POLICY.maximumDelay
+    );
 
 }
 
@@ -198,13 +254,32 @@ function completeDatasetRefresh(
         dataset.lastUpdated =
             Date.now();
 
+        dataset.nextUpdate =
+            null;
+
+        dataset.retryAt =
+            null;
+
         dataset.status =
             "fresh";
+
+        dataset.failureCount =
+            0;
 
         dataset.error =
             null;
 
     } else {
+
+        dataset.failureCount += 1;
+
+        const retryDelay =
+            getRetryDelay(
+                dataset.failureCount
+            );
+
+        dataset.retryAt =
+            Date.now() + retryDelay;
 
         dataset.status =
             "error";
@@ -213,6 +288,40 @@ function completeDatasetRefresh(
             error;
 
     }
+
+}
+
+
+//--------------------------------------------------
+// Request a Pending Refresh
+//--------------------------------------------------
+
+function requestPendingRefresh(name) {
+
+    const dataset =
+        dataManagerState.datasets[name];
+
+    if (!dataset)
+        return;
+
+    dataset.pendingRefresh = true;
+
+}
+
+
+//--------------------------------------------------
+// Check for Pending Refresh
+//--------------------------------------------------
+
+function hasPendingRefresh(name) {
+
+    const dataset =
+        dataManagerState.datasets[name];
+
+    if (!dataset)
+        return false;
+
+    return dataset.pendingRefresh;
 
 }
 
@@ -244,14 +353,40 @@ async function refreshDataset(name) {
     if (!dataManagerState.initialized)
         initializeDataManager();
 
+    //--------------------------------------------------
+    // If a request is already running, remember
+    // that another refresh was requested.
+    //--------------------------------------------------
+
+    if (
+        dataManagerState.datasets[name] &&
+        dataManagerState.datasets[name].refreshing
+    ) {
+
+        requestPendingRefresh(name);
+
+        return false;
+
+    }
+
+    //--------------------------------------------------
+    // Check normal request safety rules.
+    //--------------------------------------------------
+
     if (!canRefreshDataset(name))
         return false;
+
+    //--------------------------------------------------
+    // Begin the request.
+    //--------------------------------------------------
 
     if (!beginDatasetRefresh(name))
         return false;
 
+    //--------------------------------------------------
     // Actual dataset service calls will be
     // connected incrementally.
+    //--------------------------------------------------
 
     // For now, immediately release the
     // request guard without making a request.
