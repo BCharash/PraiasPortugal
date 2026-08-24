@@ -38,7 +38,7 @@ The application maintains a small set of shared state.
 
 Examples include:
 
-- Active Beach Complex
+- Active Area
 - Active Beach
 - Active View
 - Active Language
@@ -46,6 +46,10 @@ Examples include:
 - User Preferences
 
 These values define the application's current context.
+
+The Active Area provides the environmental context for the Active Beach.
+
+The Active Beach identifies the specific beach currently being viewed by the user.
 
 ---
 
@@ -58,7 +62,7 @@ Examples include:
 - Current View
 - Previous View
 - Selected Beach
-- Selected Beach Complex
+- Selected Area
 - Selected Chart
 - Selected Forecast Period
 
@@ -105,7 +109,7 @@ Only information required by multiple parts of the application should become sha
 
 Changes to Application State are coordinated through the Application Controller.
 
-```
+```text
 User Action
       │
       ▼
@@ -119,51 +123,3 @@ Application State
       ├── Explorer
       ├── Preferences
       └── Other Widgets
-```
-
-Views and widgets observe Application State.
-
-They should display state rather than own it.
-
----
-
-# Design Principles
-
-The application should maintain a single source of truth.
-
-Each piece of information should have exactly one authoritative location.
-
-State should be:
-
-- Minimal
-- Consistent
-- Predictable
-- Easy to update
-- Easy to observe
-
-Derived information should be calculated when needed rather than stored.
-
----
-
-# Future Expansion
-
-As the application evolves, additional state may include:
-
-- Offline status
-- Download progress
-- Synchronization status
-- Notification settings
-- Cached forecasts
-- User authentication
-
-New state should only be introduced when it cannot be derived from existing information.
-
----
-
-# Summary
-
-The purpose of Application State is to describe the application's current situation rather than the world itself.
-
-The Domain Model describes Portugal's coastline.
-
-Application State describes the user's current interaction with that coastline.
