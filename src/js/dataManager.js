@@ -29,13 +29,38 @@ This module should not:
 
 IMPORTANT:
 
-    This initial version establishes the
-    architecture only.
+    This initial implementation establishes the
+    dataset registry and status architecture.
 
     It does not yet fetch data or create
     automatic refresh timers.
 
 */
+
+
+//--------------------------------------------------
+// Dataset Definitions
+//--------------------------------------------------
+
+const DATASETS = {
+
+    weather: {
+        name: "weather"
+    },
+
+    marine: {
+        name: "marine"
+    },
+
+    tides: {
+        name: "tides"
+    },
+
+    alerts: {
+        name: "alerts"
+    }
+
+};
 
 
 //--------------------------------------------------
@@ -54,6 +79,37 @@ const dataManagerState = {
 
 
 //--------------------------------------------------
+// Create Initial Dataset Status
+//--------------------------------------------------
+
+function createDatasetStatus() {
+
+    const status = {};
+
+    Object.keys(DATASETS).forEach(name => {
+
+        status[name] = {
+
+            lastUpdated: null,
+
+            nextUpdate: null,
+
+            status: "unknown",
+
+            refreshing: false,
+
+            error: null
+
+        };
+
+    });
+
+    return status;
+
+}
+
+
+//--------------------------------------------------
 // Initialization
 //--------------------------------------------------
 
@@ -62,13 +118,16 @@ function initializeDataManager() {
     if (dataManagerState.initialized)
         return;
 
+    dataManagerState.datasets =
+        createDatasetStatus();
+
     dataManagerState.initialized = true;
 
 }
 
 
 //--------------------------------------------------
-// Refresh
+// Refresh All Required Data
 //--------------------------------------------------
 
 async function refreshData() {
@@ -79,9 +138,8 @@ async function refreshData() {
     if (dataManagerState.paused)
         return;
 
-    // Data refresh will be implemented
-    // incrementally.
-
+    // Dataset refresh logic will be
+    // implemented incrementally.
 
 }
 
@@ -98,9 +156,11 @@ async function refreshDataset(name) {
     if (dataManagerState.paused)
         return;
 
+    if (!DATASETS[name])
+        return;
+
     // Dataset-specific refresh logic
     // will be added incrementally.
-
 
 }
 
@@ -111,12 +171,18 @@ async function refreshDataset(name) {
 
 function getDataStatus(name) {
 
+    if (!dataManagerState.initialized)
+        initializeDataManager();
+
     return dataManagerState.datasets[name] ?? null;
 
 }
 
 
 function getAllDataStatus() {
+
+    if (!dataManagerState.initialized)
+        initializeDataManager();
 
     return {
         ...dataManagerState.datasets
