@@ -503,3 +503,331 @@ This principle is particularly important for major shared systems such as:
 The goal is not to make every platform identical.
 
 The goal is to ensure that each platform can provide an appropriate native user experience while remaining a client of the same underlying application architecture and concepts.
+
+---
+
+# Data Management and Refresh Architecture
+
+Praias de Portugal should maintain current environmental data while minimizing unnecessary network activity, battery consumption, and external service usage.
+
+The application should never rely on uncontrolled or independent polling by individual widgets or services.
+
+A central Data Manager should coordinate data acquisition and refresh.
+
+---
+
+## Data Manager Responsibilities
+
+The Data Manager is responsible for coordinating the acquisition and freshness of external environmental data.
+
+Its responsibilities include:
+
+- Maintaining the current status of managed datasets
+- Tracking the last successful update
+- Determining whether data is stale
+- Applying refresh policies
+- Coordinating requests to Application Services
+- Preventing duplicate requests
+- Supporting automatic refresh
+- Supporting manual "Update Now" requests
+- Handling failed requests
+- Applying retry and backoff policies
+- Reporting data freshness and update status
+- Responding appropriately when the application becomes inactive or active
+
+The Data Manager should not:
+
+- Manipulate the User Interface
+- Format values for display
+- Determine how data is visually represented
+- Contain provider-specific API logic
+- Replace the individual Application Services
+
+---
+
+## Data Refresh Flow
+
+The intended flow is:
+
+Application
+    |
+    v
+Data Manager
+    |
+    +-- Refresh Policy
+    |
+    +-- Request Guard
+    |
+    +-- Update Status
+    |
+    v
+Application Service
+    |
+    v
+External Provider
+    |
+    v
+Normalized Application Data
+    |
+    v
+Application State
+    |
+    v
+User Interface
+
+The Data Manager coordinates when data should be obtained.
+
+The Application Service remains responsible for obtaining and normalizing the data from its external provider.
+
+---
+
+## Refresh Policies
+
+Different datasets may have different natural update intervals.
+
+Examples include:
+
+- Weather
+- Marine Forecast
+- Tide Predictions
+- Sea Temperature
+- UV Index
+- IPMA Alerts
+
+The refresh interval should reflect the characteristics and update frequency of the underlying source rather than applying one universal interval to all datasets.
+
+Refresh policies should define, as appropriate:
+
+- Normal refresh interval
+- Minimum permitted refresh interval
+- Maximum acceptable data age
+- Retry interval after failure
+- Maximum retry frequency
+- Behavior when the application becomes active again
+
+The exact values should be determined when the authoritative providers and their update characteristics are established.
+
+---
+
+## Request Safety
+
+Automatic updating must be conservative by default.
+
+The Data Manager should include safeguards against excessive network activity.
+
+These safeguards include:
+
+- A minimum refresh interval
+- One active request per dataset at a time
+- Prevention of duplicate requests
+- Prevention of cascading refreshes
+- Exponential or otherwise increasing backoff after repeated failures
+- A maximum retry frequency
+- Protection against repeated manual refresh requests
+- Cancellation or suppression of unnecessary timers
+- Cleanup of scheduled refresh operations when the application becomes inactive
+
+If there is uncertainty about whether a dataset needs refreshing, the safer behavior is to avoid making the request.
+
+Slightly stale information is preferable to uncontrolled network activity.
+
+---
+
+## Automatic Refresh
+
+Automatic refresh should be coordinated centrally by the Data Manager.
+
+Individual widgets should not independently create their own polling loops.
+
+For example:
+
+    Data Manager
+         |
+         +-- Weather refresh policy
+         |
+         +-- Marine refresh policy
+         |
+         +-- Tide refresh policy
+         |
+         +-- IPMA alert refresh policy
+
+This prevents multiple widgets from requesting the same information independently.
+
+---
+
+## Application Lifecycle
+
+The application should distinguish between active and inactive states.
+
+When the application becomes inactive, unnecessary automatic refresh activity should be stopped or reduced.
+
+When the application becomes active again, the Data Manager should not automatically refresh every dataset.
+
+Instead, it should:
+
+1. Determine how long each dataset has been since its last successful update.
+2. Compare that age with its refresh policy.
+3. Refresh only datasets that are stale or otherwise require updating.
+4. Leave sufficiently fresh datasets unchanged.
+5. Apply all normal request-safety protections.
+
+Conceptually:
+
+    Application becomes active
+             |
+             v
+       Check data age
+             |
+       +-----+-----+
+       |           |
+    Fresh         Stale
+       |           |
+       v           v
+     Keep       Refresh
+       |           |
+       +-----+-----+
+             |
+             v
+       Update status
+
+Returning to the application therefore means "check whether an update is needed" rather than "download everything again."
+
+This behavior should be preserved across Web, iOS, and Android implementations, while the platform-specific mechanisms used to detect lifecycle changes may differ.
+
+---
+
+## Manual Update
+
+The application should provide a user-accessible "Update Now" function.
+
+Manual updates should still pass through the Data Manager and therefore remain subject to request-safety protections.
+
+Repeated activation of "Update Now" should not create simultaneous or excessive requests.
+
+The Data Manager should determine which datasets actually require updating and should prevent redundant requests.
+
+---
+
+## Update Status
+
+The Data Manager should maintain observable status for each managed dataset.
+
+At minimum, status should be capable of representing:
+
+- Last successful update
+- Current update state
+- Whether data is considered fresh
+- Whether data is stale
+- Next scheduled update
+- Most recent error
+- Retry state
+
+This information should be available to the User Interface.
+
+The purpose is to allow the application to communicate data freshness clearly to the user.
+
+Examples include:
+
+    Weather updated 4 minutes ago
+
+    Marine conditions updated 18 minutes ago
+
+    IPMA alerts checked 3 minutes ago
+
+    Next weather update in 11 minutes
+
+When a service repeatedly fails, the application should be able to communicate that condition rather than silently attempting requests indefinitely.
+
+---
+
+## Celestial Updates
+
+Astronomical information differs from externally retrieved environmental data.
+
+Sun position, Moon position, Moon phase, dawn, dusk, and related astronomical information can be calculated locally from the selected geographic location and time.
+
+Celestial calculations therefore do not require network requests.
+
+The celestial state should be recalculated at a fixed application-defined interval while the relevant view is active.
+
+When the application becomes inactive, unnecessary calculation activity should be reduced or stopped.
+
+When the application becomes active again, the celestial state should be recalculated from the current time rather than simply continuing from the previous state.
+
+The celestial update mechanism should remain independent of external environmental data refresh.
+
+---
+
+## Error Handling and Backoff
+
+A failed data request should not cause immediate repeated retries.
+
+After a failure, the Data Manager should wait before attempting the request again.
+
+Repeated failures should progressively increase the delay between attempts, subject to a defined maximum.
+
+Successful retrieval should reset the failure state and return the dataset to its normal refresh policy.
+
+Errors should be recorded in the dataset's observable update status.
+
+The User Interface may present an appropriate indication of the failure without exposing unnecessary provider-specific technical details.
+
+---
+
+## Data Freshness as Application State
+
+Data freshness should be treated as information about the current application state.
+
+The application may therefore distinguish between:
+
+- Fresh data
+- Aging data
+- Stale data
+- Updating data
+- Update failed
+- Update unavailable
+
+The exact thresholds for these states should be determined by the refresh policy for each dataset.
+
+This allows the application to communicate the reliability and age of displayed information without requiring individual widgets to implement their own freshness logic.
+
+---
+
+## Platform Independence
+
+The concepts of data freshness, refresh policy, request safety, lifecycle behavior, and update status should be platform-independent.
+
+Web, iOS, and Android implementations may use different mechanisms for:
+
+- Timers
+- Background execution
+- Network scheduling
+- Application lifecycle detection
+- Cancellation
+- System notifications
+
+However, they should follow the same underlying application rules.
+
+The application should therefore distinguish between:
+
+    Application Refresh Policy
+
+and:
+
+    Platform Refresh Mechanism
+
+The policy defines what should happen.
+
+The platform implementation determines how and when that policy can safely be carried out.
+
+---
+
+## Design Principle
+
+The fundamental principle of the Data Management architecture is:
+
+> Keep data current without making unnecessary requests.
+
+The system should prefer predictable, conservative, observable behavior over aggressive polling.
+
+A small amount of data staleness is preferable to uncontrolled network usage, battery consumption, or repeated requests caused by an application error.
