@@ -29,8 +29,8 @@ This module should not:
 
 IMPORTANT:
 
-    This initial implementation establishes the
-    dataset registry and status architecture.
+    This implementation establishes the request
+    safety architecture.
 
     It does not yet fetch data or create
     automatic refresh timers.
@@ -127,6 +127,97 @@ function initializeDataManager() {
 
 
 //--------------------------------------------------
+// Request Safety
+//--------------------------------------------------
+
+function canRefreshDataset(name) {
+
+    if (!DATASETS[name])
+        return false;
+
+    if (dataManagerState.paused)
+        return false;
+
+    const dataset =
+        dataManagerState.datasets[name];
+
+    if (!dataset)
+        return false;
+
+    if (dataset.refreshing)
+        return false;
+
+    return true;
+
+}
+
+
+//--------------------------------------------------
+// Begin Request
+//--------------------------------------------------
+
+function beginDatasetRefresh(name) {
+
+    if (!canRefreshDataset(name))
+        return false;
+
+    dataManagerState.datasets[name].refreshing =
+        true;
+
+    dataManagerState.datasets[name].status =
+        "updating";
+
+    dataManagerState.datasets[name].error =
+        null;
+
+    return true;
+
+}
+
+
+//--------------------------------------------------
+// Complete Request
+//--------------------------------------------------
+
+function completeDatasetRefresh(
+    name,
+    success,
+    error = null
+) {
+
+    const dataset =
+        dataManagerState.datasets[name];
+
+    if (!dataset)
+        return;
+
+    dataset.refreshing = false;
+
+    if (success) {
+
+        dataset.lastUpdated =
+            Date.now();
+
+        dataset.status =
+            "fresh";
+
+        dataset.error =
+            null;
+
+    } else {
+
+        dataset.status =
+            "error";
+
+        dataset.error =
+            error;
+
+    }
+
+}
+
+
+//--------------------------------------------------
 // Refresh All Required Data
 //--------------------------------------------------
 
@@ -153,14 +244,25 @@ async function refreshDataset(name) {
     if (!dataManagerState.initialized)
         initializeDataManager();
 
-    if (dataManagerState.paused)
-        return;
+    if (!canRefreshDataset(name))
+        return false;
 
-    if (!DATASETS[name])
-        return;
+    if (!beginDatasetRefresh(name))
+        return false;
 
-    // Dataset-specific refresh logic
-    // will be added incrementally.
+    // Actual dataset service calls will be
+    // connected incrementally.
+
+    // For now, immediately release the
+    // request guard without making a request.
+
+    completeDatasetRefresh(
+        name,
+        false,
+        "Dataset service not connected"
+    );
+
+    return false;
 
 }
 
