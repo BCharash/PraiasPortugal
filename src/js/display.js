@@ -64,15 +64,22 @@ async function displayBeach(beachId) {
     if (!beach)
         return;
 
-
     //--------------------------------------------------
     // Current Weather
     //--------------------------------------------------
 
+    await refreshDataset(
+        "weather",
+        beach
+    );
+
     const weather =
-        await getCurrentWeather(beach);
+        getDatasetData(
+            "weather"
+        );
 
 
+        
     //--------------------------------------------------
     // Current Marine Conditions
     //--------------------------------------------------
