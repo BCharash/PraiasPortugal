@@ -23,18 +23,12 @@ This module should not:
 
     - Manipulate the DOM.
     - Format data for display.
-    - Call external APIs directly.
+    - Construct provider API requests.
     - Contain provider-specific API logic.
     - Decide how data is displayed.
 
-IMPORTANT:
-
-    This implementation establishes the request
-    safety, pending-refresh, and failure/backoff
-    architecture.
-
-    It does not yet fetch data or create
-    automatic refresh timers.
+The Application Service remains responsible
+for communicating with its external provider.
 
 */
 
@@ -46,11 +40,13 @@ IMPORTANT:
 const DATASETS = {
 
     weather: {
-        name: "weather"
+        name: "weather",
+        service: getCurrentWeather
     },
 
     marine: {
-        name: "marine"
+        name: "marine",
+        service: getCurrentMarineConditions
     },
 
     tides: {
@@ -70,9 +66,11 @@ const DATASETS = {
 
 const RETRY_POLICY = {
 
-    initialDelay: 60 * 1000,
+    initialDelay:
+        60 * 1000,
 
-    maximumDelay: 30 * 60 * 1000
+    maximumDelay:
+        30 * 60 * 1000
 
 };
 
@@ -118,7 +116,9 @@ function createDatasetStatus() {
 
             failureCount: 0,
 
-            error: null
+            error: null,
+
+            data: null
 
         };
 
@@ -167,10 +167,6 @@ function canRefreshDataset(name) {
     if (dataset.refreshing)
         return false;
 
-    //--------------------------------------------------
-    // Do not retry before the retry time.
-    //--------------------------------------------------
-
     if (
         dataset.retryAt !== null &&
         Date.now() < dataset.retryAt
@@ -197,13 +193,17 @@ function beginDatasetRefresh(name) {
     const dataset =
         dataManagerState.datasets[name];
 
-    dataset.refreshing = true;
+    dataset.refreshing =
+        true;
 
-    dataset.pendingRefresh = false;
+    dataset.pendingRefresh =
+        false;
 
-    dataset.status = "updating";
+    dataset.status =
+        "updating";
 
-    dataset.error = null;
+    dataset.error =
+        null;
 
     return true;
 
@@ -221,7 +221,10 @@ function getRetryDelay(failureCount) {
 
     const delay =
         RETRY_POLICY.initialDelay *
-        Math.pow(2, failureCount - 1);
+        Math.pow(
+            2,
+            failureCount - 1
+        );
 
     return Math.min(
         delay,
@@ -238,6 +241,7 @@ function getRetryDelay(failureCount) {
 function completeDatasetRefresh(
     name,
     success,
+    data = null,
     error = null
 ) {
 
@@ -247,9 +251,13 @@ function completeDatasetRefresh(
     if (!dataset)
         return;
 
-    dataset.refreshing = false;
+    dataset.refreshing =
+        false;
 
     if (success) {
+
+        dataset.data =
+            data;
 
         dataset.lastUpdated =
             Date.now();
@@ -269,9 +277,12 @@ function completeDatasetRefresh(
         dataset.error =
             null;
 
-    } else {
+    }
 
-        dataset.failureCount += 1;
+    else {
+
+        dataset.failureCount +=
+            1;
 
         const retryDelay =
             getRetryDelay(
@@ -293,7 +304,7 @@ function completeDatasetRefresh(
 
 
 //--------------------------------------------------
-// Request a Pending Refresh
+// Request Pending Refresh
 //--------------------------------------------------
 
 function requestPendingRefresh(name) {
@@ -304,13 +315,14 @@ function requestPendingRefresh(name) {
     if (!dataset)
         return;
 
-    dataset.pendingRefresh = true;
+    dataset.pendingRefresh =
+        true;
 
 }
 
 
 //--------------------------------------------------
-// Check for Pending Refresh
+// Check Pending Refresh
 //--------------------------------------------------
 
 function hasPendingRefresh(name) {
@@ -330,7 +342,7 @@ function hasPendingRefresh(name) {
 // Refresh All Required Data
 //--------------------------------------------------
 
-async function refreshData() {
+async function refreshData(beach) {
 
     if (!dataManagerState.initialized)
         initializeDataManager();
@@ -338,8 +350,13 @@ async function refreshData() {
     if (dataManagerState.paused)
         return;
 
-    // Dataset refresh logic will be
-    // implemented incrementally.
+    if (!beach)
+        return;
+
+    await refreshDataset(
+        "weather",
+        beach
+    );
 
 }
 
@@ -348,20 +365,25 @@ async function refreshData() {
 // Refresh Individual Dataset
 //--------------------------------------------------
 
-async function refreshDataset(name) {
+async function refreshDataset(
+    name,
+    beach
+) {
 
     if (!dataManagerState.initialized)
         initializeDataManager();
 
+    if (!DATASETS[name])
+        return false;
+
+    const dataset =
+        dataManagerState.datasets[name];
+
     //--------------------------------------------------
-    // If a request is already running, remember
-    // that another refresh was requested.
+    // If already updating, remember the request.
     //--------------------------------------------------
 
-    if (
-        dataManagerState.datasets[name] &&
-        dataManagerState.datasets[name].refreshing
-    ) {
+    if (dataset.refreshing) {
 
         requestPendingRefresh(name);
 
@@ -370,34 +392,79 @@ async function refreshDataset(name) {
     }
 
     //--------------------------------------------------
-    // Check normal request safety rules.
+    // Check normal safety rules.
     //--------------------------------------------------
 
     if (!canRefreshDataset(name))
         return false;
 
     //--------------------------------------------------
-    // Begin the request.
+    // A service-backed dataset requires a beach.
+    //--------------------------------------------------
+
+    const service =
+        DATASETS[name].service;
+
+    if (!service)
+        return false;
+
+    if (!beach)
+        return false;
+
+    //--------------------------------------------------
+    // Begin request.
     //--------------------------------------------------
 
     if (!beginDatasetRefresh(name))
         return false;
 
-    //--------------------------------------------------
-    // Actual dataset service calls will be
-    // connected incrementally.
-    //--------------------------------------------------
+    try {
 
-    // For now, immediately release the
-    // request guard without making a request.
+        const data =
+            await service(beach);
 
-    completeDatasetRefresh(
-        name,
-        false,
-        "Dataset service not connected"
-    );
+        completeDatasetRefresh(
+            name,
+            true,
+            data
+        );
 
-    return false;
+        return true;
+
+    }
+
+    catch (error) {
+
+        completeDatasetRefresh(
+            name,
+            false,
+            null,
+            error
+        );
+
+        return false;
+
+    }
+
+}
+
+
+//--------------------------------------------------
+// Retrieve Stored Data
+//--------------------------------------------------
+
+function getDatasetData(name) {
+
+    if (!dataManagerState.initialized)
+        initializeDataManager();
+
+    const dataset =
+        dataManagerState.datasets[name];
+
+    if (!dataset)
+        return null;
+
+    return dataset.data;
 
 }
 
@@ -434,15 +501,15 @@ function getAllDataStatus() {
 
 function pauseDataUpdates() {
 
-    dataManagerState.paused = true;
+    dataManagerState.paused =
+        true;
 
 }
 
 
 function resumeDataUpdates() {
 
-    dataManagerState.paused = false;
-
-    refreshData();
+    dataManagerState.paused =
+        false;
 
 }
