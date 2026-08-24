@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document describes the architectural organization of **Praias de Portugal**.
+This document describes the architectural organization of Praias de Portugal.
 
 The architecture is intended to be simple, modular, and scalable. It separates domain concepts from application logic, presentation, and external services, allowing the application to evolve without major structural changes.
 
@@ -33,3 +33,25 @@ The architecture follows these principles:
 # Architectural Overview
 
 The application is organized around Areas and the Beaches contained within them.
+
+```text
+Area
+      │
+      ├── Weather
+      ├── Fog / Mist Conditions
+      ├── Marine Forecast
+      ├── Tides
+      ├── Sea Temperature
+      ├── Water Quality
+      │
+      └── Beaches
+             │
+             ├── Facilities
+             ├── Accessibility
+             ├── Lifeguard Information
+             ├── Restaurants
+             ├── Parking
+             ├── Webcams
+             ├── Points of Interest
+             ├── Beach Characteristics
+             └── Beach-Specific Safety Information
