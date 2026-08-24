@@ -453,3 +453,53 @@ The architecture should remain:
 Whenever possible, new features should extend the existing architecture rather than require architectural redesign.
 
 The architecture should encourage incremental development, allowing new functionality to be introduced as independent modules or widgets without disrupting existing functionality.
+
+---
+
+# Platform Independence
+
+Praias de Portugal should be designed so that its domain model, application logic, data contracts, and service boundaries are independent of any particular presentation platform.
+
+The initial web application is one client of the architecture rather than the architecture itself.
+
+Future versions may include native applications for:
+
+- Web — HTML, CSS, and JavaScript
+- iOS — Swift and SwiftUI
+- Android — Kotlin and Jetpack Compose
+
+The web, iOS, and Android applications do not need to share implementation code.
+
+They should, however, share the same fundamental concepts, including:
+
+- Domain entities
+- Application state concepts
+- Data structures and contracts
+- Service responsibilities
+- Data freshness and update policies
+- Environmental and astronomical concepts
+- Application behavior and business rules
+
+Platform-specific presentation should remain appropriate to each platform.
+
+For example, the web application may use HTML and CSS to present the Conditions visualization, while an iOS application may use SwiftUI and an Android application may use Jetpack Compose.
+
+Platform-specific implementation should not unnecessarily influence the Domain Model or Application Services.
+
+The architecture should therefore allow the same underlying application concepts to be implemented independently on Web, iOS, and Android without requiring the redesign of those concepts for each platform.
+
+This principle is particularly important for major shared systems such as:
+
+- Environmental data
+- Automatic data refresh and freshness
+- Astronomical calculations
+- Sky and atmospheric state
+- Beach and Area relationships
+- Alerts
+- Forecast periods
+- User preferences
+- Language support
+
+The goal is not to make every platform identical.
+
+The goal is to ensure that each platform can provide an appropriate native user experience while remaining a client of the same underlying application architecture and concepts.
