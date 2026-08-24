@@ -793,6 +793,8 @@ This allows the application to communicate the reliability and age of displayed 
 
 ---
 
+
+
 ## Platform Independence
 
 The concepts of data freshness, refresh policy, request safety, lifecycle behavior, and update status should be platform-independent.
@@ -831,3 +833,62 @@ The fundamental principle of the Data Management architecture is:
 The system should prefer predictable, conservative, observable behavior over aggressive polling.
 
 A small amount of data staleness is preferable to uncontrolled network usage, battery consumption, or repeated requests caused by an application error.
+
+## Source Update Characteristics
+
+The refresh behavior of each dataset should reflect the characteristics of its authoritative source.
+
+The application should distinguish between:
+
+- How frequently a source normally produces new information
+- How frequently the application should check for new information
+- The minimum safe interval between requests
+
+These are related but distinct concepts.
+
+A source may publish new information at a particular interval without requiring the application to request that information at exactly the same interval.
+
+For example, a provider may normally update weather information hourly. The application may therefore check for new weather data on an appropriate schedule while ensuring that requests do not occur more frequently than the provider's documented or otherwise established limits.
+
+Where a provider supplies metadata indicating when its data was last updated, the application should use that information whenever practical.
+
+The Data Manager should prefer determining whether newer source data is actually available rather than repeatedly downloading data that has not changed.
+
+Conceptually:
+
+Source Update Characteristics
+        |
+        +-- Expected update frequency
+        |
+        +-- Provider request limitations
+        |
+        +-- Source update timestamp, when available
+        |
+        v
+Application Refresh Policy
+        |
+        v
+Data Manager
+        |
+        v
+Determine whether new data is available
+        |
+        +-- Yes --> Retrieve new data
+        |
+        +-- No  --> Wait for the next appropriate check
+
+Source update characteristics should not be permanently hard-coded throughout the application.
+
+A provider may change its update schedule, data availability, request limits, or other operational characteristics.
+
+Provider-specific characteristics should therefore remain associated with the appropriate Application Service or provider configuration rather than being embedded in general Data Manager logic.
+
+If the application changes providers, the Data Manager should not require redesign merely because the new provider has different update characteristics.
+
+The application should use the most reliable information available about the source's update behavior.
+
+Where exact source update information is unavailable, the application should use a conservative refresh policy rather than assuming that new data is available.
+
+This approach allows the application to adapt when data providers change while maintaining the Data Manager's safety principles.
+
+---
