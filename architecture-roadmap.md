@@ -1971,18 +1971,4 @@ And:
 
 > **Whenever a future capability is discussed but deliberately deferred, its architectural implications should be recorded here so that the reasoning does not have to be reconstructed later.**
 
-### Tide Service Data Validation
-
-The Tide Service currently tests `marine.hourly.tide.seaLevel` using JavaScript truthiness.
-
-A value of `0` is a valid sea-level value and must not be interpreted as missing data.
-
-The eventual cleanup should therefore replace truthiness testing with an explicit null/undefined check.
-
-Current pattern:
-
-```javascript
-if (!marine.hourly.tide.seaLevel)
-    return null;
-
 # END OF ARCHITECTURE ROADMAP
