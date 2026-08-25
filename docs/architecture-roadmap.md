@@ -489,6 +489,22 @@ The current implementation is therefore a deliberate temporary solution.
 
 The migration should be designed so that the current offset logic does not become embedded throughout the application.
 
+
+### Tide Service Data Validation
+
+The Tide Service currently tests `marine.hourly.tide.seaLevel` using JavaScript truthiness.
+
+A value of `0` is a valid sea-level value and must not be interpreted as missing data.
+
+The eventual cleanup should therefore replace truthiness testing with an explicit null/undefined check.
+
+Current pattern:
+
+```javascript
+if (!marine.hourly.tide.seaLevel)
+    return null;
+
+
 ---
 
 # 13. Data Manager
@@ -1970,19 +1986,5 @@ Most importantly:
 And:
 
 > **Whenever a future capability is discussed but deliberately deferred, its architectural implications should be recorded here so that the reasoning does not have to be reconstructed later.**
-
-### Tide Service Data Validation
-
-The Tide Service currently tests `marine.hourly.tide.seaLevel` using JavaScript truthiness.
-
-A value of `0` is a valid sea-level value and must not be interpreted as missing data.
-
-The eventual cleanup should therefore replace truthiness testing with an explicit null/undefined check.
-
-Current pattern:
-
-```javascript
-if (!marine.hourly.tide.seaLevel)
-    return null;
 
 # END OF ARCHITECTURE ROADMAP
