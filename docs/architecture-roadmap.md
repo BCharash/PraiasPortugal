@@ -1987,10 +1987,12 @@ And:
 
 > **Whenever a future capability is discussed but deliberately deferred, its architectural implications should be recorded here so that the reasoning does not have to be reconstructed later.**
 
-> **Whenever a future capability is discussed but deliberately deferred, its architectural implications should be recorded here so that the reasoning does not have to be reconstructed later.**
-62. Celestial Rise and Set Ownership
+# 62. Celestial Rise and Set Ownership
+
 Sun and Moon rise/set information are related concepts, but they are not interchangeable data.
+
 The application should treat them as separate celestial properties:
+
 ```text
 Sun
     sunrise
@@ -2001,49 +2003,63 @@ Moon
     moonset
     moon phase
 ```
-The current Weather Service already supplies these values separately, and the Celestial Service should preserve that distinction.
+
+The Celestial Service should preserve that distinction.
+
 The Celestial Service should therefore not use a generic pair such as:
+
 ```text
 rise
 set
 ```
+
 for both objects without explicitly identifying which celestial body the values belong to.
+
 The intended conceptual state remains:
+
 ```text
 celestialState
 
     sun
-        isVisible
-        position
         sunrise
         sunset
 
     moon
-        isVisible
-        position
         moonrise
         moonset
         phase
-        illumination
-        phaseName
 ```
+
 This separation prevents ambiguity when the Sun and Moon are simultaneously relevant.
+
 It also allows the Moon to be above the horizon when the Sun is below it, and vice versa.
+
 No new external service is required merely to achieve this separation.
+
 ---
-63. Celestial Visibility Intervals
+
+# 63. Celestial Visibility Intervals
+
 Sun visibility and Moon visibility should be calculated independently.
+
 The Sun normally has a same-day interval:
+
 ```text
 sunrise → sunset
 ```
+
 The Moon may have an interval that crosses midnight:
+
 ```text
 moonrise → midnight → moonset
 ```
+
 The Celestial Service should therefore use a visibility test appropriate to each body's actual rise/set interval.
+
 A future implementation must not assume that every celestial interval is a same-day interval.
-The existing conceptual distinction is:
+
+The conceptual distinction is:
+
 ```text
 Sun:
     now between sunrise and sunset
@@ -2052,12 +2068,19 @@ Moon:
     now between moonrise and moonset
     including intervals crossing midnight
 ```
+
 This is a service-layer calculation.
+
 The formatter should not determine celestial visibility itself.
+
 ---
-64. Celestial Position Model
+
+# 64. Celestial Position Model
+
 The Sun and Moon should each have an independently calculated position.
+
 The current abstract position model is intentionally simple:
+
 ```text
 rise
   ↓
@@ -2065,25 +2088,37 @@ position along arc
   ↓
 set
 ```
+
 It is not intended to represent a physically exact azimuth/elevation model.
+
 The current visual representation should therefore be understood as an abstract sky-position graphic.
+
 The architecture should nevertheless allow the calculation to become more sophisticated later.
+
 A future implementation may use:
-latitude;
-longitude;
-date;
-time;
-astronomical calculations;
-azimuth;
-elevation;
-lunar phase;
-and other astronomical parameters.
+
+- latitude;
+- longitude;
+- date;
+- time;
+- astronomical calculations;
+- azimuth;
+- elevation;
+- lunar phase;
+- and other astronomical parameters.
+
 That future precision should be introduced inside the Celestial Service rather than forcing presentation code to understand astronomy.
+
 ---
-65. Celestial Graphic Responsibility
+
+# 65. Celestial Graphic Responsibility
+
 `celestialFormatter.js` owns the visual representation of celestial state.
+
 It should receive calculated state and convert that state into presentation.
+
 Conceptually:
+
 ```text
 Celestial Service
         ↓
@@ -2093,17 +2128,25 @@ Celestial Formatter
         ↓
 SVG / Visual Graphic
 ```
+
 The formatter should not:
-fetch Weather data;
-calculate network refresh timing;
-determine application state;
-obtain sunrise/sunset data from an API;
-or decide when astronomical calculations should occur.
+
+- fetch Weather data;
+- calculate network refresh timing;
+- determine application state;
+- obtain sunrise/sunset data from an API;
+- or decide when astronomical calculations should occur.
+
 If the Celestial Service eventually becomes independent of Weather, the formatter should not need to change merely because the source of the celestial state changed.
+
 ---
-66. Celestial Recalculation Versus Weather Refresh
+
+# 66. Celestial Recalculation Versus Weather Refresh
+
 Celestial position is time-dependent even when the underlying source data has not changed.
+
 This creates an important architectural distinction:
+
 ```text
 Weather data:
     may require network retrieval
@@ -2111,8 +2154,11 @@ Weather data:
 Celestial position:
     may require only local recalculation
 ```
+
 For example, if the Weather dataset was retrieved at 14:00, the Sun's visual position at 14:10 should not require another Weather API request merely because ten minutes have elapsed.
+
 The application may instead recalculate:
+
 ```text
 existing celestial inputs
         +
@@ -2120,23 +2166,33 @@ current time
         ↓
 new celestial state
 ```
+
 The approximate ten-minute Celestial update interval therefore belongs to local presentation/state recalculation, not to the environmental data refresh policy.
+
 ---
-67. Tide Height and Wave Height Are Distinct Concepts
+
+# 67. Tide Height and Wave Height Are Distinct Concepts
+
 Wave height and tide height are both measured in units of length, but they represent fundamentally different physical quantities.
+
 They should therefore remain conceptually separate.
+
 ```text
 Wave Height
     physical quantity:
-    wave amplitude/height
+    wave height
 
 Tide Height
     physical quantity:
     water level relative to a stated datum
 ```
+
 They should not be represented internally as one generic application value merely because both may be displayed in metres or feet.
+
 The application may use common conversion infrastructure where appropriate, but the domain properties should remain distinct.
+
 For example:
+
 ```text
 marine.waves.height
 
@@ -2144,73 +2200,115 @@ tide.currentHeight
 tide.nextHigh.height
 tide.nextLow.height
 ```
+
 This is preferable to a single generic:
+
 ```text
 height
 ```
+
 whose meaning depends on context.
+
 The same principle applies to future environmental measurements.
+
 A shared physical unit does not imply a shared domain variable.
+
 ---
-68. Height Unit Setting
+
+# 68. Height Unit Setting
+
 The user-facing unit preference should represent the concept being configured rather than the implementation history of the variable.
+
 The current setting is:
+
 ```text
 waveHeightUnit
 ```
+
 The setting is currently also used by tide formatting because tide heights and wave heights share the application's metric/imperial length preference.
+
 This works functionally, but the naming is narrower than the actual responsibility.
+
 The preferred long-term concept is therefore:
+
 ```text
 heightUnit
 ```
+
 with values such as:
+
 ```text
 meters
 feet
 ```
+
 The corresponding UI control should eventually be:
+
 ```text
 heightUnitSelect
 ```
+
 rather than:
+
 ```text
 waveHeightUnitSelect
 ```
+
 This is a naming/architecture cleanup, not a change to the physical meaning of either measurement.
+
 The important rule is:
+
 > Wave height and tide height remain separate data properties even if they share one user-facing length-unit preference.
+
 ---
-69. Height Unit Migration
+
+# 69. Height Unit Migration
+
 The `waveHeightUnit` → `heightUnit` change should be treated as a controlled rename.
+
 It should not be performed casually in one formatter while leaving the rest of the application using the old name.
+
 When the migration is eventually performed, all references should be updated consistently, including:
-application-state initialization;
-preference controls;
-preference loading;
-preference saving;
-preference event handlers;
-marine formatters;
-tide formatters;
-any future height formatters;
-documentation;
-tests, if present.
+
+- application-state initialization;
+- preference controls;
+- preference loading;
+- preference saving;
+- preference event handlers;
+- marine formatters;
+- tide formatters;
+- any future height formatters;
+- documentation;
+- tests, if present.
+
 A repository-wide search should be used to identify every reference before making the change.
+
 The migration should be performed as one coherent change and tested immediately afterward.
+
 No behavior change is intended by the rename.
+
 The application should continue to mean:
+
 ```text
 heightUnit = meters
 ```
+
 or:
+
 ```text
 heightUnit = feet
 ```
+
 while retaining separate wave and tide data.
+
 ---
-70. Height Conversion Ownership
+
+# 70. Height Conversion Ownership
+
 The application should avoid duplicating the same length conversion logic in multiple modules.
+
 The conceptual responsibility is:
+
 ```text
 raw value
     ↓
@@ -2218,9 +2316,13 @@ height conversion
     ↓
 formatted value
 ```
+
 Both wave and tide formatters may use the same height conversion mechanism because the conversion itself is unit conversion rather than domain interpretation.
+
 This does not make wave height and tide height the same data.
+
 The distinction is:
+
 ```text
 Shared:
     unit preference
@@ -2232,11 +2334,17 @@ Separate:
     domain meaning
     formatting context
 ```
+
 If a future environmental quantity requires a different datum or physical conversion, it should not automatically use the generic height conversion merely because its value is measured in metres.
+
 ---
-71. Compass Direction Standard
-The application should use a 16-point compass system consistently across the application.
+
+# 71. Compass Direction Standard
+
+The application should use a **16-point compass system consistently across the application**.
+
 The canonical directional labels are:
+
 ```text
 N
 NNE
@@ -2255,22 +2363,30 @@ WNW
 NW
 NNW
 ```
+
 The corresponding angular sectors are approximately 22.5° wide.
+
 The same 16-point convention should be used for:
-wind direction;
-wave direction;
-swell direction;
-wind-wave direction;
-ocean-current direction;
-future directional environmental data.
-This replaces inconsistent directional granularity between modules.
-For example, Weather currently uses 16-point directions, while the existing Marine formatter uses 8-point directions.
-The architectural target is to eliminate that inconsistency.
+
+- wind direction;
+- wave direction;
+- swell direction;
+- wind-wave direction;
+- ocean-current direction;
+- future directional environmental data.
+
+The architectural target is to eliminate inconsistent directional granularity between modules.
+
 ---
-72. Direction Arrows
+
+# 72. Direction Arrows
+
 Directional arrows should follow the same 16-sector convention as compass labels.
+
 The application should not use one directional resolution for the text label and another for the arrow.
+
 Conceptually:
+
 ```text
 direction in degrees
         ↓
@@ -2278,11 +2394,17 @@ direction in degrees
         ├── compass label
         └── directional arrow
 ```
+
 The exact visual glyphs may differ between wind, waves, and currents if presentation requires it, but the underlying directional sector should remain consistent.
+
 ---
-73. Current Direction Semantics
+
+# 73. Current Direction Semantics
+
 The application must preserve the distinction between directions describing where something comes from and directions describing where something is going.
+
 For example:
+
 ```text
 Wind direction:
     meteorological convention
@@ -2294,41 +2416,64 @@ Wave direction:
 Ocean current direction:
     direction the current is moving TO
 ```
+
 This distinction must not be lost during normalization or formatting.
+
 The 16-point compass standard does not change these semantics.
+
 It only standardizes directional representation.
+
 A formatter should therefore not mechanically describe every direction as "from" or every direction as "toward."
+
 ---
-74. Direction Normalization
+
+# 74. Direction Normalization
+
 Directional values should remain numeric internally whenever possible.
+
 For example:
+
 ```text
 wave.direction = 247
 ```
+
 is preferable as application data to:
+
 ```text
 wave.direction = "WSW"
 ```
+
 The numeric value preserves precision and allows future calculations.
+
 The formatter may then derive:
+
 ```text
 247°
 WSW
 ↙
 ```
+
 from the numeric direction.
+
 This is particularly important for future analysis such as:
-current reversal;
-wave exposure;
-beach orientation;
-directional mismatch;
-swell alignment;
-rip-risk modeling.
+
+- current reversal;
+- wave exposure;
+- beach orientation;
+- directional mismatch;
+- swell alignment;
+- rip-risk modeling.
+
 Presentation labels should therefore remain derived representations rather than replacing the underlying directional value.
+
 ---
-75. Marine Direction Consistency
+
+# 75. Marine Direction Consistency
+
 Marine Formatter should adopt the same 16-point directional resolution already used by Weather Formatter.
+
 The existing conceptual difference should be removed:
+
 ```text
 Weather:
     16 points
@@ -2336,7 +2481,9 @@ Weather:
 Marine:
     8 points
 ```
+
 The desired state is:
+
 ```text
 Weather:
     16 points
@@ -2344,38 +2491,53 @@ Weather:
 Marine:
     16 points
 
-Tide:
-    directional information only if applicable
-
 Future Analysis:
     numeric degrees + 16-point presentation
 ```
+
 This is a presentation consistency improvement and does not require changing the Marine Service's raw numeric direction data.
+
 ---
-76. Unit Preferences Versus Domain Variables
+
+# 76. Unit Preferences Versus Domain Variables
+
 Application preferences should describe how the user wants quantities displayed.
+
 They should not redefine what the underlying data means.
+
 For example:
+
 ```text
 temperatureUnit
 windSpeedUnit
 heightUnit
 ```
+
 are presentation preferences.
+
 They do not change:
+
 ```text
 weather.airTemperature
 marine.waves.height
 tide.currentHeight
 marine.current.velocity
 ```
+
 The services should continue returning normalized values in their defined internal units.
+
 Formatters should apply the user's display preference when producing user-facing values.
+
 This separation allows the same normalized dataset to support different user preferences without re-fetching data.
+
 ---
-77. Normalized Internal Units
+
+# 77. Normalized Internal Units
+
 Environmental services should preferably return normalized numeric values in clearly defined internal units.
+
 Examples:
+
 ```text
 temperature:
     °C
@@ -2393,12 +2555,19 @@ current velocity:
     provider-defined normalized unit,
     documented explicitly
 ```
+
 User preferences should be applied after normalization.
+
 This avoids provider-specific unit handling leaking into presentation or analysis.
+
 It also prevents the application from needing to request the same data again merely because the user changes a display preference.
+
 ---
-78. Preference Changes Must Not Trigger Environmental Retrieval
+
+# 78. Preference Changes Must Not Trigger Environmental Retrieval
+
 Changing a display unit should normally require:
+
 ```text
 preference change
         ↓
@@ -2406,37 +2575,53 @@ application state update
         ↓
 re-render / reformat
 ```
+
 not:
+
 ```text
 preference change
         ↓
 network request
 ```
+
 For example, changing:
+
 ```text
 heightUnit:
     meters → feet
 ```
+
 should not require another Marine or Tide API request.
+
 The existing normalized numeric values are sufficient.
+
 This principle should apply to:
-temperature units;
-wind-speed units;
-height units;
-future display-only preferences.
+
+- temperature units;
+- wind-speed units;
+- height units;
+- future display-only preferences.
+
 ---
-79. Current Code State Versus Architectural Target
+
+# 79. Current Code State Versus Architectural Target
+
 The roadmap documents architectural intent, not a claim that the current code already conforms perfectly to that intent.
+
 In particular, the current code may still contain:
-duplicate helper functions;
-transitional ownership;
-display-layer data acquisition;
-legacy setting names;
-inconsistent directional resolution;
-temporary tide-datum handling;
-duplicated formatter logic.
+
+- duplicate helper functions;
+- transitional ownership;
+- display-layer data acquisition;
+- legacy setting names;
+- inconsistent directional resolution;
+- temporary tide-datum handling;
+- duplicated formatter logic.
+
 These should be treated as known migration points rather than reasons to rewrite the application wholesale.
+
 The preferred approach remains:
+
 ```text
 identify
     ↓
@@ -2448,77 +2633,114 @@ verify
     ↓
 continue
 ```
+
 ---
-80. Current Audit Priorities
+
+# 80. Current Audit Priorities
+
 Before making broad architectural changes, the application should be audited for the following:
-Data acquisition ownership.
-Application-state ownership.
-Duplicate environmental requests.
-Refresh control.
-Tide data and datum handling.
-Celestial Sun/Moon separation.
-Height-unit naming.
-Directional resolution.
-Formatter duplication.
-Conditions-page ownership.
-Display-layer dependencies.
-Script loading order.
-Initialization sequence.
-Error handling and stale-data behavior.
+
+1. Data acquisition ownership.
+2. Application-state ownership.
+3. Duplicate environmental requests.
+4. Refresh control.
+5. Tide data and datum handling.
+6. Celestial Sun/Moon separation.
+7. Height-unit naming.
+8. Directional resolution.
+9. Formatter duplication.
+10. Conditions-page ownership.
+11. Display-layer dependencies.
+12. Script loading order.
+13. Initialization sequence.
+14. Error handling and stale-data behavior.
+
 The audit should distinguish between:
+
 ```text
 architectural problem
 ```
+
 and:
+
 ```text
 working code that merely could be cleaner
 ```
+
 Only the former necessarily requires immediate intervention.
+
 ---
-81. Audit Before Rename
+
+# 81. Audit Before Rename
+
 The `waveHeightUnit` setting should not be renamed merely because `heightUnit` is architecturally cleaner.
+
 The rename should occur after the audit confirms:
-where the setting is initialized;
-where it is read;
-where it is written;
-which controls depend on it;
-which formatters depend on it;
-whether any other modules depend on it;
-and whether the current value is persisted.
+
+- where the setting is initialized;
+- where it is read;
+- where it is written;
+- which controls depend on it;
+- which formatters depend on it;
+- whether any other modules depend on it;
+- and whether the current value is persisted.
+
 The goal is to avoid introducing a naming cleanup that accidentally becomes a behavioral change.
+
 Once the audit is complete, the rename can be performed as a small, repository-wide, mechanically verifiable change.
+
 ---
-82. Architectural Interpretation of the Current Marine/Tide Relationship
+
+# 82. Architectural Interpretation of the Current Marine/Tide Relationship
+
 The fact that Tide currently derives its data from Marine data does not mean Tide and Marine must be the same architectural responsibility.
+
 The important distinction is between:
+
 ```text
 source provider
 ```
+
 and:
+
 ```text
 application service boundary
 ```
+
 A single provider may supply several datasets.
+
 Therefore:
+
 ```text
 Open-Meteo
     ├── Marine Service
     └── Tide Service
 ```
+
 remains architecturally preferable to treating Tide as merely a formatting operation on Marine.
+
 This allows the provider to change independently for either dataset later.
+
 ---
-83. Architectural Interpretation of Celestial Data
+
+# 83. Architectural Interpretation of Celestial Data
+
 Likewise, the fact that Weather currently supplies:
-sunrise;
-sunset;
-moonrise;
-moonset;
-moon phase;
+
+- sunrise;
+- sunset;
+- moonrise;
+- moonset;
+- moon phase;
+
 does not make celestial information fundamentally part of Weather presentation.
+
 Weather is currently a convenient source of astronomical inputs.
+
 Celestial Service owns the interpretation of those inputs.
+
 The future possibility remains:
+
 ```text
 Beach Coordinates + Time
             ↓
@@ -2526,44 +2748,66 @@ Beach Coordinates + Time
             ↓
       Celestial State
 ```
+
 No immediate migration is required.
+
 ---
-84. Preserve Working Behavior During Architecture Work
+
+# 84. Preserve Working Behavior During Architecture Work
+
 The application has already accumulated working behavior through iterative development.
+
 Architectural cleanup must therefore be conservative.
+
 A change should not be considered successful merely because the new code looks cleaner.
+
 It must also preserve intended existing behavior.
+
 After each meaningful change, verify:
-application startup;
-Beach selection;
-Weather display;
-Marine display;
-Tide display;
-Celestial display;
-unit preferences;
-responsive layout;
-browser console;
-and any affected navigation.
+
+- application startup;
+- Beach selection;
+- Weather display;
+- Marine display;
+- Tide display;
+- Celestial display;
+- unit preferences;
+- responsive layout;
+- browser console;
+- and any affected navigation.
+
 If a cleanup breaks an unrelated feature, stop and resolve that regression before continuing.
+
 ---
-85. Documentation as an Architectural Control
+
+# 85. Documentation as an Architectural Control
+
 This roadmap should be updated when a decision becomes important enough that forgetting it would create future rework.
+
 Examples include:
-choosing a data provider;
-changing service ownership;
-changing a normalized data structure;
-defining unit semantics;
-defining directional semantics;
-deciding when data is refreshed;
-deciding how stale data is handled;
-deliberately postponing a migration;
-establishing a future analysis boundary.
+
+- choosing a data provider;
+- changing service ownership;
+- changing a normalized data structure;
+- defining unit semantics;
+- defining directional semantics;
+- deciding when data is refreshed;
+- deciding how stale data is handled;
+- deliberately postponing a migration;
+- establishing a future analysis boundary.
+
 The roadmap should not become a changelog containing every small implementation detail.
+
 Its purpose is to preserve architectural decisions and reasoning.
+
 ---
-86. Immediate Next Step After This Roadmap Update
-The immediate next step is audit, not broad refactoring.
+
+# 86. Immediate Next Step After This Roadmap Update
+
+The immediate next step is **audit, not broad refactoring**.
+
 The audit should establish the actual current state of:
+
 ```text
 app.js
 data.js
@@ -2584,9 +2828,13 @@ background.js
 beachHeader.js
 alerts.js
 ```
+
 The audit should compare actual ownership with the architectural targets recorded in this document.
+
 Only after that comparison should code changes be selected.
+
 In particular:
+
 ```text
 Do not rename waveHeightUnit yet.
 
@@ -2594,45 +2842,78 @@ Do not split additional services yet.
 
 Do not implement Current Analysis yet.
 
-Do not implement IH S-104 yet.
-
 Do not implement advanced astronomical calculations yet.
 
 Do not redesign the application wholesale.
 ```
+
 The immediate objective is to understand the existing system accurately enough to make the next small change safely.
+
 ---
-87. Architectural Decisions Established During the Current Audit
+
+# 87. Architectural Decisions Established During the Current Audit
+
 The following decisions are now considered established architectural direction:
-Height
+
+### Height
+
 Wave height and tide height remain separate domain quantities.
+
 They may share a single user-facing `heightUnit` preference.
-Direction
+
+### Direction
+
 The application uses a 16-point compass system consistently.
+
 Numeric degrees remain the underlying directional data.
-Celestial
+
+### Celestial
+
 Sunrise/sunset and moonrise/moonset remain separate properties.
+
 Sun and Moon visibility and position are calculated independently.
-Tide
+
+### Tide
+
 Tide remains a separate service boundary even while Open-Meteo supplies its current source data.
-Refresh
+
+### Refresh
+
 Local celestial recalculation is distinct from network environmental refresh.
-Analysis
+
+### Analysis
+
 Current anomaly, reversal, warm-water interpretation, and rip-risk modeling remain future analysis responsibilities rather than Marine Service responsibilities.
-Refactoring
+
+### Refactoring
+
 Architectural changes are performed incrementally and tested after each coherent change.
+
 ---
-88. Final Rule for Architectural Changes
+
+# 88. Final Rule for Architectural Changes
+
 When considering a proposed change, ask two questions:
+
 > **Does this make the current system clearer and safer?**
+
 and:
+
 > **Does it preserve the ability to evolve later without unnecessary rewriting?**
+
 If the answer to both is yes, the change is probably aligned with the architecture.
+
 If a change improves theoretical elegance but introduces unnecessary risk to working functionality, defer it.
+
 The architecture of Praias de Portugal should be allowed to mature incrementally.
+
 The objective is not architectural perfection.
+
 The objective is a system whose boundaries remain understandable, whose data has clear ownership, whose presentation remains replaceable, and whose future environmental intelligence can be added without dismantling the foundation.
+
 ---
+
+# END OF ARCHITECTURE ROADMAP ADDITION
 
 
 # END OF ARCHITECTURE ROADMAP
