@@ -462,3 +462,165 @@ hr {
         );
 
 }
+
+
+/* ==========================================================
+   Responsive Layout
+   ========================================================== */
+
+@media (max-width: 700px) {
+
+    /* --------------------------------------------------
+       Mobile baseline
+
+       These preserve the existing mobile visual
+       hierarchy until another size is selected.
+       -------------------------------------------------- */
+
+    :root {
+
+        --font-navigation:
+            11px;
+
+        --font-dashboard-beach:
+            16px;
+
+        --font-dashboard-alert:
+            10px;
+
+        --font-condition-label:
+            9px;
+
+        --font-condition-value:
+            14px;
+
+        --font-primary-metric:
+            18px;
+
+    }
+
+
+    body {
+
+        padding:
+            8px 14px;
+
+    }
+
+
+    #applicationHeader {
+
+        margin-bottom:
+            5px;
+
+    }
+
+
+    #mainNavigation {
+
+        justify-content:
+            flex-start;
+
+    }
+
+
+    #mainNavigation button {
+
+        padding:
+            5px 8px;
+
+    }
+
+
+    #dashboardStatus {
+
+        min-height:
+            30px;
+
+    }
+
+
+
+    /* --------------------------------------------------
+       Mobile text-size adjustments
+       -------------------------------------------------- */
+
+    :root[data-text-size="small"] {
+
+        --font-navigation:
+            10px;
+
+        --font-dashboard-beach:
+            15px;
+
+        --font-dashboard-alert:
+            9px;
+
+        --font-condition-label:
+            9px;
+
+        --font-condition-value:
+            13px;
+
+        --font-primary-metric:
+            17px;
+
+        --font-secondary-metric:
+            10px;
+
+    }
+
+
+    :root[data-text-size="large"] {
+
+        --font-navigation:
+            13px;
+
+        --font-dashboard-beach:
+            20px;
+
+        --font-dashboard-alert:
+            13px;
+
+        --font-condition-label:
+            13px;
+
+        --font-condition-value:
+            18px;
+
+        --font-primary-metric:
+            23px;
+
+        --font-secondary-metric:
+            14px;
+
+    }
+
+
+    :root[data-text-size="extra-large"] {
+
+        --font-navigation:
+            14px;
+
+        --font-dashboard-beach:
+            22px;
+
+        --font-dashboard-alert:
+            15px;
+
+        --font-condition-label:
+            15px;
+
+        --font-condition-value:
+            21px;
+
+        --font-primary-metric:
+            27px;
+
+        --font-secondary-metric:
+            16px;
+
+    }
+
+}
+
