@@ -780,8 +780,7 @@
         absolute;
 
     top:
-        54px;       // Feels like and Relative Humidity are positioned below the Current Temperature
-        
+        54px;       /* Feels like and Relative Humidity are positioned below the Current Temperature */
 
     left:
         0;
