@@ -224,8 +224,38 @@ function updateConditions(dashboardData) {
         airTempElement.textContent =
             formatAirTemperature(weather);
 
-    airTempElement.textContent =
-    formatAirTemperature(weather);
+        airTempElement.textContent =
+            formatAirTemperature(weather);
+
+        //--------------------------------------------------
+        // Temperature Range Endpoints
+        //--------------------------------------------------
+
+        const temperatureMinElement =
+            document.getElementById(
+                "dashboardTempMin"
+            );
+
+        const temperatureMaxElement =
+            document.getElementById(
+                "dashboardTempMax"
+            );
+
+        if (
+            temperatureMinElement &&
+            weather.lowTemperature != null
+        ) {
+            temperatureMinElement.textContent =
+                `${Math.round(weather.lowTemperature)}°`;
+        }
+
+        if (
+            temperatureMaxElement &&
+            weather.highTemperature != null
+        ) {
+            temperatureMaxElement.textContent =
+                `${Math.round(weather.highTemperature)}°`;
+        }
 
 
         //--------------------------------------------------
