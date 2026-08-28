@@ -614,6 +614,7 @@
 #dashboardTempMin,
 #dashboardTempMax {
 
+
     position:
         absolute;
 
@@ -788,7 +789,7 @@
     width:
         100%;
 
-        
+
     display:
         flex;
 
