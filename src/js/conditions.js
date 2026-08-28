@@ -338,6 +338,31 @@ function updateConditions(dashboardData) {
         uvElement.textContent =
             formatUV(weather);
 
+        
+if (
+    weather.uvIndex != null &&
+    weather.uvIndexMax != null &&
+    weather.uvIndexMax > 0
+) {
+
+    const position =
+        Math.max(
+            0,
+            Math.min(
+                1,
+                weather.uvIndex /
+                weather.uvIndexMax
+            )
+        );
+
+    document
+        .getElementById("conditionsUV")
+        .style.setProperty(
+            "--uv-position",
+            `${position * 100}%`
+        );
+
+}
 
         //--------------------------------------------------
         // Sunrise / Sunset
