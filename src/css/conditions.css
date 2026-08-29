@@ -721,13 +721,13 @@
         var(--temperature-position, 50%);
 
     top:
-        100%;
+        120%;
 
     width:
         2px;
 
     height:
-        8px;
+        10px;
 
     border:
         none;
