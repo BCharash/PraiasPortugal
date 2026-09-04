@@ -704,3 +704,393 @@ And this gives us a much better foundation for the next step: **we can redesign 
 Accepted
 
 
+# DJ009 — Graphic Coordinate Systems and Responsive Text
+
+## Status
+
+Established design principle.
+
+## Purpose
+
+Define a consistent approach for graphics that combine a visual scale, track, range, position marker, or other geometric reference with associated textual information.
+
+The graphic itself should establish the visual coordinate system. Associated text should be positioned in relation to that coordinate system rather than independently relative to the larger containing panel.
+
+---
+
+## Core Principle
+
+> Let the graphic establish the coordinate system. Align associated text to that system. Prefer simple CSS layout over JavaScript-driven layout calculations.
+
+This principle should be applied consistently to future graphics throughout the application.
+
+The goal is not merely to make an individual widget look correct. The goal is to establish a predictable visual language that remains coherent as the application grows.
+
+---
+
+## Temperature Widget
+
+### Graphic Coordinate System
+
+The temperature range graphic establishes its own horizontal coordinate system.
+
+The temperature track occupies the central portion of the temperature range:
+
+    MIN ───────────────────────── MAX
+    ↑                              ↑
+    track start                    track end
+
+The current-temperature marker is positioned relative to the temperature track.
+
+The minimum and maximum values are positioned at the corresponding ends of the track.
+
+The current temperature value is positioned independently at the current temperature's calculated location.
+
+Conceptually:
+
+    MIN ───────────────────────── MAX
+                     │
+                    25°
+
+The marker and current-temperature value therefore share the temperature coordinate system.
+
+---
+
+## Secondary Information
+
+Secondary information belonging to the temperature graphic includes:
+
+- Feels Like
+- Relative Humidity (RH)
+
+These values should use the same horizontal coordinate system as the temperature graphic.
+
+The desired relationship is:
+
+    MIN ───────────────────────── MAX
+    Feels Like       RH
+
+The left edge of the secondary information should align with the left edge of the temperature track.
+
+The secondary information should not extend farther left than the graphic.
+
+This alignment is more important than maintaining horizontal centering of the secondary information at every viewport width.
+
+---
+
+## Responsive Behavior
+
+### General Rule
+
+Responsive behavior should preserve the visual relationship between the graphic and its associated text.
+
+For this type of graphic:
+
+- Keep associated secondary information on one line.
+- Left-justify the secondary information to the graphic's left edge.
+- Do not allow the secondary information to extend to the left of the graphic.
+- Do not allow the secondary information to wrap onto a second line.
+- Do not use JavaScript calculations merely to maintain centering.
+- Do not introduce arbitrary responsive calculations when simple CSS produces the desired result.
+
+At smaller viewport widths, preserving alignment and readability is preferable to preserving centering.
+
+---
+
+## Why Left Alignment Is Preferred
+
+The original implementation attempted to keep the secondary information centered.
+
+At sufficiently narrow widths, this caused the text to extend beyond the left boundary of the temperature graphic and become clipped.
+
+The visually preferable solution is to establish the graphic's left edge as the stable alignment point.
+
+Thus:
+
+    MIN ───────────────────────── MAX
+    Feels Like       RH
+
+is preferable to allowing the centered group to move beyond the graphic:
+
+       MIN ───────────────────────── MAX
+    Feels Like       RH
+
+The second arrangement breaks the visual coordinate system because the secondary information begins outside the graphic.
+
+---
+
+## Geometry
+
+The graphic and its associated secondary information should share the same horizontal boundaries.
+
+For the temperature widget, the current design uses:
+
+    left: 12%;
+    width: 76%;
+
+for both the temperature range and the secondary information row.
+
+This creates a shared coordinate system:
+
+    |----------------------------------------------------------|
+            |----------------------------------------|
+            ↑                                        ↑
+            12%                                      88%
+            graphic / secondary-row boundaries
+
+The important principle is not the particular values `12%` and `76%`.
+
+The important principle is:
+
+> Associated elements should use the same geometric boundaries when they belong to the same visual coordinate system.
+
+If the graphic geometry changes in the future, associated text should be changed with it.
+
+---
+
+## Typography
+
+### Semantic Typography
+
+Graphic geometry and typography are separate concerns.
+
+The application has semantic typography variables in `base.css`.
+
+The primary metric uses:
+
+    --font-primary-metric
+
+The secondary information uses:
+
+    --font-secondary-metric
+
+These variables change according to the user's selected text-size preference.
+
+Current primary metric sizes:
+
+| Text Size | Primary Metric |
+|-----------|----------------|
+| Small | 19px |
+| Normal | 21px |
+| Large | 24px |
+| Extra-large | 28px |
+
+Current secondary metric sizes:
+
+| Text Size | Secondary Metric |
+|-----------|------------------|
+| Small | 10px |
+| Normal | 11px |
+| Large | 14px |
+| Extra-large | 16px |
+
+The font family is:
+
+    Arial,
+    Helvetica,
+    sans-serif;
+
+---
+
+## Typography Must Not Control Graphic Geometry
+
+Changing the primary metric font size must not change the geometry of the graphic.
+
+For example, changing:
+
+    --font-primary-metric:
+        21px;
+
+to:
+
+    --font-primary-metric:
+        20px;
+
+must not alter:
+
+- the temperature track position;
+- the temperature track width;
+- the minimum position;
+- the maximum position;
+- the current-temperature marker position;
+- the underlying temperature-position calculation.
+
+The graphic's geometry belongs to the graphic.
+
+Typography belongs to the text.
+
+---
+
+## Primary Metric
+
+The current temperature is a primary metric and intentionally uses the larger, bolder metric style.
+
+The primary metric is shared with other major dashboard values such as UV.
+
+Therefore, any future adjustment to the visual prominence of the current temperature should be made through the existing semantic typography system rather than by creating a special temperature-only font rule unless there is a deliberate design reason to do so.
+
+The primary metric may be slightly larger and bolder than strictly necessary because it functions as a prominent dashboard value.
+
+---
+
+## Temperature Position Calculation
+
+The current temperature's position on the track is determined by the underlying temperature values.
+
+Conceptually:
+
+    temperature position =
+        (current temperature - minimum temperature)
+        /
+        (maximum temperature - minimum temperature)
+
+This produces a normalized position between the minimum and maximum.
+
+The resulting position is independent of typography.
+
+Changing the size or weight of the current-temperature text must never affect the calculated position of the marker.
+
+---
+
+## CSS vs JavaScript
+
+### Prefer CSS
+
+Use CSS for:
+
+- horizontal alignment;
+- widths;
+- margins;
+- flexbox positioning;
+- responsive layout;
+- text alignment;
+- prevention of text wrapping;
+- relationships between elements that can be expressed geometrically.
+
+### Use JavaScript Only When Necessary
+
+Do not introduce JavaScript simply because a CSS layout is inconvenient.
+
+JavaScript should be used for layout only when the browser cannot express the required relationship robustly through CSS.
+
+In particular, avoid JavaScript functions whose sole purpose is to repeatedly measure text and change `justify-content` when a simple fixed alignment produces an acceptable and coherent design.
+
+---
+
+## Lessons From the Temperature Widget
+
+Several approaches were considered during development:
+
+1. Centering the secondary information across the entire temperature panel.
+2. Centering it within the temperature graphic.
+3. Dynamically measuring the rendered text with JavaScript.
+4. Using responsive calculations to switch between centered and left-aligned layouts.
+5. Simply aligning the secondary information with the graphic's left edge.
+
+The final design favors the simplest robust solution:
+
+> The secondary information is left-aligned to the same horizontal boundary as the temperature graphic.
+
+This avoids:
+
+- clipping at narrow widths;
+- arbitrary breakpoints;
+- JavaScript measurement;
+- interactions with the text-size preference system;
+- unnecessary layout complexity.
+
+The result is visually coherent and predictable.
+
+---
+
+## Design Philosophy
+
+A graphic should have a clear internal geometry.
+
+When multiple elements communicate information about the same graphic, they should share that geometry.
+
+Do not independently position related elements merely because they happen to be text, labels, or values.
+
+Instead:
+
+                 GRAPHIC
+        ┌───────────────────┐
+        │                   │
+        │    visual data    │
+        │                   │
+        └───────────────────┘
+        ↑                   ↑
+        shared boundaries
+        ↑
+        associated text
+
+The graphic establishes the reference frame.
+
+Associated information belongs to that reference frame.
+
+---
+
+## Future Application
+
+Apply this principle whenever a future widget contains:
+
+- a temperature range;
+- a wind-speed scale;
+- a UV scale;
+- a tide or wave range;
+- a progress track;
+- a timeline;
+- a horizontal severity scale;
+- a chart with aligned annotations;
+- a slider-like visual;
+- a range with minimum and maximum labels;
+- any other graphic where text describes positions or values along a visual axis.
+
+Before modifying such a widget, identify:
+
+1. What element establishes the coordinate system?
+2. What are its horizontal or vertical boundaries?
+3. Which associated text belongs to that coordinate system?
+4. Should those elements share the same boundaries?
+5. What should happen when the viewport becomes narrow?
+6. Can the desired behavior be achieved with CSS alone?
+
+Do not begin by modifying individual offsets.
+
+First identify the conceptual geometry.
+
+---
+
+## Implementation Rule
+
+When modifying an existing graphic:
+
+> Do not compensate for a flawed coordinate system with repeated pixel adjustments.
+
+If repeated changes to `left`, `right`, `width`, `top`, `transform`, or similar properties are required to make related elements line up, stop and reconsider the underlying geometry.
+
+A correct conceptual coordinate system should make the correct CSS relationships relatively obvious.
+
+---
+
+## Summary
+
+The application's graphics should be designed around explicit visual coordinate systems.
+
+For the temperature widget:
+
+- The temperature track establishes the horizontal coordinate system.
+- The track occupies the central graphic region.
+- Minimum and maximum values align with the track endpoints.
+- The current-temperature marker is calculated from the temperature data.
+- The current-temperature value is independent of marker geometry but uses the same horizontal position.
+- Feels Like and RH belong to the same graphic and align with its left boundary.
+- Secondary information remains on one line.
+- Typography changes must not alter graphic geometry.
+- CSS is preferred over JavaScript for layout.
+- Simplicity and predictable behavior are preferred over unnecessary dynamic calculations.
+
+## Guiding Principle
+
+> Establish the geometry first. Then place the information within that geometry. Do not use responsive or JavaScript complexity to compensate for an unclear coordinate system.
+

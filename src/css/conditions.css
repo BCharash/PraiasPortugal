@@ -662,10 +662,10 @@
         8px;
 
     left:
-        0;
+        12%;
 
     width:
-        100%;
+        76%;
 
     height:
         58px;
@@ -699,7 +699,7 @@
 #dashboardTempMin {
 
     left:
-        12%;
+        0%;
 
 }
 
@@ -707,7 +707,7 @@
 #dashboardTempMax {
 
     right:
-        12%;
+        0%;
 
 }
 
@@ -722,10 +722,10 @@
         absolute;
 
     left:
-        12%;
+        0;
 
     right:
-        12%;
+        0;
 
     top:
         14px;
@@ -786,36 +786,16 @@
    Current Temperature
    ---------------------------------------------------------- */
 
-#dashboardAirTempAnchor {
-
-    position:
-        absolute;
-
-    top:
-        12px;
-
-    left:
-        50%
-   /*     var(--temperature-position, 50%);  */
-
-    width:
-        0;
-
-    height:
-        0;
-
-}
-
 #dashboardAirTemp {
 
     position:
         absolute;
 
     top:
-        0;
+        28px;
 
     left:
-        0;
+        50%;
 
     width:
         max-content;
@@ -837,6 +817,7 @@
 
 }
 
+
 /* ----------------------------------------------------------
    Feels Like + Relative Humidity
    ---------------------------------------------------------- */
@@ -848,17 +829,19 @@
         absolute;
 
     top:
-        54px;       /* Feels like and Relative Humidity are positioned below the Current Temperature */
+        56px;
 
     left:
-        0;
+        12%;
 
     width:
-        100%;
-
+        76%;
 
     display:
         flex;
+
+    justify-content:
+    flex-start;
 
     align-items:
         center;

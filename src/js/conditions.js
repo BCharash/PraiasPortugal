@@ -297,24 +297,13 @@ function updateConditions(dashboardData) {
 
 
                 //--------------------------------------------------
-                // Match the visible temperature track.
+                // Temperature marker position
                 //
-                // The track begins at 12% and ends at 88%
-                // of the temperature range container.
+                // The temperature track runs from 0% to 100%.
                 //--------------------------------------------------
 
-                const trackStart =
-                    12;
-
-                const trackEnd =
-                    88;
-
                 const trackPosition =
-                    trackStart +
-                    (
-                        clampedPosition *
-                        (trackEnd - trackStart)
-                    );
+                    clampedPosition * 100;
 
 
                 temperatureRangeElement.style.setProperty(
@@ -523,6 +512,8 @@ function isTimeBetween(
     );
 
 }
+
+
 
 
 //--------------------------------------------------
