@@ -177,14 +177,15 @@ Widgets do not communicate directly with one another. They receive updates from 
 
 For example:
 
-```
+
+
 displayBeach()
     ├── updateDashboardBeachName()
     ├── updateWeatherWidget()
     ├── updateForecastWidget()
     ├── updateChartsWidget()
     └── updateAlertWidget()
-```
+
 
 This minimizes coupling between modules and allows widgets to evolve independently.
 
@@ -627,7 +628,7 @@ The four lower Dashboard tiles (Wind, Sea, Tide, Surf) are **not being refined y
 
 The CSS is now divided as follows:
 
-```text
+text
 src/css/
 ├── base.css
 ├── layout.css
@@ -639,7 +640,6 @@ src/css/
 ## Status
 
 Accepted
-
 
 # DJ009 — Conditions Section Divided into Upper and Lower Panels
 
@@ -689,7 +689,7 @@ The current temperature marker should represent the current temperature's actual
 
 Conceptually:
 
-```text
+text
 minimum ───────────●────────── maximum
                          current temperature
 
