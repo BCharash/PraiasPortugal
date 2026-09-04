@@ -722,10 +722,10 @@
         absolute;
 
     left:
-        0;
+        12%;
 
     right:
-        0;
+        12%;
 
     top:
         14px;
@@ -795,7 +795,8 @@
         12px;
 
     left:
-        var(--temperature-position, 50%);
+        50%
+   /*     var(--temperature-position, 50%);  */
 
     width:
         0;
