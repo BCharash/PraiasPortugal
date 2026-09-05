@@ -405,7 +405,7 @@
         absolute;
 
     top:
-        6px;
+        8px;
 
     right:
         2%;
@@ -433,7 +433,7 @@
         absolute;
 
     top:
-        18px;
+        0;
 
     color:
         #a9c9e8;
@@ -470,7 +470,7 @@
         absolute;
 
     top:
-        0;
+        -8px;
 
     left:
         clamp(
@@ -506,7 +506,7 @@
         absolute;
 
     top:
-        30px;
+        14px;
 
     left:
         0;
@@ -551,7 +551,7 @@
         0;
 
     height:
-        12px;
+        10px;
 
 }
 
@@ -577,7 +577,7 @@
         absolute;
 
     top:
-        42px;
+        28px;
 
     left:
         var(--uv-current-position, 0%);
