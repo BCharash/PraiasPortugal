@@ -399,19 +399,22 @@
 /* ----------------------------------------------------------
    UV Container
    ---------------------------------------------------------- */
-#conditionsUV {
+#dashboardUVRange {
 
     position:
         absolute;
 
     top:
-        10px;
+        6px;
 
     right:
-        4%;
+        2%;
 
     width:
-        auto;
+        min(132px, 100%);
+
+    height:
+        74px;
 
     text-align:
         center;
@@ -423,25 +426,96 @@
    UV Graphic Track
    ---------------------------------------------------------- */
 
-#conditionsUV::after {
-
-    content:
-        "";
-
-    display:
-        block;
+#dashboardUVScaleMin,
+#dashboardUVScaleMax {
 
     position:
-        relative;
+        absolute;
 
-    width:
-        72px;
+    top:
+        18px;
+
+    color:
+        #a9c9e8;
+
+    font-size:
+        var(--font-condition-label);
+
+    line-height:
+        1;
+
+}
+
+#dashboardUVScaleMin {
+
+    left:
+        0;
+
+}
+
+#dashboardUVScaleMax {
+
+    right:
+        0;
+
+}
+
+/* ----------------------------------------------------------
+   UV Current Value Marker
+   ---------------------------------------------------------- */
+
+#dashboardUVMax {
+
+    position:
+        absolute;
+
+    top:
+        0;
+
+    left:
+        clamp(
+            16px,
+            var(--uv-maximum-position, 50%),
+            calc(100% - 16px)
+        );
+
+    transform:
+        translateX(-50%);
+
+    color:
+        #a9c9e8;
+
+    font-size:
+        var(--font-condition-label);
+
+    line-height:
+        1;
+
+    white-space:
+        nowrap;
+
+}
+
+/* ----------------------------------------------------------
+   UV Value
+   ---------------------------------------------------------- */
+
+#dashboardUVTrack {
+
+    position:
+        absolute;
+
+    top:
+        30px;
+
+    left:
+        0;
+
+    right:
+        0;
 
     height:
         4px;
-
-    margin:
-        7px auto 0 auto;
 
     border-radius:
         4px;
@@ -451,32 +525,14 @@
 
 }
 
-/* ----------------------------------------------------------
-   UV Current Value Marker
-   ---------------------------------------------------------- */
-
-#conditionsUV::before {
-
-    content:
-        "";
+#dashboardUVCurrentMarker,
+#dashboardUVMaxMarker {
 
     position:
         absolute;
 
-    top:
-        31px;
-
-    left:
-        calc(
-            4% +
-            (var(--uv-position, 50%) * 0.72)
-        );
-
     width:
         2px;
-
-    height:
-        12px;
 
     background:
         #ffffff;
@@ -486,20 +542,79 @@
 
 }
 
-/* ----------------------------------------------------------
-   UV Value
-   ---------------------------------------------------------- */
+#dashboardUVCurrentMarker {
+
+    left:
+        var(--uv-current-position, 0%);
+
+    top:
+        0;
+
+    height:
+        12px;
+
+}
+
+#dashboardUVMaxMarker {
+
+    left:
+        var(--uv-maximum-position, 0%);
+
+    top:
+        -8px;
+
+    height:
+        12px;
+
+    background:
+        #a9c9e8;
+
+}
 
 #dashboardUV {
 
+    position:
+        absolute;
+
+    top:
+        42px;
+
+    left:
+        var(--uv-current-position, 0%);
+
+    transform:
+        translateX(-50%);
+
     font-size:
-        var(--font-primary-metric);
+        var(--font-condition-label);
 
     font-weight:
-        700;
+        600;
 
     line-height:
         1.1;
+
+}
+
+#dashboardUVRisk {
+
+    position:
+        absolute;
+
+    top:
+        56px;
+
+    left:
+        0;
+
+    right:
+        0;
+
+    margin-top:
+        0;
+
+    text-align:
+        center;
 
 }
 
