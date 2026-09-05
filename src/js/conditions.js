@@ -64,7 +64,7 @@ function initializeConditions() {
         document.getElementById("dashboardTide");
 
     uvElement =
-        document.getElementById("dashboardUV");
+        document.getElementById("dashboardUVValue");
 
     uvRiskElement =
         document.getElementById("dashboardUVRisk");

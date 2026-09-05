@@ -553,6 +553,9 @@
     height:
         10px;
 
+    background:
+        #2f80ed;
+
 }
 
 #dashboardUVMaxMarker {
@@ -580,7 +583,7 @@
         28px;
 
     left:
-        var(--uv-current-position, 0%);
+        50%;
 
     transform:
         translateX(-50%);
@@ -591,8 +594,24 @@
     font-weight:
         600;
 
+    color:
+        #2f80ed;
+
     line-height:
         1.1;
+
+}
+
+#dashboardUVUnit {
+
+    font-size:
+        var(--font-secondary-metric);
+
+    font-weight:
+        400;
+
+    color:
+        #2f80ed;
 
 }
 
@@ -886,7 +905,7 @@
         0;
 
     background:
-        #ffffff;
+        #ffd34d;
 
     transform:
         translate(
@@ -926,6 +945,9 @@
 
     font-weight:
         700;
+
+    color:
+        #ffd34d;
 
     line-height:
         1;
