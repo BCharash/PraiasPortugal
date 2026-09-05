@@ -20,6 +20,11 @@ let windElement;
 let surfElement;
 let tideElement;
 let uvElement;
+let uvRiskElement;
+let uvRangeElement;
+let uvMaximumElement;
+
+const UV_SCALE_MAX = 11;
 
 
 //--------------------------------------------------
@@ -61,6 +66,15 @@ function initializeConditions() {
     uvElement =
         document.getElementById("dashboardUV");
 
+    uvRiskElement =
+        document.getElementById("dashboardUVRisk");
+
+    uvRangeElement =
+        document.getElementById("dashboardUVRange");
+
+    uvMaximumElement =
+        document.getElementById("dashboardUVMax");
+
 
     //--------------------------------------------------
     // Initial Values
@@ -97,6 +111,12 @@ function initializeConditions() {
         "--";
 
     uvElement.textContent =
+        "--";
+
+    uvRiskElement.textContent =
+        "--";
+
+    uvMaximumElement.textContent =
         "--";
 
 }
@@ -325,33 +345,53 @@ function updateConditions(dashboardData) {
             formatWind(weather);
 
         uvElement.textContent =
-            formatUV(weather);
+            formatUVValue(weather);
 
-        
-if (
-    weather.uvIndex != null &&
-    weather.uvIndexMax != null &&
-    weather.uvIndexMax > 0
-) {
+        uvRiskElement.textContent =
+            formatUVRisk(weather);
 
-    const position =
-        Math.max(
-            0,
-            Math.min(
-                1,
-                weather.uvIndex /
-                weather.uvIndexMax
-            )
-        );
+        if (weather.uvIndexMax != null) {
 
-    document
-        .getElementById("conditionsUV")
-        .style.setProperty(
-            "--uv-position",
-            `${position * 100}%`
-        );
+            uvMaximumElement.textContent =
+                `${translate("uvMaximum")} ${Math.round(weather.uvIndexMax)}`;
 
-}
+        }
+
+        if (uvRangeElement) {
+
+            const currentPosition =
+                weather.uvIndex == null
+                    ? 0
+                    : Math.max(
+                        0,
+                        Math.min(
+                            1,
+                            weather.uvIndex / UV_SCALE_MAX
+                        )
+                    );
+
+            const maximumPosition =
+                weather.uvIndexMax == null
+                    ? 0
+                    : Math.max(
+                        0,
+                        Math.min(
+                            1,
+                            weather.uvIndexMax / UV_SCALE_MAX
+                        )
+                    );
+
+            uvRangeElement.style.setProperty(
+                "--uv-current-position",
+                `${currentPosition * 100}%`
+            );
+
+            uvRangeElement.style.setProperty(
+                "--uv-maximum-position",
+                `${maximumPosition * 100}%`
+            );
+
+        }
 
         //--------------------------------------------------
         // Sunrise / Sunset

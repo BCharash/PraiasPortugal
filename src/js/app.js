@@ -268,6 +268,7 @@ const translations = {
         uvHigh: "High",
         uvVeryHigh: "Very High",
         uvExtreme: "Extreme",
+        uvMaximum: "Max",
 
         weatherClearSky: "Clear sky",
         weatherMainlyClear: "Mainly clear",
@@ -396,6 +397,7 @@ const translations = {
         uvHigh: "Alto",
         uvVeryHigh: "Muito alto",
         uvExtreme: "Extremo",
+        uvMaximum: "Máx.",
 
         weatherClearSky: "Céu limpo",
         weatherMainlyClear:

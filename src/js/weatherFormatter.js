@@ -123,19 +123,42 @@ function formatUV(weather) {
     const uv =
         Math.round(weather.uvIndex);
 
+    return `${uv} ${formatUVRisk(weather)}`;
+
+}
+
+
+function formatUVValue(weather) {
+
+    if (!weather || weather.uvIndex == null)
+        return "--";
+
+    return Math.round(weather.uvIndex);
+
+}
+
+
+function formatUVRisk(weather) {
+
+    if (!weather || weather.uvIndex == null)
+        return "--";
+
+    const uv =
+        Math.round(weather.uvIndex);
+
     if (uv <= 2)
-        return `${uv} ${translate("uvLow")}`;
+        return translate("uvLow");
 
     if (uv <= 5)
-        return `${uv} ${translate("uvModerate")}`;
+        return translate("uvModerate");
 
     if (uv <= 7)
-        return `${uv} ${translate("uvHigh")}`;
+        return translate("uvHigh");
 
     if (uv <= 10)
-        return `${uv} ${translate("uvVeryHigh")}`;
+        return translate("uvVeryHigh");
 
-    return `${uv} ${translate("uvExtreme")}`;
+    return translate("uvExtreme");
 
 }
 
