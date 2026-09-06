@@ -68,8 +68,10 @@ async function getCurrentWeather(beach) {
     return {
 
         //--------------------------------------------------
-        // Location / Time
+        // Air
         //--------------------------------------------------
+
+        // Location and time metadata used by the celestial model
 
         latitude:
             data.latitude,
@@ -79,6 +81,9 @@ async function getCurrentWeather(beach) {
 
         timezone:
             data.timezone,
+
+        utcOffsetSeconds:
+            data.utc_offset_seconds,
 
         currentTime:
             data.current.time,

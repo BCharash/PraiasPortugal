@@ -1,22 +1,22 @@
 //--------------------------------------------------
 // Celestial Service
 //
-// Calculates the astronomical state used by the
-// celestial graphic.
-//
-// Solar position is calculated from the selected
-// beach's latitude/longitude and the current instant.
-// Civil time is interpreted in Europe/Lisbon, including
-// daylight-saving time.
+// Calculates the astronomical state of the Sun and
+// Moon and supplies the coordinates used by the sky
+// graphic.
 //--------------------------------------------------
 
 
 //--------------------------------------------------
-// Constants
+// Fixed Portuguese display envelope
 //--------------------------------------------------
 
-const CELESTIAL_TIME_ZONE =
-    "Europe/Lisbon";
+// South is the horizontal center of the graphic.
+// The display extends approximately 132 degrees to
+// either side of South. This is sufficient to contain
+// the maximum solar/lunar azimuth excursion anywhere
+// in mainland Portugal throughout the year.
+const CELESTIAL_AZIMUTH_HALF_RANGE = 132;
 
 
 //--------------------------------------------------
@@ -29,77 +29,62 @@ function getCelestialState(weather) {
         return null;
 
 
-    const now =
-        new Date();
-
-
-    //--------------------------------------------------
-    // Solar coordinates
-    //--------------------------------------------------
-
-    const latitude =
-        Number(weather.latitude);
-
-    const longitude =
-        Number(weather.longitude);
-
-
-    const solarPosition =
-        Number.isFinite(latitude) &&
-        Number.isFinite(longitude)
-            ? calculateSolarPosition(
-                  now,
-                  latitude,
-                  longitude
-              )
-            : null;
-
-
-    //--------------------------------------------------
-    // Sunrise / sunset
-    //
-    // These remain the provider's local civil times for
-    // the selected beach. They are used for the labels.
-    //--------------------------------------------------
-
     const sunrise =
-        parseCelestialTime(
-            weather.sunrise
-        );
+        parseCelestialTime(weather.sunrise);
 
     const sunset =
-        parseCelestialTime(
-            weather.sunset
-        );
+        parseCelestialTime(weather.sunset);
+
+    const now =
+        parseCelestialTime(weather.currentTime);
+
+
+    //--------------------------------------------------
+    // Sun
+    //--------------------------------------------------
+
+    let sunPosition = null;
+
+    if (
+        now &&
+        sunrise &&
+        sunset
+    ) {
+
+        sunPosition =
+            calculateSolarPosition(
+                now,
+                weather.latitude,
+                weather.longitude,
+                weather.utcOffsetSeconds
+            );
+
+    }
 
 
     const sunIsVisible =
-        solarPosition !== null &&
-        solarPosition.altitude >= 0;
+        sunrise !== null &&
+        sunset !== null &&
+        now !== null &&
+        now >= sunrise &&
+        now <= sunset;
 
 
     //--------------------------------------------------
     // Moon
-    //
-    // Moon positioning is intentionally not redesigned
-    // yet. The existing phase data remains available for
-    // the next implementation stage.
     //--------------------------------------------------
 
     const moonrise =
-        parseCelestialTime(
-            weather.moonrise
-        );
+        parseCelestialTime(weather.moonrise);
 
     const moonset =
-        parseCelestialTime(
-            weather.moonset
-        );
+        parseCelestialTime(weather.moonset);
 
 
     const moonIsVisible =
         moonrise !== null &&
         moonset !== null &&
+        now !== null &&
         isCelestialTimeBetween(
             now,
             moonrise,
@@ -125,20 +110,18 @@ function getCelestialState(weather) {
 
     return {
 
+        azimuthHalfRange:
+            CELESTIAL_AZIMUTH_HALF_RANGE,
+
         sun: {
 
             isVisible:
                 sunIsVisible,
 
             position:
-                solarPosition,
-
-            sunrise,
-
-            sunset
+                sunPosition
 
         },
-
 
         moon: {
 
@@ -167,365 +150,13 @@ function getCelestialState(weather) {
 
 
 //--------------------------------------------------
-// Solar Position
-//
-// NOAA/Meeus-style solar position calculation.
-//
-// Returns:
-//     altitude - degrees above geometric horizon
-//     azimuth  - degrees clockwise from north
-//
-// The calculation uses the actual instant (UTC
-// internally), so the result is independent of the
-// browser's local timezone. Europe/Lisbon is used when
-// determining the local civil date for the daily path.
-//--------------------------------------------------
-
-function calculateSolarPosition(
-    date,
-    latitude,
-    longitude
-) {
-
-    const julianDay =
-        date.getTime() / 86400000 +
-        2440587.5;
-
-
-    const julianCentury =
-        (julianDay - 2451545.0) /
-        36525;
-
-
-    const geomMeanLongSun =
-        normalizeDegrees(
-            280.46646 +
-            julianCentury * (
-                36000.76983 +
-                julianCentury * 0.0003032
-            )
-        );
-
-
-    const geomMeanAnomalySun =
-        357.52911 +
-        julianCentury * (
-            35999.05029 -
-            julianCentury * 0.0001537
-        );
-
-
-    const eccentricityEarthOrbit =
-        0.016708634 -
-        julianCentury * (
-            0.000042037 +
-            0.0000001267 * julianCentury
-        );
-
-
-    const anomalyRadians =
-        degreesToRadians(
-            geomMeanAnomalySun
-        );
-
-
-    const sunEquationOfCenter =
-        Math.sin(anomalyRadians) * (
-            1.914602 -
-            julianCentury * (
-                0.004817 +
-                0.000014 * julianCentury
-            )
-        ) +
-        Math.sin(2 * anomalyRadians) * (
-            0.019993 -
-            0.000101 * julianCentury
-        ) +
-        Math.sin(3 * anomalyRadians) *
-        0.000289;
-
-
-    const sunTrueLongitude =
-        geomMeanLongSun +
-        sunEquationOfCenter;
-
-
-    const omega =
-        125.04 -
-        1934.136 * julianCentury;
-
-
-    const solarApparentLongitude =
-        sunTrueLongitude -
-        0.00569 -
-        0.00478 * Math.sin(
-            degreesToRadians(omega)
-        );
-
-
-    const meanObliquity =
-        23 + (
-            26 + (
-                21.448 -
-                julianCentury * (
-                    46.815 +
-                    julianCentury * (
-                        0.00059 -
-                        julianCentury * 0.001813
-                    )
-                )
-            ) / 60
-        ) / 60;
-
-
-    const obliquityCorrection =
-        meanObliquity +
-        0.00256 * Math.cos(
-            degreesToRadians(omega)
-        );
-
-
-    const obliquityRadians =
-        degreesToRadians(
-            obliquityCorrection
-        );
-
-
-    const apparentLongitudeRadians =
-        degreesToRadians(
-            solarApparentLongitude
-        );
-
-
-    const solarDeclination =
-        radiansToDegrees(
-            Math.asin(
-                Math.sin(obliquityRadians) *
-                Math.sin(apparentLongitudeRadians)
-            )
-        );
-
-
-    //--------------------------------------------------
-    // Equation of time
-    //--------------------------------------------------
-
-    const y =
-        Math.tan(
-            obliquityRadians / 2
-        ) ** 2;
-
-
-    const equationOfTime =
-        4 * radiansToDegrees(1) * (
-            y * Math.sin(2 * degreesToRadians(geomMeanLongSun)) -
-            2 * eccentricityEarthOrbit * Math.sin(anomalyRadians) +
-            4 * eccentricityEarthOrbit * y *
-                Math.sin(anomalyRadians) *
-                Math.cos(2 * degreesToRadians(geomMeanLongSun)) -
-            0.5 * y * y *
-                Math.sin(4 * degreesToRadians(geomMeanLongSun)) -
-            1.25 * eccentricityEarthOrbit * eccentricityEarthOrbit *
-                Math.sin(2 * anomalyRadians)
-        );
-
-
-    //--------------------------------------------------
-    // True solar time and hour angle
-    //
-    // UTC is used here. Longitude is positive east.
-    //--------------------------------------------------
-
-    const utcMinutes =
-        date.getUTCHours() * 60 +
-        date.getUTCMinutes() +
-        date.getUTCSeconds() / 60 +
-        date.getUTCMilliseconds() / 60000;
-
-
-    let trueSolarTime =
-        utcMinutes +
-        equationOfTime +
-        4 * longitude;
-
-
-    trueSolarTime =
-        ((trueSolarTime % 1440) + 1440) % 1440;
-
-
-    let hourAngle =
-        trueSolarTime / 4 - 180;
-
-
-    if (hourAngle < -180)
-        hourAngle += 360;
-
-
-    //--------------------------------------------------
-    // Solar zenith / altitude
-    //--------------------------------------------------
-
-    const latitudeRadians =
-        degreesToRadians(latitude);
-
-
-    const declinationRadians =
-        degreesToRadians(
-            solarDeclination
-        );
-
-
-    const hourAngleRadians =
-        degreesToRadians(
-            hourAngle
-        );
-
-
-    const cosineZenith =
-        clamp(
-            Math.sin(latitudeRadians) *
-                Math.sin(declinationRadians) +
-            Math.cos(latitudeRadians) *
-                Math.cos(declinationRadians) *
-                Math.cos(hourAngleRadians),
-            -1,
-            1
-        );
-
-
-    const zenith =
-        radiansToDegrees(
-            Math.acos(cosineZenith)
-        );
-
-
-    const altitude =
-        90 - zenith;
-
-
-    //--------------------------------------------------
-    // Solar azimuth
-    //
-    // Clockwise from north:
-    //     0   N
-    //     90  E
-    //     180 S
-    //     270 W
-    //--------------------------------------------------
-
-    const azimuth =
-        normalizeDegrees(
-            radiansToDegrees(
-                Math.atan2(
-                    Math.sin(hourAngleRadians),
-                    Math.cos(hourAngleRadians) *
-                        Math.sin(latitudeRadians) -
-                    Math.tan(declinationRadians) *
-                        Math.cos(latitudeRadians)
-                )
-            ) +
-            180
-        );
-
-
-    return {
-
-        altitude,
-
-        azimuth,
-
-        declination:
-            solarDeclination,
-
-        equationOfTime
-
-    };
-
-}
-
-
-//--------------------------------------------------
-// Daily Solar Path
-//--------------------------------------------------
-
-function getSolarPath(
-    date,
-    latitude,
-    longitude
-) {
-
-    const localDate =
-        getLocalDateParts(
-            date,
-            CELESTIAL_TIME_ZONE
-        );
-
-
-    const start =
-        zonedDateTimeToUtc(
-            {
-                year: localDate.year,
-                month: localDate.month,
-                day: localDate.day,
-                hour: 0,
-                minute: 0,
-                second: 0
-            },
-            CELESTIAL_TIME_ZONE
-        );
-
-
-    const points = [];
-
-    const minutesPerDay =
-        24 * 60;
-
-
-    for (
-        let minute = 0;
-        minute <= minutesPerDay;
-        minute += 10
-    ) {
-
-        const instant =
-            new Date(
-                start.getTime() +
-                minute * 60000
-            );
-
-
-        const position =
-            calculateSolarPosition(
-                instant,
-                latitude,
-                longitude
-            );
-
-
-        points.push({
-
-            date: instant,
-
-            altitude:
-                position.altitude,
-
-            azimuth:
-                position.azimuth
-
-        });
-
-    }
-
-
-    return points;
-
-}
-
-
-//--------------------------------------------------
 // Time Parsing
 //--------------------------------------------------
 
+// Open-Meteo supplies local civil times because the
+// forecast request specifies Europe/Lisbon. The value
+// is therefore deliberately parsed as a wall-clock time
+// rather than allowing the browser's timezone to alter it.
 function parseCelestialTime(value) {
 
     if (!value)
@@ -554,22 +185,12 @@ function parseCelestialTime(value) {
         return null;
 
 
-    return zonedDateTimeToUtc(
-        {
-            year:
-                Number(dateParts[0]),
-            month:
-                Number(dateParts[1]),
-            day:
-                Number(dateParts[2]),
-            hour:
-                Number(timeParts[0]),
-            minute:
-                Number(timeParts[1]),
-            second:
-                Number(timeParts[2] || 0)
-        },
-        CELESTIAL_TIME_ZONE
+    return new Date(
+        Number(dateParts[0]),
+        Number(dateParts[1]) - 1,
+        Number(dateParts[2]),
+        Number(timeParts[0]),
+        Number(timeParts[1])
     );
 
 }
@@ -604,189 +225,320 @@ function isCelestialTimeBetween(
 
 
 //--------------------------------------------------
-// Time Zone Helpers
+// Solar Position
+//
+// NOAA/Meeus-style solar position calculation.
+// Azimuth: 0=N, 90=E, 180=S, 270=W.
+// Altitude: degrees above/below the horizon.
 //--------------------------------------------------
 
-function getLocalDateParts(
-    date,
-    timeZone
+function calculateSolarPosition(
+    localDate,
+    latitude,
+    longitude,
+    utcOffsetSeconds = 0
 ) {
 
-    const formatter =
-        new Intl.DateTimeFormat(
-            "en-CA",
-            {
-                timeZone,
-                year: "numeric",
-                month: "2-digit",
-                day: "2-digit"
-            }
+    if (latitude == null || longitude == null)
+        return null;
+
+
+    //--------------------------------------------------
+    // The input Date represents a local civil wall-clock
+    // time. Use its local calendar/time components directly.
+    // The UTC offset is applied exactly once in the true
+    // solar-time correction below.
+    //--------------------------------------------------
+
+    const year =
+        localDate.getFullYear();
+
+    const month =
+        localDate.getMonth() + 1;
+
+    const day =
+        localDate.getDate();
+
+    const hour =
+        localDate.getHours();
+
+    const minute =
+        localDate.getMinutes();
+
+    const second =
+        localDate.getSeconds();
+
+
+    const decimalHour =
+        hour +
+        minute / 60 +
+        second / 3600;
+
+
+    const dayOfYear =
+        Math.floor(
+            (Date.UTC(year, month - 1, day) -
+             Date.UTC(year, 0, 0)) /
+            86400000
         );
 
 
-    const parts =
-        formatter.formatToParts(date);
+    const gamma =
+        2 * Math.PI / 365 *
+        (dayOfYear - 1 +
+         (decimalHour - 12) / 24);
+
+
+    const equationOfTime =
+        229.18 * (
+            0.000075 +
+            0.001868 * Math.cos(gamma) -
+            0.032077 * Math.sin(gamma) -
+            0.014615 * Math.cos(2 * gamma) -
+            0.040849 * Math.sin(2 * gamma)
+        );
+
+
+    const declination =
+        0.006918 -
+        0.399912 * Math.cos(gamma) +
+        0.070257 * Math.sin(gamma) -
+        0.006758 * Math.cos(2 * gamma) +
+        0.000907 * Math.sin(2 * gamma) -
+        0.002697 * Math.cos(3 * gamma) +
+        0.00148 * Math.sin(3 * gamma);
+
+
+    //--------------------------------------------------
+    // True solar time
+    //
+    // local civil time
+    // + equation of time
+    // + longitude correction
+    // - UTC-offset correction
+    //
+    // This converts the Portugal civil clock directly to
+    // the local apparent solar time at the beach.
+    //--------------------------------------------------
+
+    const trueSolarMinutes =
+        decimalHour * 60 +
+        equationOfTime +
+        4 * longitude -
+        utcOffsetSeconds / 60;
+
+
+    let hourAngle =
+        trueSolarMinutes / 4 - 180;
+
+
+    while (hourAngle < -180)
+        hourAngle += 360;
+
+    while (hourAngle > 180)
+        hourAngle -= 360;
+
+
+    const latitudeRadians =
+        latitude * Math.PI / 180;
+
+    const declinationRadians =
+        declination;
+
+    const hourAngleRadians =
+        hourAngle * Math.PI / 180;
+
+
+    const cosZenith =
+        Math.sin(latitudeRadians) *
+        Math.sin(declinationRadians) +
+        Math.cos(latitudeRadians) *
+        Math.cos(declinationRadians) *
+        Math.cos(hourAngleRadians);
+
+
+    const zenith =
+        Math.acos(
+            Math.max(-1, Math.min(1, cosZenith))
+        );
+
+
+    const altitude =
+        90 -
+        zenith * 180 / Math.PI;
+
+
+    const azimuthRadians =
+        Math.atan2(
+            Math.sin(hourAngleRadians),
+            Math.cos(hourAngleRadians) *
+                Math.sin(latitudeRadians) -
+                Math.tan(declinationRadians) *
+                Math.cos(latitudeRadians)
+        );
+
+
+    let azimuth =
+        azimuthRadians * 180 / Math.PI + 180;
+
+
+    if (azimuth < 0)
+        azimuth += 360;
+
+    if (azimuth >= 360)
+        azimuth -= 360;
 
 
     return {
 
-        year:
-            Number(
-                parts.find(
-                    part => part.type === "year"
-                ).value
-            ),
+        azimuth,
 
-        month:
-            Number(
-                parts.find(
-                    part => part.type === "month"
-                ).value
-            ),
-
-        day:
-            Number(
-                parts.find(
-                    part => part.type === "day"
-                ).value
-            )
+        altitude
 
     };
 
 }
 
 
-function getTimeZoneOffsetMinutes(
-    date,
-    timeZone
-) {
+//--------------------------------------------------
+// Solar Horizon Times
+//
+// Calculate the geometric sunrise and sunset for the
+// same solar-position model used by the graphic. This
+// keeps both ends of the path exactly on altitude = 0.
+//--------------------------------------------------
 
-    const formatter =
-        new Intl.DateTimeFormat(
-            "en-US",
-            {
-                timeZone,
-                year: "numeric",
-                month: "2-digit",
-                day: "2-digit",
-                hour: "2-digit",
-                minute: "2-digit",
-                second: "2-digit",
-                hourCycle: "h23"
-            }
+function getSolarHorizonTimes(localDate, latitude, longitude, utcOffsetSeconds = 0) {
+
+    if (localDate == null || latitude == null || longitude == null)
+        return null;
+
+    const year = localDate.getFullYear();
+    const month = localDate.getMonth();
+    const day = localDate.getDate();
+
+    const dateAtHour = hour =>
+        new Date(year, month, day, hour, 0, 0, 0);
+
+    const getSolarTerms = date => {
+        const y = date.getFullYear();
+        const m = date.getMonth() + 1;
+        const d = date.getDate();
+        const h = date.getHours();
+        const min = date.getMinutes();
+        const sec = date.getSeconds();
+
+        const decimalHour = h + min / 60 + sec / 3600;
+        const dayOfYear = Math.floor(
+            (Date.UTC(y, m - 1, d) - Date.UTC(y, 0, 0)) / 86400000
         );
 
+        const gamma = 2 * Math.PI / 365 *
+            (dayOfYear - 1 + (decimalHour - 12) / 24);
 
-    const parts =
-        formatter.formatToParts(date);
-
-
-    const getPart =
-        type => Number(
-            parts.find(
-                part => part.type === type
-            ).value
+        const equationOfTime = 229.18 * (
+            0.000075 +
+            0.001868 * Math.cos(gamma) -
+            0.032077 * Math.sin(gamma) -
+            0.014615 * Math.cos(2 * gamma) -
+            0.040849 * Math.sin(2 * gamma)
         );
 
+        const declination =
+            0.006918 -
+            0.399912 * Math.cos(gamma) +
+            0.070257 * Math.sin(gamma) -
+            0.006758 * Math.cos(2 * gamma) +
+            0.000907 * Math.sin(2 * gamma) -
+            0.002697 * Math.cos(3 * gamma) +
+            0.00148 * Math.sin(3 * gamma);
 
-    const localAsUtc =
-        Date.UTC(
-            getPart("year"),
-            getPart("month") - 1,
-            getPart("day"),
-            getPart("hour"),
-            getPart("minute"),
-            getPart("second")
-        );
+        return { equationOfTime, declination };
+    };
 
+    // Iterate once or twice because declination/EoT vary slightly
+    // across the day. The horizon crossing is geometric altitude 0°.
+    let estimate = dateAtHour(12);
 
-    return (
-        localAsUtc - date.getTime()
-    ) / 60000;
+    for (let iteration = 0; iteration < 3; iteration++) {
+        const terms = getSolarTerms(estimate);
+        const lat = latitude * Math.PI / 180;
+        const dec = terms.declination;
 
-}
+        const cosH = -Math.tan(lat) * Math.tan(dec);
 
+        if (cosH < -1 || cosH > 1)
+            return null;
 
-function zonedDateTimeToUtc(
-    parts,
-    timeZone
-) {
+        const hourAngle = Math.acos(cosH) * 180 / Math.PI;
+        const solarNoonMinutes =
+            720 - 4 * longitude - terms.equationOfTime + utcOffsetSeconds / 60;
 
-    let guess =
-        Date.UTC(
-            parts.year,
-            parts.month - 1,
-            parts.day,
-            parts.hour || 0,
-            parts.minute || 0,
-            parts.second || 0
-        );
+        const sunriseMinutes = solarNoonMinutes - hourAngle * 4;
+        const sunsetMinutes = solarNoonMinutes + hourAngle * 4;
 
+        estimate = new Date(year, month, day, 0, 0, 0, 0);
 
-    //--------------------------------------------------
-    // Two passes handle normal DST transitions.
-    //--------------------------------------------------
-
-    for (let i = 0; i < 2; i++) {
-
-        const offset =
-            getTimeZoneOffsetMinutes(
-                new Date(guess),
-                timeZone
-            );
-
-        guess =
-            Date.UTC(
-                parts.year,
-                parts.month - 1,
-                parts.day,
-                parts.hour || 0,
-                parts.minute || 0,
-                parts.second || 0
-            ) -
-            offset * 60000;
-
+        return {
+            sunrise: new Date(estimate.getTime() + sunriseMinutes * 60000),
+            sunset: new Date(estimate.getTime() + sunsetMinutes * 60000)
+        };
     }
 
+    return null;
+}
 
-    return new Date(guess);
+
+//--------------------------------------------------
+// Relative Azimuth
+//
+// Converts absolute azimuth into angular distance from
+// South. This is the coordinate used horizontally by
+// the graphic.
+//--------------------------------------------------
+
+function getRelativeAzimuth(azimuth) {
+
+    let relative =
+        azimuth - 180;
+
+
+    while (relative < -180)
+        relative += 360;
+
+    while (relative > 180)
+        relative -= 360;
+
+
+    return relative;
 
 }
 
 
 //--------------------------------------------------
-// Numeric Helpers
+// Graphic X Position
 //--------------------------------------------------
 
-function degreesToRadians(degrees) {
+function getAzimuthGraphicPosition(azimuth) {
 
-    return degrees * Math.PI / 180;
-
-}
-
-
-function radiansToDegrees(radians) {
-
-    return radians * 180 / Math.PI;
-
-}
+    const relative =
+        getRelativeAzimuth(azimuth);
 
 
-function normalizeDegrees(degrees) {
-
-    return (
-        (degrees % 360) +
-        360
-    ) % 360;
-
-}
+    const normalized =
+        relative /
+        CELESTIAL_AZIMUTH_HALF_RANGE;
 
 
-function clamp(value, min, max) {
+    // East is left; West is right.
+    const x =
+        50 +
+        normalized * 50;
 
-    return Math.min(
-        max,
-        Math.max(min, value)
+
+    return Math.max(
+        0,
+        Math.min(100, x)
     );
 
 }
@@ -809,10 +561,6 @@ function normalizeMoonPhase(phase) {
 }
 
 
-//--------------------------------------------------
-// Moon Illumination
-//--------------------------------------------------
-
 function calculateMoonIllumination(phase) {
 
     if (phase == null)
@@ -829,10 +577,6 @@ function calculateMoonIllumination(phase) {
 }
 
 
-//--------------------------------------------------
-// Moon Phase Name
-//--------------------------------------------------
-
 function getMoonPhaseName(phase) {
 
     if (phase == null)
@@ -843,35 +587,26 @@ function getMoonPhaseName(phase) {
         phase < 0.0625 ||
         phase >= 0.9375
     ) {
-
         return "New Moon";
-
     }
-
 
     if (phase < 0.25)
         return "Waxing Crescent";
 
-
     if (phase < 0.3125)
         return "First Quarter";
-
 
     if (phase < 0.50)
         return "Waxing Gibbous";
 
-
     if (phase < 0.5625)
         return "Full Moon";
-
 
     if (phase < 0.75)
         return "Waning Gibbous";
 
-
     if (phase < 0.8125)
         return "Last Quarter";
-
 
     return "Waning Crescent";
 

@@ -1,34 +1,11 @@
 //--------------------------------------------------
 // Celestial Formatter
 //
-// Projects real solar altitude/azimuth coordinates
-// into the celestial sky graphic.
+// Creates the visual representation of the sky.
+// The graphic uses the fixed Portuguese azimuth
+// coordinate system supplied by celestialService.js.
 //--------------------------------------------------
 
-
-//--------------------------------------------------
-// Display Coordinate System
-//--------------------------------------------------
-
-const CELESTIAL_TOP_ALTITUDE =
-    85;
-
-const CELESTIAL_BOTTOM_ALTITUDE =
-    -20;
-
-const CELESTIAL_HORIZON_ALTITUDE =
-    0;
-
-const CELESTIAL_BELOW_HORIZON_ALTITUDE =
-    -10;
-
-const CELESTIAL_BODY_RADIUS =
-    12;
-
-
-//--------------------------------------------------
-// Public Functions
-//--------------------------------------------------
 
 function renderCelestialGraphic(
     celestialState,
@@ -41,340 +18,221 @@ function renderCelestialGraphic(
         return "";
 
 
-    const width =
-        graphicWidth;
-
-    const height =
-        graphicHeight;
+    const width = graphicWidth;
+    const height = graphicHeight;
 
 
     //--------------------------------------------------
-    // Solar path
+    // Sun
     //--------------------------------------------------
-
-    let solarPath = "";
-
 
     if (
-        weather &&
-        Number.isFinite(Number(weather.latitude)) &&
-        Number.isFinite(Number(weather.longitude))
+        celestialState.sun &&
+        celestialState.sun.position
     ) {
 
-        const pathPoints =
-            getSolarPath(
-                new Date(),
-                Number(weather.latitude),
-                Number(weather.longitude)
+        const sun =
+            celestialState.sun.position;
+
+
+        //--------------------------------------------------
+        // Fixed vertical coordinate system
+        //
+        // Horizon = 0 degrees.
+        // Display range = +80 to -20 degrees.
+        //--------------------------------------------------
+
+        const altitudeToY =
+            altitude =>
+                graphicHeight *
+                (0.80 - altitude / 100 * 0.80);
+
+
+        //--------------------------------------------------
+        // Current Sun position
+        //--------------------------------------------------
+
+        const xPercent =
+            getAzimuthGraphicPosition(
+                sun.azimuth
             );
 
 
-        let pathStarted = false;
+        const x =
+            graphicWidth *
+            xPercent / 100;
 
 
-        for (const point of pathPoints) {
+        const y =
+            altitudeToY(
+                sun.altitude
+            );
 
-            //--------------------------------------------------
-            // The visible solar path is the portion above
-            // the geometric horizon. Below-horizon solar
-            // positions are represented separately by the
-            // current body position.
-            //--------------------------------------------------
 
-            if (point.altitude < CELESTIAL_HORIZON_ALTITUDE) {
+        //--------------------------------------------------
+        // Sun path
+        //
+        // Use the same solar-position calculation as the current Sun.
+        // The path is sampled between the supplied civil sunrise and
+        // sunset times.  The first and last points are explicitly the
+        // geometric horizon (altitude = 0).  No baseline correction is
+        // applied to the interior of the curve.
+        //--------------------------------------------------
 
-                pathStarted = false;
-                continue;
+        const openMeteoSunrise =
+            parseCelestialTime(weather.sunrise);
 
+        const openMeteoSunset =
+            parseCelestialTime(weather.sunset);
+
+        const horizonTimes =
+            getSolarHorizonTimes(
+                openMeteoSunrise || new Date(),
+                weather.latitude,
+                weather.longitude,
+                weather.utcOffsetSeconds
+            );
+
+        const sunrise =
+            horizonTimes?.sunrise || openMeteoSunrise;
+
+        const sunset =
+            horizonTimes?.sunset || openMeteoSunset;
+
+        const pathPoints = [];
+        const pathSegments = 96;
+
+        if (sunrise && sunset && sunset > sunrise) {
+
+            for (let i = 0; i <= pathSegments; i++) {
+
+                const progress =
+                    i / pathSegments;
+
+                const localTime =
+                    new Date(
+                        sunrise.getTime() +
+                        progress *
+                        (sunset.getTime() - sunrise.getTime())
+                    );
+
+                const position =
+                    calculateSolarPosition(
+                        localTime,
+                        weather.latitude,
+                        weather.longitude,
+                        weather.utcOffsetSeconds
+                    );
+
+                if (!position)
+                    continue;
+
+                const pathXPercent =
+                    getAzimuthGraphicPosition(
+                        position.azimuth
+                    );
+
+                const pathX =
+                    graphicWidth * pathXPercent / 100;
+
+                // The path is sampled between the geometric horizon
+                // crossings, so altitude is used directly for every point.
+                const pathAltitude =
+                    position.altitude;
+
+                const pathY =
+                    altitudeToY(pathAltitude);
+
+                pathPoints.push(
+                    `${i === 0 ? "M" : "L"} ${pathX} ${pathY}`
+                );
             }
-
-
-            const x =
-                projectAzimuth(
-                    point.azimuth,
-                    graphicWidth
-                );
-
-
-            const y =
-                projectAltitude(
-                    point.altitude,
-                    graphicHeight
-                );
-
-
-            solarPath +=
-                `${pathStarted ? "L" : "M"} ${x} ${y} `;
-
-
-            pathStarted = true;
-
         }
 
-    }
+        const sunPath =
+            pathPoints.join(" ");
 
 
-    //--------------------------------------------------
-    // Current Sun position
-    //--------------------------------------------------
+        return `
 
-    let sunMarkup = "";
+            <svg
+                viewBox="0 0 ${width} ${height}"
+                width="100%"
+                height="100%"
+                preserveAspectRatio="none"
+                xmlns="http://www.w3.org/2000/svg"
+            >
 
-
-    const sunPosition =
-        celestialState.sun.position;
-
-
-    if (sunPosition) {
-
-        const sunX =
-            projectAzimuth(
-                sunPosition.azimuth,
-                graphicWidth
-            );
-
-
-        const displayedAltitude =
-            sunPosition.altitude >=
-            CELESTIAL_HORIZON_ALTITUDE
-                ? sunPosition.altitude
-                : CELESTIAL_BELOW_HORIZON_ALTITUDE;
-
-
-        const sunY =
-            projectAltitude(
-                displayedAltitude,
-                graphicHeight
-            );
-
-
-        const belowHorizon =
-            sunPosition.altitude <
-            CELESTIAL_HORIZON_ALTITUDE;
-
-
-        const opacity =
-            belowHorizon ? 0.38 : 1;
-
-
-        sunMarkup = `
-
-            <g opacity="${opacity}">
-
-                <!-- Soft solar glow -->
-
-                <circle
-                    cx="${sunX}"
-                    cy="${sunY}"
-                    r="19"
-                    fill="#ffd34d"
-                    opacity="0.12"
-                />
-
-
-                <!-- Solar disk: 24 px diameter -->
-
-                <circle
-                    cx="${sunX}"
-                    cy="${sunY}"
-                    r="${CELESTIAL_BODY_RADIUS}"
-                    fill="#ffd34d"
-                />
-
-
-                <!-- Sun rays -->
-
-                <g
+                <path
+                    d="${sunPath}"
+                    fill="none"
                     stroke="#ffd34d"
                     stroke-width="2"
+                    stroke-dasharray="7 7"
                     stroke-linecap="round"
-                >
+                    opacity="0.30"
+                />
 
-                    <line
-                        x1="${sunX}"
-                        y1="${sunY - 15}"
-                        x2="${sunX}"
-                        y2="${sunY - 20}"
+                <!-- Temporary horizon guide: altitude = 0 degrees -->
+                <line
+                    x1="0"
+                    y1="${altitudeToY(0)}"
+                    x2="${width}"
+                    y2="${altitudeToY(0)}"
+                    stroke="#ffffff"
+                    stroke-width="1"
+                    stroke-dasharray="4 5"
+                    opacity="0.28"
+                />
+
+
+                <g>
+
+                    <!-- Soft glow -->
+                    <circle
+                        cx="${x}"
+                        cy="${y}"
+                        r="19"
+                        fill="#ffd34d"
+                        opacity="0.12"
                     />
 
-                    <line
-                        x1="${sunX + 15}"
-                        y1="${sunY}"
-                        x2="${sunX + 20}"
-                        y2="${sunY}"
+                    <!-- 24 px Sun disk -->
+                    <circle
+                        cx="${x}"
+                        cy="${y}"
+                        r="12"
+                        fill="#ffd34d"
                     />
 
-                    <line
-                        x1="${sunX}"
-                        y1="${sunY + 15}"
-                        x2="${sunX}"
-                        y2="${sunY + 20}"
-                    />
+                    <!-- Sun rays -->
+                    <g
+                        stroke="#ffd34d"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                    >
 
-                    <line
-                        x1="${sunX - 15}"
-                        y1="${sunY}"
-                        x2="${sunX - 20}"
-                        y2="${sunY}"
-                    />
+                        <line x1="${x}" y1="${y - 15}" x2="${x}" y2="${y - 20}" />
+                        <line x1="${x + 15}" y1="${y}" x2="${x + 20}" y2="${y}" />
+                        <line x1="${x}" y1="${y + 15}" x2="${x}" y2="${y + 20}" />
+                        <line x1="${x - 15}" y1="${y}" x2="${x - 20}" y2="${y}" />
 
+                        <line x1="${x + 10.6}" y1="${y - 10.6}" x2="${x + 14.2}" y2="${y - 14.2}" />
+                        <line x1="${x + 10.6}" y1="${y + 10.6}" x2="${x + 14.2}" y2="${y + 14.2}" />
+                        <line x1="${x - 10.6}" y1="${y + 10.6}" x2="${x - 14.2}" y2="${y + 14.2}" />
+                        <line x1="${x - 10.6}" y1="${y - 10.6}" x2="${x - 14.2}" y2="${y - 14.2}" />
 
-                    <line
-                        x1="${sunX + 11}"
-                        y1="${sunY - 11}"
-                        x2="${sunX + 15}"
-                        y2="${sunY - 15}"
-                    />
-
-                    <line
-                        x1="${sunX + 11}"
-                        y1="${sunY + 11}"
-                        x2="${sunX + 15}"
-                        y2="${sunY + 15}"
-                    />
-
-                    <line
-                        x1="${sunX - 11}"
-                        y1="${sunY + 11}"
-                        x2="${sunX - 15}"
-                        y2="${sunY + 15}"
-                    />
-
-                    <line
-                        x1="${sunX - 11}"
-                        y1="${sunY - 11}"
-                        x2="${sunX - 15}"
-                        y2="${sunY - 15}"
-                    />
+                    </g>
 
                 </g>
 
-            </g>
+            </svg>
 
         `;
 
     }
 
 
-    //--------------------------------------------------
-    // Horizon
-    //--------------------------------------------------
-
-    const horizonY =
-        projectAltitude(
-            CELESTIAL_HORIZON_ALTITUDE,
-            graphicHeight
-        );
-
-
-    return `
-
-        <svg
-            viewBox="0 0 ${width} ${height}"
-            width="100%"
-            height="100%"
-            preserveAspectRatio="none"
-            xmlns="http://www.w3.org/2000/svg"
-        >
-
-            <!--
-                Real geometric horizon: altitude = 0°.
-            -->
-
-            <line
-                x1="0"
-                y1="${horizonY}"
-                x2="${width}"
-                y2="${horizonY}"
-                stroke="#ffffff"
-                stroke-width="1"
-                opacity="0.22"
-            />
-
-
-            <!--
-                Actual solar trajectory above the horizon.
-                South is centered; North is the seam at the
-                left/right edges.
-            -->
-
-            <path
-                d="${solarPath}"
-                fill="none"
-                stroke="#ffd34d"
-                stroke-width="2"
-                stroke-dasharray="7 7"
-                stroke-linecap="round"
-                opacity="0.30"
-            />
-
-
-            ${sunMarkup}
-
-        </svg>
-
-    `;
-
-}
-
-
-//--------------------------------------------------
-// Azimuth Projection
-//
-// South (180°) is centered.
-// East (90°) is right.
-// West (270°) is left.
-// North (0°/360°) is the seam.
-//--------------------------------------------------
-
-function projectAzimuth(
-    azimuth,
-    graphicWidth
-) {
-
-    const signedDifference =
-        ((
-            azimuth -
-            180 +
-            540
-        ) % 360) - 180;
-
-
-    return graphicWidth * (
-        0.5 -
-        signedDifference / 360
-    );
-
-}
-
-
-//--------------------------------------------------
-// Altitude Projection
-//--------------------------------------------------
-
-function projectAltitude(
-    altitude,
-    graphicHeight
-) {
-
-    const clampedAltitude =
-        Math.max(
-            CELESTIAL_BOTTOM_ALTITUDE,
-            Math.min(
-                CELESTIAL_TOP_ALTITUDE,
-                altitude
-            )
-        );
-
-
-    const range =
-        CELESTIAL_TOP_ALTITUDE -
-        CELESTIAL_BOTTOM_ALTITUDE;
-
-
-    return graphicHeight * (
-        CELESTIAL_TOP_ALTITUDE -
-        clampedAltitude
-    ) / range;
+    return "";
 
 }
