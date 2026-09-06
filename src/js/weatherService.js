@@ -68,6 +68,23 @@ async function getCurrentWeather(beach) {
     return {
 
         //--------------------------------------------------
+        // Location / Time
+        //--------------------------------------------------
+
+        latitude:
+            data.latitude,
+
+        longitude:
+            data.longitude,
+
+        timezone:
+            data.timezone,
+
+        currentTime:
+            data.current.time,
+
+
+        //--------------------------------------------------
         // Air
         //--------------------------------------------------
 
