@@ -42,7 +42,7 @@ function getMoonPhaseImageUrl(phase) {
         ((normalizedPhase % 1) + 1) % 1;
 
     const imageNumber =
-        Math.floor(normalizedPhase * 30) + 1;
+    Math.round(normalizedPhase * 30) % 30 + 1;
 
     return `assets/moon/moon-${String(imageNumber).padStart(2, "0")}.png`;
 }
@@ -463,7 +463,7 @@ function updateConditions(dashboardData) {
 
         }
 
-        
+
         if (moonIlluminationElement) {
 
             moonIlluminationElement.textContent =
