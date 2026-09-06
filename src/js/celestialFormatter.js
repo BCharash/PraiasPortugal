@@ -7,6 +7,116 @@
 //--------------------------------------------------
 
 
+function getSunDisplayGraphicPosition(sun) {
+    return getAzimuthGraphicPosition(
+        sun.displayAzimuth != null ? sun.displayAzimuth : sun.azimuth
+    );
+}
+
+function getPathGraphicPosition(position, sunset, nextSunrise, weather) {
+    if (!position.isBelowHorizon)
+        return getAzimuthGraphicPosition(position.azimuth);
+
+    if (!sunset || !nextSunrise || nextSunrise <= sunset)
+        return getAzimuthGraphicPosition(position.azimuth);
+
+    const sunsetPosition = calculateSolarPosition(
+        sunset, weather.latitude, weather.longitude, weather.utcOffsetSeconds
+    );
+    const sunrisePosition = calculateSolarPosition(
+        nextSunrise, weather.latitude, weather.longitude, weather.utcOffsetSeconds
+    );
+
+    if (!sunsetPosition || !sunrisePosition)
+        return getAzimuthGraphicPosition(position.azimuth);
+
+    const progress =
+        Math.max(0, Math.min(1,
+            (position._pathTime - sunset.getTime()) /
+            (nextSunrise.getTime() - sunset.getTime())
+        ));
+
+    const relativeAzimuth =
+        sunsetPosition.azimuth +
+        (sunrisePosition.azimuth - sunsetPosition.azimuth) * progress;
+
+    return getAzimuthGraphicPosition(relativeAzimuth);
+}
+
+function getBelowHorizonAltitudeRange(weather, sunrise) {
+
+    if (!weather || !sunrise)
+        return 20;
+
+    const horizonTimes =
+        getSolarHorizonTimes(
+            sunrise,
+            weather.latitude,
+            weather.longitude,
+            weather.utcOffsetSeconds
+        );
+
+    if (!horizonTimes?.sunset)
+        return 20;
+
+    const nextDay =
+        new Date(
+            sunrise.getFullYear(),
+            sunrise.getMonth(),
+            sunrise.getDate() + 1,
+            12, 0, 0, 0, 0
+        );
+
+    const nextHorizon =
+        getSolarHorizonTimes(
+            nextDay,
+            weather.latitude,
+            weather.longitude,
+            weather.utcOffsetSeconds
+        );
+
+    if (!nextHorizon?.sunrise)
+        return 20;
+
+    let minimumAltitude = 0;
+    const samples = 96;
+
+    for (let i = 0; i <= samples; i++) {
+
+        const progress = i / samples;
+        const time =
+            new Date(
+                horizonTimes.sunset.getTime() +
+                progress *
+                (nextHorizon.sunrise.getTime() - horizonTimes.sunset.getTime())
+            );
+
+        const position =
+            calculateSolarPosition(
+                time,
+                weather.latitude,
+                weather.longitude,
+                weather.utcOffsetSeconds
+            );
+
+        if (position)
+            minimumAltitude = Math.min(
+                minimumAltitude,
+                position.altitude
+            );
+    }
+
+    // Keep a small floor so the mapping remains stable even in
+    // unusual circumstances where the sampled minimum is shallow.
+    return Math.max(1, Math.abs(minimumAltitude));
+
+}
+
+
+//--------------------------------------------------
+// Celestial Graphic
+//--------------------------------------------------
+
 function renderCelestialGraphic(
     celestialState,
     weather,
@@ -38,14 +148,43 @@ function renderCelestialGraphic(
         //--------------------------------------------------
         // Fixed vertical coordinate system
         //
-        // Horizon = 0 degrees.
-        // Display range = +80 to -20 degrees.
+        // Horizon = 0 degrees. Above-horizon altitude retains
+        // the existing scale. Negative altitude is compressed
+        // into the available 20% below the horizon.
         //--------------------------------------------------
 
+        const belowHorizonAltitudeRange =
+            getBelowHorizonAltitudeRange(
+                weather,
+                parseCelestialTime(weather.sunrise)
+            );
+
+        // Leave enough room at the bottom for the Sun disk and rays.
+        // The curve itself still occupies the full conceptual night
+        // band; the drawable altitude range ends just above the SVG edge.
+        const belowHorizonBottomPadding = 22;
+        const horizonY = graphicHeight * 0.80;
+        const belowHorizonBottomY =
+            Math.max(horizonY, graphicHeight - belowHorizonBottomPadding);
+        const belowHorizonHeight =
+            belowHorizonBottomY - horizonY;
+
         const altitudeToY =
-            altitude =>
-                graphicHeight *
-                (0.80 - altitude / 100 * 0.80);
+            altitude => {
+
+                if (altitude >= 0) {
+                    return graphicHeight *
+                        (0.80 - altitude / 100 * 0.80);
+                }
+
+                // Compress the complete negative-altitude range into
+                // the available lower band, while reserving enough
+                // space for the Sun graphic itself at the deepest point.
+                const depth =
+                    Math.min(1, Math.abs(altitude) / belowHorizonAltitudeRange);
+
+                return horizonY + depth * belowHorizonHeight;
+            };
 
 
         //--------------------------------------------------
@@ -53,8 +192,9 @@ function renderCelestialGraphic(
         //--------------------------------------------------
 
         const xPercent =
-            getAzimuthGraphicPosition(
-                sun.azimuth
+            getSunDisplayGraphicPosition(
+                sun,
+                weather
             );
 
 
@@ -99,21 +239,66 @@ function renderCelestialGraphic(
         const sunset =
             horizonTimes?.sunset || openMeteoSunset;
 
+        const nextDay =
+            sunrise
+                ? new Date(
+                    sunrise.getFullYear(),
+                    sunrise.getMonth(),
+                    sunrise.getDate() + 1,
+                    12, 0, 0, 0
+                )
+                : null;
+
+        const nextHorizon =
+            nextDay
+                ? getSolarHorizonTimes(
+                    nextDay,
+                    weather.latitude,
+                    weather.longitude,
+                    weather.utcOffsetSeconds
+                )
+                : null;
+
+        const nextSunrise =
+            nextHorizon?.sunrise || null;
+
         const pathPoints = [];
         const pathSegments = 96;
 
+        const addPathPoint = (position, command) => {
+
+            if (!position)
+                return;
+
+            const pathXPercent =
+                getPathGraphicPosition(
+                    position,
+                    sunset,
+                    nextSunrise,
+                    weather
+                );
+
+            const pathX =
+                graphicWidth * pathXPercent / 100;
+
+            const pathY =
+                altitudeToY(position.altitude);
+
+            pathPoints.push(
+                `${command} ${pathX} ${pathY}`
+            );
+        };
+
+        // Above-horizon path: sunrise today -> sunset today.
         if (sunrise && sunset && sunset > sunrise) {
 
             for (let i = 0; i <= pathSegments; i++) {
 
-                const progress =
-                    i / pathSegments;
-
+                const progress = i / pathSegments;
                 const localTime =
                     new Date(
                         sunrise.getTime() +
-                        progress *
-                        (sunset.getTime() - sunrise.getTime())
+                        progress * (sunset.getTime() - sunrise.getTime())
                     );
 
                 const position =
@@ -124,28 +309,42 @@ function renderCelestialGraphic(
                         weather.utcOffsetSeconds
                     );
 
-                if (!position)
-                    continue;
+                if (position) {
+                    if (i === 0 || i === pathSegments)
+                        position.altitude = 0;
 
-                const pathXPercent =
-                    getAzimuthGraphicPosition(
-                        position.azimuth
+                    position._pathTime = localTime.getTime();
+                    addPathPoint(position, i === 0 ? "M" : "L");
+                }
+            }
+        }
+
+        // Below-horizon path: sunset today -> sunrise tomorrow.
+        // X is intentionally relative: right -> left.
+        if (sunset && nextSunrise && nextSunrise > sunset) {
+
+            for (let i = 1; i <= pathSegments; i++) {
+
+                const progress = i / pathSegments;
+                const localTime =
+                    new Date(
+                        sunset.getTime() +
+                        progress * (nextSunrise.getTime() - sunset.getTime())
                     );
 
-                const pathX =
-                    graphicWidth * pathXPercent / 100;
+                const position =
+                    calculateSolarPosition(
+                        localTime,
+                        weather.latitude,
+                        weather.longitude,
+                        weather.utcOffsetSeconds
+                    );
 
-                // The path is sampled between the geometric horizon
-                // crossings, so altitude is used directly for every point.
-                const pathAltitude =
-                    position.altitude;
-
-                const pathY =
-                    altitudeToY(pathAltitude);
-
-                pathPoints.push(
-                    `${i === 0 ? "M" : "L"} ${pathX} ${pathY}`
-                );
+                if (position) {
+                    position.isBelowHorizon = true;
+                    position._pathTime = localTime.getTime();
+                    addPathPoint(position, "L");
+                }
             }
         }
 
@@ -186,7 +385,22 @@ function renderCelestialGraphic(
                 />
 
 
-                <g>
+                <defs>
+                    <!-- Below-horizon Sun imagery must never cross the horizon. -->
+                    <clipPath id="sunBelowHorizonClip">
+                        <rect
+                            x="0"
+                            y="${horizonY}"
+                            width="${width}"
+                            height="${Math.max(0, height - horizonY)}"
+                        />
+                    </clipPath>
+                </defs>
+
+                <g
+                    opacity="${sun.isBelowHorizon ? 0.30 : 1}"
+                    clip-path="${sun.isBelowHorizon ? 'url(#sunBelowHorizonClip)' : 'none'}"
+                >
 
                     <!-- Soft glow -->
                     <circle

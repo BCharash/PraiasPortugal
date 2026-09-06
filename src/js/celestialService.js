@@ -36,7 +36,12 @@ function getCelestialState(weather) {
         parseCelestialTime(weather.sunset);
 
     const now =
-        parseCelestialTime(weather.currentTime);
+        parseCelestialTime(
+            getCelestialSimulationTime(
+                weather.currentTime,
+                weather.sunrise
+            )
+        );
 
 
     //--------------------------------------------------
@@ -51,9 +56,27 @@ function getCelestialState(weather) {
         sunset
     ) {
 
+        const nextDay =
+            new Date(
+                sunrise.getFullYear(),
+                sunrise.getMonth(),
+                sunrise.getDate() + 1,
+                12, 0, 0, 0
+            );
+
+        const nextHorizon =
+            getSolarHorizonTimes(
+                nextDay,
+                weather.latitude,
+                weather.longitude,
+                weather.utcOffsetSeconds
+            );
+
         sunPosition =
-            calculateSolarPosition(
+            getSunDisplayPosition(
                 now,
+                sunset,
+                nextHorizon?.sunrise || null,
                 weather.latitude,
                 weather.longitude,
                 weather.utcOffsetSeconds
@@ -145,6 +168,91 @@ function getCelestialState(weather) {
         }
 
     };
+
+}
+
+
+//--------------------------------------------------
+// Temporary celestial time simulation
+//--------------------------------------------------
+
+function getCelestialSimulationTime(defaultTime, sunriseTime) {
+
+    if (typeof window === "undefined")
+        return defaultTime;
+
+    const value =
+        new URLSearchParams(window.location.search)
+            .get("celestialSim");
+
+    if (!value || !/^\d{1,2}:\d{2}$/.test(value))
+        return defaultTime;
+
+    const base =
+        parseCelestialTime(defaultTime);
+
+    if (!base)
+        return defaultTime;
+
+    let [hour, minute] =
+        value.split(":").map(Number);
+
+    // Accept 24:00 as the exact end-of-day equivalent of 00:00
+    // on the following calendar day. This keeps 24:00 and 00:00
+    // at the same point in the continuous celestial cycle.
+    const isEndOfDay =
+        hour === 24 && minute === 0;
+
+    if ((hour > 23 && !isEndOfDay) || minute > 59)
+        return defaultTime;
+
+    if (isEndOfDay)
+        hour = 0;
+
+    // The simulation represents the continuous celestial cycle
+    // beginning with today's sunrise and ending with tomorrow's
+    // sunrise. Therefore a simulated clock time before today's
+    // sunrise belongs to tomorrow, not to earlier today.
+    const simulatedDate =
+        new Date(
+            base.getFullYear(),
+            base.getMonth(),
+            base.getDate(),
+            hour,
+            minute,
+            0,
+            0
+        );
+
+    // 24:00 is already explicitly the following midnight.
+    if (isEndOfDay) {
+        simulatedDate.setDate(simulatedDate.getDate() + 1);
+    }
+
+    const sunrise =
+        parseCelestialTime(sunriseTime);
+
+    if (sunrise) {
+
+        const sunriseMinutes =
+            sunrise.getHours() * 60 +
+            sunrise.getMinutes();
+
+        const simulatedMinutes =
+            hour * 60 + minute;
+
+        // Times before today's sunrise are the following
+        // calendar day in the continuous sunrise-to-sunrise cycle.
+        if (!isEndOfDay && simulatedMinutes < sunriseMinutes) {
+            simulatedDate.setDate(
+                simulatedDate.getDate() + 1
+            );
+        }
+    }
+
+    // Preserve the local civil-time representation used by the
+    // rest of the celestial service.
+    return `${simulatedDate.getFullYear()}-${String(simulatedDate.getMonth()+1).padStart(2,"0")}-${String(simulatedDate.getDate()).padStart(2,"0")}T${String(hour).padStart(2,"0")}:${String(minute).padStart(2,"0")}`;
 
 }
 
@@ -396,6 +504,91 @@ function calculateSolarPosition(
         altitude
 
     };
+
+}
+
+
+//--------------------------------------------------
+// Sun display position
+//
+// Above the horizon, use absolute astronomical azimuth.
+// Below the horizon, use a relative night-time azimuth
+// running from sunset (right) to the following sunrise
+// (left). The underlying astronomical azimuth is still
+// available on the solar position itself.
+//--------------------------------------------------
+
+function getSunDisplayPosition(
+    now,
+    todaySunset,
+    nextSunrise,
+    latitude,
+    longitude,
+    utcOffsetSeconds = 0
+) {
+
+    const position =
+        calculateSolarPosition(
+            now,
+            latitude,
+            longitude,
+            utcOffsetSeconds
+        );
+
+    if (!position)
+        return null;
+
+    if (
+        todaySunset &&
+        nextSunrise &&
+        now > todaySunset &&
+        now < nextSunrise
+    ) {
+
+        const sunsetPosition =
+            calculateSolarPosition(
+                todaySunset,
+                latitude,
+                longitude,
+                utcOffsetSeconds
+            );
+
+        const sunrisePosition =
+            calculateSolarPosition(
+                nextSunrise,
+                latitude,
+                longitude,
+                utcOffsetSeconds
+            );
+
+        if (sunsetPosition && sunrisePosition) {
+
+            const duration =
+                nextSunrise.getTime() -
+                todaySunset.getTime();
+
+            const elapsed =
+                now.getTime() -
+                todaySunset.getTime();
+
+            const progress =
+                Math.max(0, Math.min(1, elapsed / duration));
+
+            // Relative night azimuth: sunset is right,
+            // sunrise is left. This deliberately does not
+            // follow the absolute azimuth through North.
+            position.displayAzimuth =
+                sunsetPosition.azimuth +
+                (sunrisePosition.azimuth - sunsetPosition.azimuth) *
+                progress;
+
+            // Keep the actual astronomical azimuth too.
+            position.isBelowHorizon = true;
+
+        }
+    }
+
+    return position;
 
 }
 
