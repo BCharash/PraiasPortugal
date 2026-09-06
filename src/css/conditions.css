@@ -779,6 +779,18 @@
 
 }
 
+.dashboard-moon-image {
+
+    display:
+        block;
+
+    width:
+        34px;
+
+    height:
+        34px;
+
+}
 
 /* ----------------------------------------------------------
    Moon Illumination
