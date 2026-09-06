@@ -759,11 +759,23 @@
 
 #dashboardMoonPhase {
 
-    font-size:
-        var(--font-condition-value);
+    width:
+        34px;
 
-    line-height:
-        1.2;
+    height:
+        34px;
+
+    margin:
+        0 auto;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
 
 }
 

@@ -26,6 +26,27 @@ let uvMaximumElement;
 
 const UV_SCALE_MAX = 11;
 
+//--------------------------------------------------
+// Moon phase image
+//--------------------------------------------------
+
+function getMoonPhaseImageUrl(phase) {
+
+    let normalizedPhase = Number(phase);
+
+    if (!Number.isFinite(normalizedPhase)) {
+        normalizedPhase = 0;
+    }
+
+    normalizedPhase =
+        ((normalizedPhase % 1) + 1) % 1;
+
+    const imageNumber =
+        Math.floor(normalizedPhase * 30) + 1;
+
+    return `assets/moon/moon-${String(imageNumber).padStart(2, "0")}.png`;
+}
+
 
 //--------------------------------------------------
 // Initialization
@@ -432,11 +453,17 @@ function updateConditions(dashboardData) {
 
         if (moonPhaseElement) {
 
-            moonPhaseElement.textContent =
-                formatMoonPhase(weather.moonPhase);
+            moonPhaseElement.innerHTML = `
+                <img
+                    class="dashboard-moon-image"
+                    src="${getMoonPhaseImageUrl(weather.moonPhase)}"
+                    alt="${formatMoonPhase(weather.moonPhase)}"
+                >
+            `;
 
         }
 
+        
         if (moonIlluminationElement) {
 
             moonIlluminationElement.textContent =
