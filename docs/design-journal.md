@@ -1098,3 +1098,522 @@ For the temperature widget:
 ## Guiding Principle
 
 > Establish the geometry first. Then place the information within that geometry. Do not use responsive or JavaScript complexity to compensate for an unclear coordinate system.
+
+# DJ0011 — Realistic Lunar Graphic and Phase Asset System
+
+**Date:** 2026-09-07  
+**Project:** Praias de Portugal  
+**Focus:** Replacing the textual Moon-phase indicator with a realistic lunar graphic
+
+---
+
+## 1. Objective
+
+The Conditions panel originally represented the Moon primarily through textual phase information. The goal was to replace this with a visually realistic representation of the Moon while retaining the existing numerical illumination information.
+
+The graphic should communicate the Moon's current appearance immediately, while the percentage illumination remains available as explicit data.
+
+The implementation should also remain lightweight enough for a static GitHub Pages application and should not require a dynamically generated lunar image from an external service.
+
+---
+
+## 2. Design Decision
+
+A library of realistic Moon images was selected rather than attempting to construct the illuminated portion of the Moon using CSS or a simple geometric diagram.
+
+The reason was visual fidelity.
+
+The Moon's appearance is not merely a simple illuminated semicircle. Real lunar images contain visible surface features, and the apparent shape changes with the Moon's phase and libration.
+
+A static library therefore provides a substantially more convincing result while keeping the runtime implementation simple.
+
+---
+
+## 3. Source Material
+
+NASA Scientific Visualization Studio's:
+
+**Moon Phase and Libration, 2026 (SVS-5587)**
+
+was selected as the source material.
+
+The NASA visualization provides hourly frames throughout 2026 and incorporates:
+
+- lunar phase
+- lunar libration
+- changing apparent orientation
+- changing apparent diameter
+- lunar surface detail derived from Lunar Reconnaissance Orbiter data
+
+The complete 2026 animation was obtained through Wikimedia Commons when direct access to the individual NASA frame files was not practical.
+
+The resulting asset set therefore retains the appearance of the NASA visualization while allowing the application to use individual PNG images locally.
+
+---
+
+## 4. Asset Strategy
+
+Thirty representative lunar images were extracted from the 2026 animation.
+
+The images were selected according to illumination rather than simply taking thirty evenly spaced points in time.
+
+The resulting sequence approximates:
+
+- 0%
+- 7%
+- 14%
+- 21%
+- 29%
+- 36%
+- 43%
+- 50%
+- 57%
+- 64%
+- 71%
+- 79%
+- 86%
+- 93%
+- 100%
+
+followed by the corresponding waning sequence back toward the New Moon.
+
+This produces a visually useful distribution across the complete lunar cycle.
+
+---
+
+## 5. Image Processing
+
+The extracted frames were processed into application assets.
+
+Each Moon image was:
+
+1. isolated from its original background;
+2. cleaned of unwanted dark edge artifacts;
+3. standardized to a common lunar-disk size;
+4. placed on a transparent 128 × 128 pixel canvas;
+5. saved as a PNG.
+
+The dark outer crescent/rim artifact found on some source frames was removed without eliminating the legitimate dark portion of the lunar surface.
+
+This distinction was important.
+
+The dark hemisphere and earthshine are part of the actual appearance of the Moon and should remain visible. The unwanted black edge surrounding the illuminated portion was an artifact of the source/background treatment and was removed.
+
+---
+
+## 6. Application Mapping
+
+The application receives a normalized lunar phase value between 0 and 1.
+
+The phase is normalized before selecting an image:
+
+    normalizedPhase =
+        ((normalizedPhase % 1) + 1) % 1;
+
+The normalized phase is then mapped onto the thirty-image library:
+
+    const imageNumber =
+        Math.round(normalizedPhase * 30) % 30 + 1;
+
+The resulting asset path follows the convention:
+
+    assets/moon/moon-01.png
+    assets/moon/moon-02.png
+    ...
+    assets/moon/moon-30.png
+
+This keeps the runtime implementation independent of the original source video.
+
+---
+
+## 7. Conditions Panel Integration
+
+The textual phase representation was replaced by an image element.
+
+The Moon graphic is displayed separately from the numerical illumination value.
+
+The visual Moon therefore communicates:
+
+> What does the Moon look like?
+
+while the numerical value communicates:
+
+> How much of the Moon is illuminated?
+
+This preserves both visual and explicit informational representations.
+
+---
+
+## 8. Illumination
+
+The application's existing illumination calculation was retained:
+
+    (1 - Math.cos(2 * Math.PI * phase)) / 2
+
+The resulting value is displayed as a percentage.
+
+The image selection and numerical illumination are therefore derived from the same underlying phase value.
+
+A small discrepancy between the application's calculated percentage and an external lunar application was observed during testing. This was not changed because the discrepancy appears to relate to differences in the underlying phase timing rather than an error in the graphic asset system itself.
+
+---
+
+## 9. Visual Result
+
+The Moon is now represented as a realistic lunar object rather than a symbolic crescent/quarter/full-circle diagram.
+
+This provides:
+
+- recognizable lunar surface detail;
+- realistic phase geometry;
+- visible earthshine where appropriate;
+- consistent apparent scale;
+- a transparent background suitable for the celestial Conditions graphic.
+
+The implementation remains entirely compatible with the application's static architecture.
+
+---
+
+## Status
+
+Accepted
+
+---
+
+# DJ0012 — Celestial Positioning and Astronomical Coordinate System
+
+**Date:** 2026-09-07  
+**Project:** Praias de Portugal  
+**Focus:** Establishing the astronomical coordinate system and visual movement of the Sun
+
+---
+
+## 1. Objective
+
+The celestial Conditions graphic needed to represent the Sun's position in a way that was both astronomically meaningful and visually useful.
+
+The central requirement was that the Sun's position should correspond to its actual:
+
+- azimuth;
+- altitude;
+- local civil time;
+- sunrise and sunset.
+
+The graphic should therefore function as a coordinate system rather than as a decorative illustration.
+
+---
+
+## 2. Coordinate System
+
+The celestial graphic uses:
+
+- **X-axis = azimuth**
+- **Y-axis = altitude**
+
+The horizon represents:
+
+    altitude = 0°
+
+Positions above the horizon have positive altitude.
+
+Positions below the horizon have negative astronomical altitude.
+
+The horizontal center of the graphic represents:
+
+    South = 180° azimuth
+
+The horizontal direction is intentionally reversed from the conventional mathematical orientation:
+
+    East  → left
+    South → center
+    West  → right
+
+This corresponds to viewing the sky from the observer's perspective.
+
+---
+
+## 3. Fixed Azimuth Envelope
+
+A complete 360° azimuth display was rejected.
+
+Instead, the graphic uses a fixed useful envelope of approximately:
+
+    ±132° from South
+
+or approximately:
+
+    48° → 312° absolute azimuth
+
+This is sufficient to contain the maximum useful solar/lunar azimuth excursion for mainland Portugal throughout the year.
+
+The advantage of a fixed envelope is that the coordinate system does not change from day to day or season to season.
+
+The Sun therefore moves through a stable visual coordinate system.
+
+---
+
+## 4. Solar Position
+
+The Sun's astronomical position is calculated from:
+
+- latitude;
+- longitude;
+- local civil date;
+- local civil time;
+- UTC offset.
+
+The calculation uses a NOAA/Meeus-style solar-position model.
+
+The resulting position contains:
+
+    azimuth
+    altitude
+
+with conventional astronomical azimuth:
+
+    0°   = North
+    90°  = East
+    180° = South
+    270° = West
+
+The application's graphic then converts this absolute azimuth into its observer-oriented horizontal coordinate.
+
+---
+
+## 5. Local Civil Time
+
+The application deliberately works from the local civil time supplied by the weather service.
+
+This is important because the user sees sunrise and sunset in Portuguese local clock time.
+
+The UTC offset is applied exactly once within the solar-time correction.
+
+This preserves the relationship between:
+
+- the displayed clock;
+- the calculated solar position;
+- sunrise;
+- sunset.
+
+Daylight-saving time is therefore represented through the local UTC offset rather than by manually shifting the displayed times.
+
+---
+
+## 6. Solar Arc
+
+When the Sun is above the horizon, its position follows the calculated astronomical position.
+
+The daytime path is generated by sampling the solar position between sunrise and sunset.
+
+The first and last path points are explicitly placed at:
+
+    altitude = 0°
+
+This ensures that the visible daytime arc meets the horizon at sunrise and sunset.
+
+The established daytime astronomical arc is not altered merely to accommodate the visual appearance of the Sun's disk.
+
+---
+
+## 7. Separation of Astronomy and Graphics
+
+A critical architectural decision was made during development:
+
+> The astronomical position and the visual appearance of the Sun are separate concerns.
+
+The celestial service calculates where the Sun actually is.
+
+The formatter determines how the Sun is visually represented at the horizon.
+
+This prevents visual effects from corrupting the astronomical coordinate system.
+
+In particular, the Sun's calculated altitude is not artificially changed simply because the graphic is large enough to extend across the horizon.
+
+---
+
+## 8. Sunrise and Sunset Visual Transition
+
+The Sun's physical graphic is larger than a mathematical point.
+
+Consequently, a purely geometric altitude crossing would make the graphic appear abruptly.
+
+A visual reveal system was therefore introduced.
+
+At sunrise:
+
+    sunrise       → 0%
+    +1 minute     → 20%
+    +2 minutes    → 40%
+    +3 minutes    → 60%
+    +4 minutes    → 80%
+    +5 minutes    → 100%
+
+At sunset the sequence is reversed:
+
+    -5 minutes    → 100%
+    -4 minutes    → 80%
+    -3 minutes    → 60%
+    -2 minutes    → 40%
+    -1 minute     → 20%
+    sunset        → 0%
+
+The astronomical position itself does not change during this visual transition.
+
+Only the visible portion of the Sun's disk changes.
+
+---
+
+## 9. Nighttime Position
+
+The behavior immediately surrounding the horizon was deliberately made symmetric.
+
+At the exact sunset minute, the Sun remains on its astronomical path while its disk has visually disappeared.
+
+Beginning one minute after sunset, the Sun moves immediately to the horizontal nighttime track.
+
+The same principle applies before sunrise.
+
+One minute before sunrise, the Sun remains on the horizontal nighttime track.
+
+At sunrise, the visual emergence begins and the Sun resumes its astronomical path.
+
+This produces a clean conceptual distinction:
+
+    Astronomical arc
+          ↓
+    visual horizon transition
+          ↓
+    horizontal nighttime track
+
+and the reverse sequence at sunrise.
+
+---
+
+## 10. Nighttime Azimuth
+
+During the night, the application does not attempt to display the Sun's full astronomical journey toward the northern sky.
+
+Instead, the Sun follows a controlled visual path from:
+
+    sunset position → sunrise position
+
+while moving:
+
+    West → East
+
+visually across the nighttime portion of the graphic.
+
+The purpose is not to imply that the Sun literally travels along a horizontal line beneath the observer.
+
+The nighttime track is a visualization of the continuous daily celestial cycle.
+
+The underlying astronomical calculation remains available separately.
+
+---
+
+## 11. Horizontal Nighttime Line
+
+The horizontal nighttime line therefore has a specific meaning in the visualization:
+
+> The Sun is below the horizon and is being represented by its controlled nighttime position rather than by its true negative altitude.
+
+This avoids allowing the Sun to disappear far below the useful display area during the night.
+
+It also makes the transition between sunset, nighttime, and sunrise visually comprehensible.
+
+---
+
+## 12. Simulation
+
+A temporary celestial simulation mechanism was retained for development and testing.
+
+The URL parameter uses the four-digit form:
+
+    ?celestialSim=0710
+    ?celestialSim=1200
+    ?celestialSim=2015
+    ?celestialSim=2100
+
+`2400` is accepted as the equivalent of midnight at the end of the simulated day.
+
+The simulation represents the continuous cycle:
+
+    today's sunrise
+            ↓
+    today's sunset
+            ↓
+    tomorrow's sunrise
+
+Therefore a simulated time before today's sunrise belongs to the following sunrise-to-sunrise cycle rather than to an earlier point on the same calendar day.
+
+This distinction is important for correctly representing the nighttime Sun movement.
+
+---
+
+## 13. Automatic Celestial Updating
+
+The celestial graphic is designed to update independently of the main weather-data refresh.
+
+Once weather data has been loaded, the application can recalculate the celestial position using the existing data.
+
+The celestial calculation does not require another weather or marine API request every minute.
+
+The intended update sequence is therefore:
+
+    Load weather data
+           ↓
+    Calculate celestial state
+           ↓
+    Display celestial graphic
+           ↓
+    Wait for next minute boundary
+           ↓
+    Recalculate celestial state
+           ↓
+    Redraw celestial graphic
+           ↓
+    Repeat
+
+This allows the Sun and Moon graphic to track the passage of time while leaving the rest of the Conditions panel unchanged.
+
+---
+
+## 14. Design Principle
+
+The celestial graphic is consequently treated as a small astronomical visualization system rather than a static decoration.
+
+Its responsibilities are divided into three layers:
+
+### Astronomical layer
+
+Determines:
+
+- solar azimuth;
+- solar altitude;
+- lunar state;
+- sunrise;
+- sunset;
+- moonrise;
+- moonset.
+
+### Coordinate layer
+
+Converts astronomical coordinates into the fixed Portuguese display system.
+
+### Visual layer
+
+Determines:
+
+- Sun disk appearance;
+- horizon reveal;
+- nighttime positioning;
+- path rendering;
+- lunar image selection.
+
+This separation allows visual improvements to be made without changing the underlying astronomical calculations.
+
+---
+
+## Status
+
+Accepted
