@@ -13,8 +13,99 @@ function getSunDisplayGraphicPosition(sun) {
     );
 }
 
+function smoothstep(value) {
+    const t = Math.max(0, Math.min(1, value));
+    return t * t * (3 - 2 * t);
+}
+
+function getSunDiscReveal(sun) {
+
+    if (!sun || !sun.localTime)
+        return 1;
+
+    const now = sun.localTime.getTime();
+
+    // Sunrise/sunset supplied by the forecast belong to the forecast date.
+    // The celestial simulation can move the displayed time to the following
+    // calendar day, so compare wall-clock times on the same calendar date
+    // as the Sun being displayed.
+    const alignHorizonToSunDate = horizonTime => {
+        if (!(horizonTime instanceof Date) || !sun.localTime)
+            return null;
+
+        const aligned = new Date(horizonTime.getTime());
+        aligned.setFullYear(
+            sun.localTime.getFullYear(),
+            sun.localTime.getMonth(),
+            sun.localTime.getDate()
+        );
+        return aligned.getTime();
+    };
+
+    const sunrise = alignHorizonToSunDate(sun.sunriseTime);
+    const sunset = alignHorizonToSunDate(sun.sunsetTime);
+    const transition = 5 * 60000;
+
+    if (Number.isFinite(sunrise)) {
+        const elapsed = now - sunrise;
+
+        // Sunrise: 0% at sunrise, then 20/40/60/80/100%
+        // at each successive minute.
+        if (elapsed >= 0 && elapsed <= transition) {
+            return Math.max(
+                0,
+                Math.min(1, elapsed / transition)
+            );
+        }
+    }
+
+    if (Number.isFinite(sunset)) {
+        const remaining = sunset - now;
+
+        // Sunset: 100% five minutes before sunset, then
+        // 80/60/40/20%, reaching 0% exactly at sunset.
+        if (remaining >= 0 && remaining <= transition) {
+            return Math.max(
+                0,
+                Math.min(1, remaining / transition)
+            );
+        }
+    }
+
+    return 1;
+}
+
+
+function getSunGraphicY(
+    sun,
+    graphicHeight,
+    horizonY,
+    pixelsPerDegree
+) {
+
+    //--------------------------------------------------
+    // The Sun remains on its astronomical vertical course.
+    // Horizon crossing is handled visually by the disc reveal;
+    // the Sun's calculated position is not altered.
+    //--------------------------------------------------
+
+    const normalY =
+        graphicHeight *
+        (0.80 - sun.altitude / 100 * 0.80);
+
+    const SUN_VISUAL_RADIUS_PX = 21;
+
+    const nightY =
+        horizonY + SUN_VISUAL_RADIUS_PX;
+
+    if (sun.isNightParked)
+        return nightY;
+
+    return normalY;
+}
+
 function getPathGraphicPosition(position, sunset, nextSunrise, weather) {
-    if (!position.isBelowHorizon)
+    if (!position.isNightParked)
         return getAzimuthGraphicPosition(position.azimuth);
 
     if (!sunset || !nextSunrise || nextSunrise <= sunset)
@@ -148,44 +239,19 @@ function renderCelestialGraphic(
         //--------------------------------------------------
         // Fixed vertical coordinate system
         //
-        // Horizon = 0 degrees. Above-horizon altitude retains
-        // the existing scale. Negative altitude is compressed
-        // into the available 20% below the horizon.
+        // The established daytime mapping is preserved. Only the
+        // deliberately oversized Sun's horizon crossing uses a faster
+        // visual scale. The transition is anchored to the same sunrise
+        // and sunset timestamps displayed to the user.
         //--------------------------------------------------
 
-        const belowHorizonAltitudeRange =
-            getBelowHorizonAltitudeRange(
-                weather,
-                parseCelestialTime(weather.sunrise)
-            );
-
-        // Leave enough room at the bottom for the Sun disk and rays.
-        // The curve itself still occupies the full conceptual night
-        // band; the drawable altitude range ends just above the SVG edge.
-        const belowHorizonBottomPadding = 22;
         const horizonY = graphicHeight * 0.80;
-        const belowHorizonBottomY =
-            Math.max(horizonY, graphicHeight - belowHorizonBottomPadding);
-        const belowHorizonHeight =
-            belowHorizonBottomY - horizonY;
 
-        const altitudeToY =
-            altitude => {
+        const SUN_DISC_RADIUS_PX = 12;
+        const SUN_DISC_RADIUS_DEGREES = 0.27;
 
-                if (altitude >= 0) {
-                    return graphicHeight *
-                        (0.80 - altitude / 100 * 0.80);
-                }
-
-                // Compress the complete negative-altitude range into
-                // the available lower band, while reserving enough
-                // space for the Sun graphic itself at the deepest point.
-                const depth =
-                    Math.min(1, Math.abs(altitude) / belowHorizonAltitudeRange);
-
-                return horizonY + depth * belowHorizonHeight;
-            };
-
+        const pixelsPerDegree =
+            SUN_DISC_RADIUS_PX / SUN_DISC_RADIUS_DEGREES;
 
         //--------------------------------------------------
         // Current Sun position
@@ -203,10 +269,24 @@ function renderCelestialGraphic(
             xPercent / 100;
 
 
+        // Preserve the exact daytime arc away from the horizon while
+        // using the visual horizon-transition state around sunrise/sunset.
         const y =
-            altitudeToY(
-                sun.altitude
+            getSunGraphicY(
+                sun,
+                graphicHeight,
+                horizonY,
+                pixelsPerDegree
             );
+
+        const sunsetDiscReveal =
+            getSunDiscReveal(sun);
+
+        const sunDiscTop =
+            y - 12;
+
+        const sunDiscRevealHeight =
+            24 * sunsetDiscReveal;
 
 
         //--------------------------------------------------
@@ -225,19 +305,14 @@ function renderCelestialGraphic(
         const openMeteoSunset =
             parseCelestialTime(weather.sunset);
 
-        const horizonTimes =
-            getSolarHorizonTimes(
-                openMeteoSunrise || new Date(),
-                weather.latitude,
-                weather.longitude,
-                weather.utcOffsetSeconds
-            );
-
+        // Use the same civil sunrise/sunset timestamps displayed in the
+        // conditions panel. The celestial graphic must not invent a second
+        // set of horizon times.
         const sunrise =
-            horizonTimes?.sunrise || openMeteoSunrise;
+            openMeteoSunrise;
 
         const sunset =
-            horizonTimes?.sunset || openMeteoSunset;
+            openMeteoSunset;
 
         const nextDay =
             sunrise
@@ -270,6 +345,44 @@ function renderCelestialGraphic(
             if (!position)
                 return;
 
+            position.localTime =
+                new Date(position._pathTime);
+            position.sunriseTime =
+                position._pathTime > sunset.getTime()
+                    ? nextSunrise
+                    : sunrise;
+            position.sunsetTime =
+                sunset;
+            position.sunriseAltitude =
+                calculateSolarPosition(
+                    position.sunriseTime,
+                    weather.latitude,
+                    weather.longitude,
+                    weather.utcOffsetSeconds
+                )?.altitude ?? 0;
+            position.sunsetAltitude =
+                calculateSolarPosition(
+                    sunset,
+                    weather.latitude,
+                    weather.longitude,
+                    weather.utcOffsetSeconds
+                )?.altitude ?? 0;
+            position.latitude = weather.latitude;
+            position.longitude = weather.longitude;
+            position.utcOffsetSeconds = weather.utcOffsetSeconds;
+
+            if (
+                position._pathTime >= sunset.getTime() + 1 * 60000 &&
+                position._pathTime <= nextSunrise.getTime() - 1 * 60000
+            ) {
+                position.isNightParked = true;
+                position.isBelowHorizon = true;
+            } else {
+                position.isNightParked = false;
+                position.isBelowHorizon =
+                    position._pathTime >= sunset.getTime() + 4 * 60000;
+            }
+
             const pathXPercent =
                 getPathGraphicPosition(
                     position,
@@ -282,7 +395,12 @@ function renderCelestialGraphic(
                 graphicWidth * pathXPercent / 100;
 
             const pathY =
-                altitudeToY(position.altitude);
+                getSunGraphicY(
+                    position,
+                    graphicHeight,
+                    horizonY,
+                    pixelsPerDegree
+                );
 
             pathPoints.push(
                 `${command} ${pathX} ${pathY}`
@@ -320,8 +438,27 @@ function renderCelestialGraphic(
         }
 
         // Below-horizon path: sunset today -> sunrise tomorrow.
-        // X is intentionally relative: right -> left.
+        // The exact sunset minute remains on the astronomical arc for the
+        // visual transition. Beginning one minute after sunset, the Sun
+        // drops to the controlled horizontal nighttime track. The same
+        // behavior reverses one minute before the following sunrise.
         if (sunset && nextSunrise && nextSunrise > sunset) {
+
+            const sunsetPosition =
+                calculateSolarPosition(
+                    sunset,
+                    weather.latitude,
+                    weather.longitude,
+                    weather.utcOffsetSeconds
+                );
+
+            const sunrisePosition =
+                calculateSolarPosition(
+                    nextSunrise,
+                    weather.latitude,
+                    weather.longitude,
+                    weather.utcOffsetSeconds
+                );
 
             for (let i = 1; i <= pathSegments; i++) {
 
@@ -341,7 +478,20 @@ function renderCelestialGraphic(
                     );
 
                 if (position) {
-                    position.isBelowHorizon = true;
+                    position.isBelowHorizon =
+                        position.altitude < -SOLAR_DISC_RADIUS_DEGREES;
+
+                    if (
+                        position.isBelowHorizon &&
+                        sunsetPosition &&
+                        sunrisePosition
+                    ) {
+                        position.displayAzimuth =
+                            sunsetPosition.azimuth +
+                            (sunrisePosition.azimuth - sunsetPosition.azimuth) *
+                            progress;
+                    }
+
                     position._pathTime = localTime.getTime();
                     addPathPoint(position, "L");
                 }
@@ -375,9 +525,9 @@ function renderCelestialGraphic(
                 <!-- Temporary horizon guide: altitude = 0 degrees -->
                 <line
                     x1="0"
-                    y1="${altitudeToY(0)}"
+                    y1="${horizonY}"
                     x2="${width}"
-                    y2="${altitudeToY(0)}"
+                    y2="${horizonY}"
                     stroke="#ffffff"
                     stroke-width="1"
                     stroke-dasharray="4 5"
@@ -395,11 +545,43 @@ function renderCelestialGraphic(
                             height="${Math.max(0, height - horizonY)}"
                         />
                     </clipPath>
+
+                    <!-- During sunrise, reveal only the portion of the
+                         Sun graphic that has emerged above the horizon. -->
+                    <clipPath id="sunAboveHorizonClip">
+                        <rect
+                            x="0"
+                            y="0"
+                            width="${width}"
+                            height="${Math.max(0, horizonY)}"
+                        />
+                    </clipPath>
+
+                    <!-- Sunrise disc reveal: the bright disc appears
+                         evenly over the five minutes beginning at sunrise. -->
+                    <clipPath id="sunriseDiscRevealClip">
+                        <rect
+                            x="${x - 12}"
+                            y="${y - 12}"
+                            width="24"
+                            height="${24 * getSunDiscReveal(sun)}"
+                        />
+                    </clipPath>
+
+                    <!-- Sunset disc reveal: the bright disc disappears
+                         evenly over the five minutes leading to sunset. -->
+                    <clipPath id="sunsetDiscRevealClip">
+                        <rect
+                            x="${x - 12}"
+                            y="${sunDiscTop}"
+                            width="24"
+                            height="${sunDiscRevealHeight}"
+                        />
+                    </clipPath>
                 </defs>
 
                 <g
-                    opacity="${sun.isBelowHorizon ? 0.30 : 1}"
-                    clip-path="${sun.isBelowHorizon ? 'url(#sunBelowHorizonClip)' : 'none'}"
+                    opacity="${sun.isBelowHorizon || (sun.sunsetTime && sun.localTime && sun.localTime.getTime() >= sun.sunsetTime.getTime() + 1 * 60000) ? 0.30 : 1}"
                 >
 
                     <!-- Soft glow -->
@@ -417,6 +599,7 @@ function renderCelestialGraphic(
                         cy="${y}"
                         r="12"
                         fill="#ffd34d"
+                        clip-path="${sun.sunsetTransition ? 'url(#sunsetDiscRevealClip)' : (sun.sunriseTransition ? 'url(#sunriseDiscRevealClip)' : 'none')}"
                     />
 
                     <!-- Sun rays -->

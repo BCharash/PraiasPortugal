@@ -24,6 +24,11 @@ let uvRiskElement;
 let uvRangeElement;
 let uvMaximumElement;
 
+// Most recently loaded weather data, reused by the celestial auto-update.
+// The timer redraws the graphic only; it does not request new API data.
+let latestCelestialWeather = null;
+let celestialAutoUpdateTimer = null;
+
 const UV_SCALE_MAX = 11;
 
 //--------------------------------------------------
@@ -144,6 +149,78 @@ function initializeConditions() {
 
 
 //--------------------------------------------------
+// Celestial auto-update
+//--------------------------------------------------
+
+// Redraw only the celestial graphic using the most recently loaded weather.
+// This keeps the sunrise/sunset transition moving without another API call.
+function updateCelestialGraphicOnly() {
+
+    if (!latestCelestialWeather)
+        return;
+
+    const celestialGraphicElement =
+        document.getElementById("celestialGraphic");
+
+    if (!celestialGraphicElement)
+        return;
+
+    const graphicWidth =
+        celestialGraphicElement.clientWidth;
+
+    const graphicHeight =
+        celestialGraphicElement.clientHeight;
+
+    if (!graphicWidth || !graphicHeight)
+        return;
+
+    const celestial =
+        getCelestialState(latestCelestialWeather);
+
+    if (!celestial)
+        return;
+
+    celestialGraphicElement.innerHTML =
+        renderCelestialGraphic(
+            celestial,
+            latestCelestialWeather,
+            graphicWidth,
+            graphicHeight
+        );
+}
+
+
+function startCelestialAutoUpdate() {
+
+    if (celestialAutoUpdateTimer) {
+        clearTimeout(celestialAutoUpdateTimer);
+        clearInterval(celestialAutoUpdateTimer);
+    }
+
+    const now = new Date();
+    const millisecondsIntoMinute =
+        now.getSeconds() * 1000 +
+        now.getMilliseconds();
+
+    const delayToNextMinute =
+        60000 - millisecondsIntoMinute;
+
+    celestialAutoUpdateTimer =
+        setTimeout(() => {
+
+            updateCelestialGraphicOnly();
+
+            celestialAutoUpdateTimer =
+                setInterval(
+                    updateCelestialGraphicOnly,
+                    60000
+                );
+
+        }, delayToNextMinute);
+}
+
+
+//--------------------------------------------------
 // Updates
 //--------------------------------------------------
 
@@ -160,6 +237,11 @@ function updateConditions(dashboardData) {
         dashboardData.weather;
 
     window.testWeather = weather;
+
+    latestCelestialWeather = weather;
+
+    if (weather)
+        startCelestialAutoUpdate();
 
     const marine =
         dashboardData.marine;

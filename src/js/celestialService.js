@@ -18,6 +18,9 @@
 // in mainland Portugal throughout the year.
 const CELESTIAL_AZIMUTH_HALF_RANGE = 132;
 
+// Apparent solar-disc radius used only for the visual horizon transition.
+const SOLAR_DISC_RADIUS_DEGREES = 0.27;
+
 
 //--------------------------------------------------
 // Public Functions
@@ -75,6 +78,7 @@ function getCelestialState(weather) {
         sunPosition =
             getSunDisplayPosition(
                 now,
+                sunrise,
                 sunset,
                 nextHorizon?.sunrise || null,
                 weather.latitude,
@@ -194,13 +198,10 @@ function getCelestialSimulationTime(defaultTime, sunriseTime) {
     if (!base)
         return defaultTime;
 
-    let hour =
-        Number(value.slice(0, 2));
+    let hour = Number(value.slice(0, 2));
+    let minute = Number(value.slice(2, 4));
 
-    let minute =
-        Number(value.slice(2, 4));
-
-    // Accept 24:00 as the exact end-of-day equivalent of 00:00
+    // Accept 2400 as the exact end-of-day equivalent of 0000
     // on the following calendar day. This keeps 24:00 and 00:00
     // at the same point in the continuous celestial cycle.
     const isEndOfDay =
@@ -209,7 +210,6 @@ function getCelestialSimulationTime(defaultTime, sunriseTime) {
     if ((hour > 23 && !isEndOfDay) || minute > 59)
         return defaultTime;
 
-    
     if (isEndOfDay)
         hour = 0;
 
@@ -228,7 +228,7 @@ function getCelestialSimulationTime(defaultTime, sunriseTime) {
             0
         );
 
-    // 24:00 is already explicitly the following midnight.
+    // 2400 is already explicitly the following midnight.
     if (isEndOfDay) {
         simulatedDate.setDate(simulatedDate.getDate() + 1);
     }
@@ -524,6 +524,7 @@ function calculateSolarPosition(
 
 function getSunDisplayPosition(
     now,
+    todaySunrise,
     todaySunset,
     nextSunrise,
     latitude,
@@ -542,60 +543,159 @@ function getSunDisplayPosition(
     if (!position)
         return null;
 
-    if (
-        todaySunset &&
-        nextSunrise &&
+    // Keep the astronomical position intact. The formatter is responsible
+    // for reconciling that position with the deliberately oversized Sun
+    // graphic at the horizon.
+    position.displayAzimuth = position.azimuth;
+    position.localTime = new Date(now.getTime());
+    position.sunriseTime = todaySunrise;
+    position.sunsetTime = todaySunset;
+    position.nextSunriseTime = nextSunrise;
+    position.sunriseAltitude =
+        calculateSolarPosition(
+            todaySunrise,
+            latitude,
+            longitude,
+            utcOffsetSeconds
+        )?.altitude ?? 0;
+    position.sunsetAltitude =
+        calculateSolarPosition(
+            todaySunset,
+            latitude,
+            longitude,
+            utcOffsetSeconds
+        )?.altitude ?? 0;
+    position.latitude = latitude;
+    position.longitude = longitude;
+    position.utcOffsetSeconds = utcOffsetSeconds;
+    position.isBelowHorizon = false;
+    position.isNightParked = false;
+
+    if (!todaySunrise || !todaySunset || !nextSunrise)
+        return position;
+
+    const sunriseTransitionStart =
+        new Date(todaySunrise.getTime() - 4 * 60000);
+
+    const sunriseTransitionEnd =
+        new Date(todaySunrise.getTime() + 5 * 60000);
+
+    const sunsetTransitionStart =
+        new Date(todaySunset.getTime() - 5 * 60000);
+
+    const sunsetTransitionEnd =
+        new Date(todaySunset.getTime() + 4 * 60000);
+
+    //--------------------------------------------------
+    // Sunrise / sunset state information.
+    //
+    // These timestamps are deliberately based on the same civil times
+    // shown to the user by Open-Meteo. This prevents the graphic horizon
+    // event from drifting away from the displayed sunrise/sunset time.
+    //--------------------------------------------------
+
+    position.sunriseTransition =
+        now >= sunriseTransitionStart &&
+        now <= sunriseTransitionEnd;
+
+    position.sunsetTransition =
+        now >= sunsetTransitionStart &&
+        now <= sunsetTransitionEnd;
+
+    //--------------------------------------------------
+    // Night azimuth.
+    //
+    // During the visual horizon transition we retain the astronomical
+    // azimuth. Once the Sun's entire visual graphic has cleared the
+    // horizon, it follows the fixed eastward night track.
+    //--------------------------------------------------
+
+    const sunsetPosition =
+        calculateSolarPosition(
+            todaySunset,
+            latitude,
+            longitude,
+            utcOffsetSeconds
+        );
+
+    const sunrisePosition =
+        calculateSolarPosition(
+            nextSunrise,
+            latitude,
+            longitude,
+            utcOffsetSeconds
+        );
+
+    const isNight =
         now > todaySunset &&
-        now < nextSunrise
+        now < nextSunrise;
+
+    // Once the Sun has reached the next minute after sunset,
+    // immediately place it on the horizontal nighttime track.
+    // Likewise, keep it on that track until one minute before
+    // the following sunrise, when the astronomical emergence begins.
+    const nightParkStart =
+        new Date(todaySunset.getTime() + 1 * 60000);
+
+    const nightParkEnd =
+        new Date(nextSunrise.getTime() - 1 * 60000);
+
+    // The Sun is parked on the horizontal nighttime track beginning
+    // one minute after sunset, and remains there until one minute
+    // before the following sunrise. The exact sunset/sunrise minutes
+    // remain available for the visual horizon transition.
+    if (
+        isNight &&
+        now >= nightParkStart &&
+        now <= nightParkEnd
     ) {
 
-        const sunsetPosition =
-            calculateSolarPosition(
-                todaySunset,
-                latitude,
-                longitude,
-                utcOffsetSeconds
-            );
-
-        const sunrisePosition =
-            calculateSolarPosition(
-                nextSunrise,
-                latitude,
-                longitude,
-                utcOffsetSeconds
-            );
+        position.isNightParked = true;
+        position.isBelowHorizon = true;
 
         if (sunsetPosition && sunrisePosition) {
 
-            const duration =
-                nextSunrise.getTime() -
-                todaySunset.getTime();
-
-            const elapsed =
-                now.getTime() -
-                todaySunset.getTime();
-
             const progress =
-                Math.max(0, Math.min(1, elapsed / duration));
+                Math.max(
+                    0,
+                    Math.min(
+                        1,
+                        (now.getTime() - todaySunset.getTime()) /
+                        (nextSunrise.getTime() - todaySunset.getTime())
+                    )
+                );
 
-            // Relative night azimuth: sunset is right,
-            // sunrise is left. This deliberately does not
-            // follow the absolute azimuth through North.
             position.displayAzimuth =
                 sunsetPosition.azimuth +
                 (sunrisePosition.azimuth - sunsetPosition.azimuth) *
                 progress;
+        }
 
-            // Keep the actual astronomical azimuth too.
-            position.isBelowHorizon = true;
+    } else if (isNight) {
 
+        // The Sun remains dim only after the disc itself has cleared
+        // the horizon. During the short visual descent immediately
+        // after sunset it remains fully bright.
+        position.isBelowHorizon =
+            now >= todaySunset.getTime() + 4 * 60000;
+
+        if (position.isBelowHorizon && sunsetPosition && sunrisePosition) {
+            const progress =
+                Math.max(0, Math.min(1,
+                    (now.getTime() - todaySunset.getTime()) /
+                    (nextSunrise.getTime() - todaySunset.getTime())
+                ));
+
+            position.displayAzimuth =
+                sunsetPosition.azimuth +
+                (sunrisePosition.azimuth - sunsetPosition.azimuth) *
+                progress;
         }
     }
 
     return position;
 
 }
-
 
 //--------------------------------------------------
 // Solar Horizon Times
