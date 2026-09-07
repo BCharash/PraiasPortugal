@@ -185,7 +185,7 @@ function getCelestialSimulationTime(defaultTime, sunriseTime) {
         new URLSearchParams(window.location.search)
             .get("celestialSim");
 
-    if (!value || !/^\d{1,2}:\d{2}$/.test(value))
+    if (!value || !/^\d{4}$/.test(value))
         return defaultTime;
 
     const base =
@@ -194,8 +194,11 @@ function getCelestialSimulationTime(defaultTime, sunriseTime) {
     if (!base)
         return defaultTime;
 
-    let [hour, minute] =
-        value.split(":").map(Number);
+    let hour =
+        Number(value.slice(0, 2));
+
+    let minute =
+        Number(value.slice(2, 4));
 
     // Accept 24:00 as the exact end-of-day equivalent of 00:00
     // on the following calendar day. This keeps 24:00 and 00:00
@@ -206,6 +209,7 @@ function getCelestialSimulationTime(defaultTime, sunriseTime) {
     if ((hour > 23 && !isEndOfDay) || minute > 59)
         return defaultTime;
 
+    
     if (isEndOfDay)
         hour = 0;
 
