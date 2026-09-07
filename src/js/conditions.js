@@ -153,7 +153,7 @@ function initializeConditions() {
 //--------------------------------------------------
 
 // Redraw only the celestial graphic using the most recently loaded weather.
-// This keeps the sunrise/sunset transition moving without another API call.
+// This uses the already-loaded weather data; it never requests new API data.
 function updateCelestialGraphicOnly() {
 
     if (!latestCelestialWeather)
@@ -190,12 +190,13 @@ function updateCelestialGraphicOnly() {
 }
 
 
-function startCelestialAutoUpdate() {
+function scheduleCelestialAutoUpdate() {
 
-    if (celestialAutoUpdateTimer) {
+    // Use a fresh timeout each time rather than a repeating interval.
+    // This keeps every redraw aligned to the actual minute boundary and
+    // avoids the timer being repeatedly reset by weather-data refreshes.
+    if (celestialAutoUpdateTimer)
         clearTimeout(celestialAutoUpdateTimer);
-        clearInterval(celestialAutoUpdateTimer);
-    }
 
     const now = new Date();
     const millisecondsIntoMinute =
@@ -209,14 +210,28 @@ function startCelestialAutoUpdate() {
         setTimeout(() => {
 
             updateCelestialGraphicOnly();
-
-            celestialAutoUpdateTimer =
-                setInterval(
-                    updateCelestialGraphicOnly,
-                    60000
-                );
+            scheduleCelestialAutoUpdate();
 
         }, delayToNextMinute);
+}
+
+
+function startCelestialAutoUpdate() {
+
+    if (!celestialAutoUpdateTimer)
+        scheduleCelestialAutoUpdate();
+}
+
+
+// If the browser temporarily suspends timers while the page is hidden,
+// redraw immediately when the page becomes visible again.
+if (typeof document !== "undefined") {
+    document.addEventListener("visibilitychange", () => {
+        if (!document.hidden) {
+            updateCelestialGraphicOnly();
+            scheduleCelestialAutoUpdate();
+        }
+    });
 }
 
 
