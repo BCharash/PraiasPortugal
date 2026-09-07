@@ -174,8 +174,34 @@ function updateCelestialGraphicOnly() {
     if (!graphicWidth || !graphicHeight)
         return;
 
+    // getCelestialState normally uses weather.currentTime, which is the
+    // timestamp from the last weather/API load. For the minute-by-minute
+    // display we must supply the current local civil clock time instead.
+    // This changes no weather data and makes no API request.
+    const simulationValue =
+        typeof window !== "undefined"
+            ? new URLSearchParams(window.location.search).get("celestialSim")
+            : null;
+
+    let celestialWeather = latestCelestialWeather;
+
+    // Preserve celestial simulation exactly as entered by the developer.
+    // In normal operation, replace only currentTime with the actual local
+    // wall-clock time so the celestial position advances every minute.
+    if (!simulationValue) {
+        const now = new Date();
+        const pad = value => String(value).padStart(2, "0");
+
+        celestialWeather = {
+            ...latestCelestialWeather,
+            currentTime:
+                `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}` +
+                `T${pad(now.getHours())}:${pad(now.getMinutes())}`
+        };
+    }
+
     const celestial =
-        getCelestialState(latestCelestialWeather);
+        getCelestialState(celestialWeather);
 
     if (!celestial)
         return;
