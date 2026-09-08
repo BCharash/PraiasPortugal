@@ -54,6 +54,257 @@ function getMoonPhaseImageUrl(phase) {
 
 
 //--------------------------------------------------
+// Celestial Development Simulator
+//--------------------------------------------------
+
+let celestialSimulatorRunning = false;
+let celestialSimulatorTimer = null;
+let celestialSimulatorWeather = null;
+
+function hasCelestialSimulatorParameter() {
+    if (typeof window === "undefined")
+        return false;
+
+    return new URLSearchParams(window.location.search)
+        .has("celestialSim");
+}
+
+function formatSimulatorDate(date) {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
+function formatSimulatorTime(date) {
+    return `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
+}
+
+function simulatorDateFromWeather(weather) {
+
+    const parsed =
+        parseCelestialTime(weather?.currentTime);
+
+    if (!parsed)
+        return new Date();
+
+    const urlValue =
+        typeof window !== "undefined"
+            ? new URLSearchParams(window.location.search).get("celestialSim")
+            : null;
+
+    if (urlValue && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(urlValue)) {
+        const explicit = parseCelestialTime(urlValue);
+        if (explicit)
+            return explicit;
+    }
+
+    if (urlValue && /^\d{4}$/.test(urlValue)) {
+        const hour = Number(urlValue.slice(0, 2));
+        const minute = Number(urlValue.slice(2, 4));
+
+        if (hour <= 23 && minute <= 59) {
+            parsed.setHours(hour, minute, 0, 0);
+            return parsed;
+        }
+
+        if (hour === 24 && minute === 0) {
+            parsed.setDate(parsed.getDate() + 1);
+            parsed.setHours(0, 0, 0, 0);
+            return parsed;
+        }
+    }
+
+    return parsed;
+}
+
+function writeCelestialSimulatorUrl(date) {
+
+    if (typeof window === "undefined")
+        return;
+
+    const url = new URL(window.location.href);
+
+    url.searchParams.set(
+        "celestialSim",
+        `${formatSimulatorDate(date)}T${formatSimulatorTime(date)}`
+    );
+
+    window.history.replaceState(null, "", url.toString());
+}
+
+function setCelestialSimulatorTime(date, updateUrl = true) {
+
+    if (!(date instanceof Date) || Number.isNaN(date.getTime()))
+        return;
+
+    const next = new Date(date.getTime());
+    next.setSeconds(0, 0);
+
+    window.celestialSimulatorTime = next;
+
+    if (updateUrl)
+        writeCelestialSimulatorUrl(next);
+
+    updateCelestialSimulatorControls();
+    updateCelestialGraphicOnly();
+}
+
+function stepCelestialSimulator(minutes) {
+
+    if (!(window.celestialSimulatorTime instanceof Date))
+        return;
+
+    const next = new Date(window.celestialSimulatorTime.getTime());
+    next.setMinutes(next.getMinutes() + minutes);
+    setCelestialSimulatorTime(next);
+}
+
+function stopCelestialSimulatorRun() {
+
+    celestialSimulatorRunning = false;
+
+    if (celestialSimulatorTimer) {
+        clearInterval(celestialSimulatorTimer);
+        celestialSimulatorTimer = null;
+    }
+
+    updateCelestialSimulatorControls();
+}
+
+function startCelestialSimulatorRun() {
+
+    if (celestialSimulatorRunning)
+        return;
+
+    celestialSimulatorRunning = true;
+    updateCelestialSimulatorControls();
+
+    // One simulated minute per real second makes long transitions practical
+    // to observe without waiting in real time.
+    celestialSimulatorTimer =
+        setInterval(() => stepCelestialSimulator(1), 1000);
+}
+
+function updateCelestialSimulatorControls(celestialState = null) {
+
+    const root = document.getElementById("celestialSimulator");
+
+    if (!root || root.hidden)
+        return;
+
+    const dateInput = root.querySelector("[data-sim-date]");
+    const timeDisplay = root.querySelector("[data-sim-time]");
+    const runButton = root.querySelector("[data-sim-run]");
+    const pauseButton = root.querySelector("[data-sim-pause]");
+    const date = window.celestialSimulatorTime;
+
+    if (date instanceof Date) {
+        dateInput.value = formatSimulatorDate(date);
+        timeDisplay.textContent = formatSimulatorTime(date);
+    }
+
+    if (runButton)
+        runButton.disabled = celestialSimulatorRunning;
+
+    if (pauseButton)
+        pauseButton.disabled = !celestialSimulatorRunning;
+
+    if (celestialState?.sun?.position) {
+
+        const sun = celestialState.sun.position;
+        const diagnostics = root.querySelector("[data-sim-diagnostics]");
+
+        if (diagnostics) {
+            diagnostics.innerHTML = `
+                <span>State: <strong>${sun.presentationState || "--"}</strong></span>
+                <span>Altitude: <strong>${Number.isFinite(sun.altitude) ? sun.altitude.toFixed(2) + "°" : "--"}</strong></span>
+                <span>Azimuth: <strong>${Number.isFinite(sun.azimuth) ? sun.azimuth.toFixed(1) + "°" : "--"}</strong></span>
+                <span>Reveal: <strong>${Math.round(getSunDiscReveal(sun) * 100)}%</strong></span>
+                <span>Sunrise: <strong>${sun.sunriseTime ? formatSimulatorTime(sun.sunriseTime) : "--"}</strong></span>
+                <span>Sunset: <strong>${sun.sunsetTime ? formatSimulatorTime(sun.sunsetTime) : "--"}</strong></span>
+                <span>Parked: <strong>${sun.isNightParked ? "YES" : "NO"}</strong></span>
+            `;
+        }
+    }
+}
+
+function initializeCelestialSimulator(weather = null) {
+
+    const root = document.getElementById("celestialSimulator");
+
+    if (!root || !hasCelestialSimulatorParameter())
+        return;
+
+    root.hidden = false;
+
+    if (weather)
+        celestialSimulatorWeather = weather;
+
+    if (!(window.celestialSimulatorTime instanceof Date)) {
+        window.celestialSimulatorTime =
+            simulatorDateFromWeather(
+                celestialSimulatorWeather || weather
+            );
+    }
+
+    // Avoid rebuilding the controls every time weather data updates.
+    if (root.dataset.initialized !== "true") {
+
+        root.innerHTML = `
+            <div id="celestialSimulatorControls">
+                <strong>Celestial Simulator</strong>
+                <input data-sim-date type="date" aria-label="Simulated date">
+                <button type="button" data-sim-back10>−10 min</button>
+                <button type="button" data-sim-back1>−1 min</button>
+                <span id="celestialSimulatorTime" data-sim-time>--:--</span>
+                <button type="button" data-sim-forward1>+1 min</button>
+                <button type="button" data-sim-forward10>+10 min</button>
+                <button type="button" data-sim-run>▶ Run</button>
+                <button type="button" data-sim-pause disabled>⏸ Pause</button>
+            </div>
+            <div id="celestialSimulatorDiagnostics" data-sim-diagnostics aria-live="polite">
+                <span>State: <strong>--</strong></span>
+            </div>
+        `;
+
+        root.querySelector("[data-sim-back10]")
+            .addEventListener("click", () => stepCelestialSimulator(-10));
+        root.querySelector("[data-sim-back1]")
+            .addEventListener("click", () => stepCelestialSimulator(-1));
+        root.querySelector("[data-sim-forward1]")
+            .addEventListener("click", () => stepCelestialSimulator(1));
+        root.querySelector("[data-sim-forward10]")
+            .addEventListener("click", () => stepCelestialSimulator(10));
+        root.querySelector("[data-sim-run]")
+            .addEventListener("click", startCelestialSimulatorRun);
+        root.querySelector("[data-sim-pause]")
+            .addEventListener("click", stopCelestialSimulatorRun);
+
+        root.querySelector("[data-sim-date]")
+            .addEventListener("change", event => {
+
+                const value = event.target.value;
+
+                if (!/^\d{4}-\d{2}-\d{2}$/.test(value))
+                    return;
+
+                const current =
+                    window.celestialSimulatorTime instanceof Date
+                        ? new Date(window.celestialSimulatorTime.getTime())
+                        : new Date();
+
+                const parts = value.split("-").map(Number);
+
+                current.setFullYear(parts[0], parts[1] - 1, parts[2]);
+                setCelestialSimulatorTime(current);
+            });
+
+        root.dataset.initialized = "true";
+    }
+
+    updateCelestialSimulatorControls();
+}
+
+
+//--------------------------------------------------
 // Initialization
 //--------------------------------------------------
 
@@ -206,6 +457,8 @@ function updateCelestialGraphicOnly() {
     if (!celestial)
         return;
 
+    updateCelestialSimulatorControls(celestial);
+
     celestialGraphicElement.innerHTML =
         renderCelestialGraphic(
             celestial,
@@ -281,8 +534,10 @@ function updateConditions(dashboardData) {
 
     latestCelestialWeather = weather;
 
-    if (weather)
+    if (weather) {
+        initializeCelestialSimulator(weather);
         startCelestialAutoUpdate();
+    }
 
     const marine =
         dashboardData.marine;
@@ -355,6 +610,8 @@ function updateConditions(dashboardData) {
 
         const celestial =
             getCelestialState(weather);
+
+        updateCelestialSimulatorControls(celestial);
 
                 const celestialGraphicElement =
             document.getElementById("celestialGraphic");

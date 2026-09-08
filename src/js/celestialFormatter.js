@@ -25,25 +25,18 @@ function getSunDiscReveal(sun) {
 
     const now = sun.localTime.getTime();
 
-    // Sunrise/sunset supplied by the forecast belong to the forecast date.
-    // The celestial simulation can move the displayed time to the following
-    // calendar day, so compare wall-clock times on the same calendar date
-    // as the Sun being displayed.
-    const alignHorizonToSunDate = horizonTime => {
-        if (!(horizonTime instanceof Date) || !sun.localTime)
-            return null;
+    // The service resolves sunrise/sunset for the actual celestial cycle.
+    // Do not realign these timestamps by wall-clock time: after midnight
+    // the relevant sunset is yesterday's sunset, while sunrise is today's.
+    const sunrise =
+        sun.sunriseTime instanceof Date
+            ? sun.sunriseTime.getTime()
+            : null;
 
-        const aligned = new Date(horizonTime.getTime());
-        aligned.setFullYear(
-            sun.localTime.getFullYear(),
-            sun.localTime.getMonth(),
-            sun.localTime.getDate()
-        );
-        return aligned.getTime();
-    };
-
-    const sunrise = alignHorizonToSunDate(sun.sunriseTime);
-    const sunset = alignHorizonToSunDate(sun.sunsetTime);
+    const sunset =
+        sun.sunsetTime instanceof Date
+            ? sun.sunsetTime.getTime()
+            : null;
     const transition = 5 * 60000;
 
     if (Number.isFinite(sunrise)) {
@@ -299,43 +292,17 @@ function renderCelestialGraphic(
         // applied to the interior of the curve.
         //--------------------------------------------------
 
-        const openMeteoSunrise =
-            parseCelestialTime(weather.sunrise);
-
-        const openMeteoSunset =
-            parseCelestialTime(weather.sunset);
-
-        // Use the same civil sunrise/sunset timestamps displayed in the
-        // conditions panel. The celestial graphic must not invent a second
-        // set of horizon times.
+        // Use the cycle resolved by celestialService. This is essential
+        // after midnight: the path must be yesterday's sunset -> today's
+        // sunrise, not today's loaded forecast sunrise/sunset.
         const sunrise =
-            openMeteoSunrise;
+            sun.sunriseTime || null;
 
         const sunset =
-            openMeteoSunset;
-
-        const nextDay =
-            sunrise
-                ? new Date(
-                    sunrise.getFullYear(),
-                    sunrise.getMonth(),
-                    sunrise.getDate() + 1,
-                    12, 0, 0, 0
-                )
-                : null;
-
-        const nextHorizon =
-            nextDay
-                ? getSolarHorizonTimes(
-                    nextDay,
-                    weather.latitude,
-                    weather.longitude,
-                    weather.utcOffsetSeconds
-                )
-                : null;
+            sun.sunsetTime || null;
 
         const nextSunrise =
-            nextHorizon?.sunrise || null;
+            sun.nextSunriseTime || null;
 
         const pathPoints = [];
         const pathSegments = 96;
