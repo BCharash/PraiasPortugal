@@ -31,6 +31,14 @@ function getCelestialState(weather) {
     if (!weather)
         return null;
 
+
+    //--------------------------------------------------
+    // Resolve the solar cycle from the actual date/time being displayed.
+    // The weather object's sunrise/sunset belong to the forecast load date;
+    // they must not be used as the calendar anchor when the clock crosses
+    // midnight.
+    //--------------------------------------------------
+
     const now =
         parseCelestialTime(
             getCelestialSimulationTime(
@@ -39,23 +47,74 @@ function getCelestialState(weather) {
             )
         );
 
-    if (!now)
-        return null;
+    let sunrise = null;
+    let sunset = null;
+    let previousSunset = null;
+    let nextSunrise = null;
 
-    //--------------------------------------------------
-    // Resolve the complete sunrise-to-sunrise cycle for
-    // the actual date represented by `now`.
-    //
-    // This is deliberately independent of application
-    // history. The state is determined entirely from the
-    // requested date/time and the beach coordinates.
-    //--------------------------------------------------
+    if (now) {
 
-    const cycle =
-        resolveCelestialCycle(
-            now,
-            weather
+        const today = new Date(
+            now.getFullYear(),
+            now.getMonth(),
+            now.getDate(),
+            12, 0, 0, 0
         );
+
+        const yesterday = new Date(today.getTime());
+        yesterday.setDate(yesterday.getDate() - 1);
+
+        const tomorrow = new Date(today.getTime());
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
+        // For the forecast's loaded date, preserve the exact Open-Meteo
+        // civil sunrise/sunset shown elsewhere in the app. For any other
+        // simulated date, calculate the corresponding horizon times locally.
+        const forecastDate = parseCelestialTime(weather.currentTime);
+        const sameCalendarDate = date =>
+            forecastDate &&
+            date.getFullYear() === forecastDate.getFullYear() &&
+            date.getMonth() === forecastDate.getMonth() &&
+            date.getDate() === forecastDate.getDate();
+
+        const forecastSunrise = parseCelestialTime(weather.sunrise);
+        const forecastSunset = parseCelestialTime(weather.sunset);
+
+        const todayHorizon =
+            sameCalendarDate(today) && forecastSunrise && forecastSunset
+                ? {
+                    sunrise: forecastSunrise,
+                    sunset: forecastSunset
+                }
+                : getSolarHorizonTimes(
+                    today,
+                    weather.latitude,
+                    weather.longitude,
+                    weather.utcOffsetSeconds
+                );
+
+        const yesterdayHorizon =
+            getSolarHorizonTimes(
+                yesterday,
+                weather.latitude,
+                weather.longitude,
+                weather.utcOffsetSeconds
+            );
+
+        const tomorrowHorizon =
+            getSolarHorizonTimes(
+                tomorrow,
+                weather.latitude,
+                weather.longitude,
+                weather.utcOffsetSeconds
+            );
+
+        sunrise = todayHorizon?.sunrise || null;
+        sunset = todayHorizon?.sunset || null;
+        previousSunset = yesterdayHorizon?.sunset || null;
+        nextSunrise = tomorrowHorizon?.sunrise || null;
+    }
+
 
     //--------------------------------------------------
     // Sun
@@ -63,26 +122,35 @@ function getCelestialState(weather) {
 
     let sunPosition = null;
 
-    if (cycle) {
+    if (
+        now &&
+        sunrise &&
+        sunset &&
+        previousSunset &&
+        nextSunrise
+    ) {
 
         sunPosition =
             getSunDisplayPosition(
                 now,
-                cycle.sunrise,
-                cycle.sunset,
-                cycle.nextSunrise,
+                sunrise,
+                sunset,
+                previousSunset,
+                nextSunrise,
                 weather.latitude,
                 weather.longitude,
-                weather.utcOffsetSeconds,
-                cycle.presentationState
+                weather.utcOffsetSeconds
             );
-
     }
 
+
     const sunIsVisible =
-        cycle &&
-        now >= cycle.sunrise &&
-        now <= cycle.sunset;
+        sunrise !== null &&
+        sunset !== null &&
+        now !== null &&
+        now >= sunrise &&
+        now <= sunset;
+
 
     //--------------------------------------------------
     // Moon
@@ -97,264 +165,38 @@ function getCelestialState(weather) {
     const moonIsVisible =
         moonrise !== null &&
         moonset !== null &&
+        now !== null &&
         isCelestialTimeBetween(
             now,
             moonrise,
             moonset
         );
 
-    //--------------------------------------------------
-    // Moon phase
-    //--------------------------------------------------
 
     const moonPhase =
-        normalizeMoonPhase(
-            weather.moonPhase
-        );
+        normalizeMoonPhase(weather.moonPhase);
 
     const moonIllumination =
-        calculateMoonIllumination(
-            moonPhase
-        );
+        calculateMoonIllumination(moonPhase);
+
 
     return {
 
         azimuthHalfRange:
             CELESTIAL_AZIMUTH_HALF_RANGE,
 
-        currentTime:
-            now,
-
         sun: {
-
-            isVisible:
-                sunIsVisible,
-
-            presentationState:
-                cycle?.presentationState || null,
-
-            position:
-                sunPosition
-
+            isVisible: sunIsVisible,
+            position: sunPosition
         },
 
         moon: {
-
-            isVisible:
-                moonIsVisible,
-
-            phase:
-                moonPhase,
-
-            illumination:
-                moonIllumination,
-
-            phaseName:
-                getMoonPhaseName(
-                    moonPhase
-                ),
-
-            position:
-                null
-
+            isVisible: moonIsVisible,
+            phase: moonPhase,
+            illumination: moonIllumination,
+            phaseName: getMoonPhaseName(moonPhase),
+            position: null
         }
-
-    };
-
-}
-
-
-//--------------------------------------------------
-// Celestial cycle resolution
-//
-// Given an absolute local civil date/time, determine
-// the surrounding sunrise/sunset events. This makes
-// celestial presentation deterministic for any date,
-// including after midnight and during transitions.
-//--------------------------------------------------
-
-function resolveCelestialCycle(now, weather) {
-
-    if (
-        !now ||
-        weather?.latitude == null ||
-        weather?.longitude == null
-    )
-        return null;
-
-    const makeDate = (offsetDays, hour = 12) => {
-        const date = new Date(now.getTime());
-        date.setHours(hour, 0, 0, 0);
-        date.setDate(date.getDate() + offsetDays);
-        return date;
-    };
-
-    const previousDay =
-        makeDate(-1);
-
-    const currentDay =
-        makeDate(0);
-
-    const nextDay =
-        makeDate(1);
-
-    const previousHorizon =
-        getSolarHorizonTimes(
-            previousDay,
-            weather.latitude,
-            weather.longitude,
-            weather.utcOffsetSeconds
-        );
-
-    const currentHorizon =
-        getSolarHorizonTimes(
-            currentDay,
-            weather.latitude,
-            weather.longitude,
-            weather.utcOffsetSeconds
-        );
-
-    const nextHorizon =
-        getSolarHorizonTimes(
-            nextDay,
-            weather.latitude,
-            weather.longitude,
-            weather.utcOffsetSeconds
-        );
-
-    if (!currentHorizon)
-        return null;
-
-    // Preserve the weather provider's current-day civil sunrise/sunset
-    // when they belong to the same calendar date. Neighboring dates have
-    // to be calculated locally because the weather object only supplies
-    // the currently loaded day's values.
-    const weatherSunrise =
-        parseCelestialTime(weather.sunrise);
-
-    const weatherSunset =
-        parseCelestialTime(weather.sunset);
-
-    const sameCalendarDate = (a, b) =>
-        a && b &&
-        a.getFullYear() === b.getFullYear() &&
-        a.getMonth() === b.getMonth() &&
-        a.getDate() === b.getDate();
-
-    const sunriseForCurrentDate =
-        sameCalendarDate(weatherSunrise, currentHorizon.sunrise)
-            ? weatherSunrise
-            : currentHorizon.sunrise;
-
-    const sunsetForCurrentDate =
-        sameCalendarDate(weatherSunset, currentHorizon.sunset)
-            ? weatherSunset
-            : currentHorizon.sunset;
-
-    let relevantSunrise;
-    let relevantSunset;
-    let nextSunrise;
-
-    if (now < sunriseForCurrentDate) {
-
-        // Before today's sunrise, the current cycle began yesterday.
-        relevantSunset =
-            previousHorizon?.sunset || null;
-
-        relevantSunrise =
-            sunriseForCurrentDate;
-
-        nextSunrise =
-            sunriseForCurrentDate;
-
-    } else if (now <= sunsetForCurrentDate) {
-
-        // Daytime and both visual transitions belong to today's cycle.
-        relevantSunrise =
-            sunriseForCurrentDate;
-
-        relevantSunset =
-            sunsetForCurrentDate;
-
-        nextSunrise =
-            nextHorizon?.sunrise || null;
-
-    } else {
-
-        // After today's sunset, the cycle runs through tonight to
-        // tomorrow's sunrise.
-        relevantSunrise =
-            sunriseForCurrentDate;
-
-        relevantSunset =
-            sunsetForCurrentDate;
-
-        nextSunrise =
-            nextHorizon?.sunrise || null;
-
-    }
-
-    if (!relevantSunrise || !relevantSunset || !nextSunrise)
-        return null;
-
-    let presentationState = "DAY";
-
-    const sunriseTransitionEnd =
-        new Date(relevantSunrise.getTime() + 5 * 60000);
-
-    const sunsetTransitionStart =
-        new Date(relevantSunset.getTime() - 5 * 60000);
-
-    const nightParkStart =
-        new Date(relevantSunset.getTime() + 1 * 60000);
-
-    const nightParkEnd =
-        new Date(nextSunrise.getTime() - 1 * 60000);
-
-    if (
-        now >= relevantSunrise &&
-        now <= sunriseTransitionEnd
-    ) {
-
-        presentationState = "SUNRISE TRANSITION";
-
-    } else if (
-        now >= sunsetTransitionStart &&
-        now <= relevantSunset
-    ) {
-
-        presentationState = "SUNSET TRANSITION";
-
-    } else if (
-        now >= nightParkStart &&
-        now <= nightParkEnd
-    ) {
-
-        presentationState = "NIGHT PARKED";
-
-    } else if (now < relevantSunrise) {
-
-        presentationState = "NIGHT PARKED";
-
-    } else if (now > relevantSunset) {
-
-        presentationState = "NIGHT PARKED";
-
-    }
-
-    return {
-        previousSunset:
-            previousHorizon?.sunset || null,
-
-        sunrise:
-            relevantSunrise,
-
-        sunset:
-            relevantSunset,
-
-        nextSunrise,
-
-        presentationState
     };
 
 }
@@ -369,86 +211,51 @@ function getCelestialSimulationTime(defaultTime, sunriseTime) {
     if (typeof window === "undefined")
         return defaultTime;
 
-    //--------------------------------------------------
-    // The development simulator owns an explicit local
-    // date/time. The service simply consumes it.
-    //--------------------------------------------------
+    const params = new URLSearchParams(window.location.search);
+    const devMode = params.has("dev");
+    const value = params.get("celestialSim");
 
-    if (window.celestialSimulatorTime instanceof Date) {
+    // In ?dev mode the simulator keeps the simulated civil time in memory.
+    // Use that value as the authoritative clock; the URL itself remains
+    // simply ?dev. This also means crossing midnight changes the calendar
+    // date used for sunrise/sunset and for both celestial path segments.
+    if (devMode &&
+        typeof window.celestialSimulatorTime !== "undefined" &&
+        window.celestialSimulatorTime instanceof Date &&
+        !Number.isNaN(window.celestialSimulatorTime.getTime())) {
+        const simulated = window.celestialSimulatorTime;
+        const pad = value => String(value).padStart(2, "0");
 
-        const d =
-            window.celestialSimulatorTime;
-
-        const pad = value =>
-            String(value).padStart(2, "0");
-
-        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}` +
-               `T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+        return `${simulated.getFullYear()}-${pad(simulated.getMonth() + 1)}-${pad(simulated.getDate())}` +
+            `T${pad(simulated.getHours())}:${pad(simulated.getMinutes())}`;
     }
-
-    //--------------------------------------------------
-    // URL initialization.
-    //
-    // New form:
-    //     ?celestialSim=2026-09-08T07:13
-    //
-    // The old HHMM form remains accepted for convenience.
-    //--------------------------------------------------
-
-    const value =
-        new URLSearchParams(window.location.search)
-            .get("celestialSim");
 
     if (!value)
         return defaultTime;
 
+    // New simulator format: an explicit local civil date and time.
     if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value))
         return value;
 
+    // Backward-compatible four-digit time format. In this legacy mode
+    // retain the forecast date rather than inventing a sunrise-to-sunrise
+    // date shift; the new simulator carries the date explicitly.
     if (!/^\d{4}$/.test(value))
         return defaultTime;
 
-    const base =
-        parseCelestialTime(defaultTime);
-
+    const base = parseCelestialTime(defaultTime);
     if (!base)
         return defaultTime;
 
-    const hour =
-        Number(value.slice(0, 2));
+    const hour = Number(value.slice(0, 2));
+    const minute = Number(value.slice(2, 4));
 
-    const minute =
-        Number(value.slice(2, 4));
-
-    if (
-        (hour > 23 && !(hour === 24 && minute === 0)) ||
-        minute > 59
-    )
+    if (hour > 23 || minute > 59)
         return defaultTime;
 
-    const simulatedDate =
-        new Date(base.getTime());
+    base.setHours(hour, minute, 0, 0);
 
-    if (hour === 24) {
-        simulatedDate.setDate(
-            simulatedDate.getDate() + 1
-        );
-        simulatedDate.setHours(0, 0, 0, 0);
-    } else {
-        simulatedDate.setHours(
-            hour,
-            minute,
-            0,
-            0
-        );
-    }
-
-    const pad = value =>
-        String(value).padStart(2, "0");
-
-    return `${simulatedDate.getFullYear()}-${pad(simulatedDate.getMonth() + 1)}-${pad(simulatedDate.getDate())}` +
-           `T${pad(simulatedDate.getHours())}:${pad(simulatedDate.getMinutes())}`;
-
+    return `${base.getFullYear()}-${String(base.getMonth() + 1).padStart(2, "0")}-${String(base.getDate()).padStart(2, "0")}T${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
 }
 
 
@@ -717,11 +524,11 @@ function getSunDisplayPosition(
     now,
     todaySunrise,
     todaySunset,
+    previousSunset,
     nextSunrise,
     latitude,
     longitude,
-    utcOffsetSeconds = 0,
-    presentationState = null
+    utcOffsetSeconds = 0
 ) {
 
     const position =
@@ -740,6 +547,7 @@ function getSunDisplayPosition(
     // graphic at the horizon.
     position.displayAzimuth = position.azimuth;
     position.localTime = new Date(now.getTime());
+    position.previousSunsetTime = previousSunset;
     position.sunriseTime = todaySunrise;
     position.sunsetTime = todaySunset;
     position.nextSunriseTime = nextSunrise;
@@ -762,7 +570,6 @@ function getSunDisplayPosition(
     position.utcOffsetSeconds = utcOffsetSeconds;
     position.isBelowHorizon = false;
     position.isNightParked = false;
-    position.presentationState = presentationState;
 
     if (!todaySunrise || !todaySunset || !nextSunrise)
         return position;
@@ -819,71 +626,95 @@ function getSunDisplayPosition(
             utcOffsetSeconds
         );
 
-    const isNight =
-        presentationState === "NIGHT PARKED" ||
-        (now > todaySunset && now < nextSunrise);
+    const isBeforeSunrise =
+        now < todaySunrise;
 
-    // Once the Sun has reached the next minute after sunset,
-    // immediately place it on the horizontal nighttime track.
-    // Likewise, keep it on that track until one minute before
-    // the following sunrise, when the astronomical emergence begins.
+    const isAfterSunset =
+        now > todaySunset;
+
+    const isNight =
+        (isBeforeSunrise && now > previousSunset) ||
+        (isAfterSunset && now < nextSunrise);
+
     const nightParkStart =
-        new Date(todaySunset.getTime() + 1 * 60000);
+        isBeforeSunrise
+            ? new Date(previousSunset.getTime() + 1 * 60000)
+            : new Date(todaySunset.getTime() + 1 * 60000);
 
     const nightParkEnd =
-        new Date(nextSunrise.getTime() - 1 * 60000);
+        isBeforeSunrise
+            ? new Date(todaySunrise.getTime() - 1 * 60000)
+            : new Date(nextSunrise.getTime() - 1 * 60000);
 
-    // The Sun is parked on the horizontal nighttime track beginning
-    // one minute after sunset, and remains there until one minute
-    // before the following sunrise. The exact sunset/sunrise minutes
-    // remain available for the visual horizon transition.
-    if (
-        isNight &&
-        now >= nightParkStart &&
-        now <= nightParkEnd
-    ) {
+    if (isNight && now >= nightParkStart && now <= nightParkEnd) {
 
         position.isNightParked = true;
         position.isBelowHorizon = true;
 
-        if (sunsetPosition && sunrisePosition) {
+        const parkStart =
+            isBeforeSunrise ? previousSunset : todaySunset;
 
-            const progress =
-                Math.max(
-                    0,
-                    Math.min(
-                        1,
-                        (now.getTime() - todaySunset.getTime()) /
-                        (nextSunrise.getTime() - todaySunset.getTime())
-                    )
-                );
+        const parkEnd =
+            isBeforeSunrise ? todaySunrise : nextSunrise;
+
+        const startPosition =
+            calculateSolarPosition(
+                parkStart, latitude, longitude, utcOffsetSeconds
+            );
+
+        const endPosition =
+            calculateSolarPosition(
+                parkEnd, latitude, longitude, utcOffsetSeconds
+            );
+
+        if (startPosition && endPosition) {
+            const progress = Math.max(0, Math.min(1,
+                (now.getTime() - parkStart.getTime()) /
+                (parkEnd.getTime() - parkStart.getTime())
+            ));
 
             position.displayAzimuth =
-                sunsetPosition.azimuth +
-                (sunrisePosition.azimuth - sunsetPosition.azimuth) *
-                progress;
+                startPosition.azimuth +
+                (endPosition.azimuth - startPosition.azimuth) * progress;
         }
 
     } else if (isNight) {
 
-        // The Sun remains dim only after the disc itself has cleared
-        // the horizon. During the short visual descent immediately
-        // after sunset it remains fully bright.
+        // During the four-minute visual descent/rise immediately around
+        // the horizon, retain the astronomical position. Once the disk
+        // has cleared the horizon, the Sun uses the parked night track.
+        const transitionBoundary =
+            isBeforeSunrise
+                ? todaySunrise.getTime() - 4 * 60000
+                : todaySunset.getTime() + 4 * 60000;
+
         position.isBelowHorizon =
-            now >= todaySunset.getTime() + 4 * 60000;
+            isBeforeSunrise
+                ? now < transitionBoundary
+                : now >= transitionBoundary;
+    }
 
-        if (position.isBelowHorizon && sunsetPosition && sunrisePosition) {
-            const progress =
-                Math.max(0, Math.min(1,
-                    (now.getTime() - todaySunset.getTime()) /
-                    (nextSunrise.getTime() - todaySunset.getTime())
-                ));
-
-            position.displayAzimuth =
-                sunsetPosition.azimuth +
-                (sunrisePosition.azimuth - sunsetPosition.azimuth) *
-                progress;
-        }
+    if (
+        now >= sunriseTransitionStart &&
+        now <= sunriseTransitionEnd
+    ) {
+        position.presentationState =
+            "SUNRISE TRANSITION";
+    } else if (
+        now >= sunsetTransitionStart &&
+        now <= todaySunset.getTime()
+    ) {
+        position.presentationState =
+            "SUNSET TRANSITION";
+    } else if (
+        now > sunriseTransitionEnd &&
+        now < sunsetTransitionStart
+    ) {
+        position.presentationState =
+            "DAY";
+    } else {
+        position.presentationState =
+            "NIGHT PARKED";
     }
 
     return position;

@@ -65,8 +65,11 @@ function hasCelestialSimulatorParameter() {
     if (typeof window === "undefined")
         return false;
 
-    return new URLSearchParams(window.location.search)
-        .has("celestialSim");
+    const params = new URLSearchParams(window.location.search);
+
+    // Development mode is deliberately easy to remember and type:
+    // https://.../?dev
+    return params.has("dev") || params.has("celestialSim");
 }
 
 function formatSimulatorDate(date) {
@@ -74,7 +77,27 @@ function formatSimulatorDate(date) {
 }
 
 function formatSimulatorTime(date) {
-    return `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
+    return `${String(date.getHours()).padStart(2, "0")}${String(date.getMinutes()).padStart(2, "0")}`;
+}
+
+function formatSimulatorDateTime(date) {
+    return `${formatSimulatorDate(date)} ${formatSimulatorTime(date)}`;
+}
+
+function parseSimulatorFourDigitTime(value) {
+
+    const normalized = String(value || "").trim();
+
+    if (!/^\d{4}$/.test(normalized))
+        return null;
+
+    const hour = Number(normalized.slice(0, 2));
+    const minute = Number(normalized.slice(2, 4));
+
+    if (hour > 23 || minute > 59)
+        return null;
+
+    return { hour, minute };
 }
 
 function simulatorDateFromWeather(weather) {
@@ -82,6 +105,9 @@ function simulatorDateFromWeather(weather) {
     const parsed =
         parseCelestialTime(weather?.currentTime);
 
+    // In ?dev mode, always start from the currently loaded real-world time.
+    // This means opening/reloading the development web app resets the clock
+    // to "now" instead of retaining a previous simulation time.
     if (!parsed)
         return new Date();
 
@@ -122,9 +148,18 @@ function writeCelestialSimulatorUrl(date) {
 
     const url = new URL(window.location.href);
 
+    // ?dev is a persistent development-mode switch, not a simulation time.
+    // Keep it in the URL while the simulated clock lives only in memory.
+    if (url.searchParams.has("dev"))
+        return;
+
+    // Preserve compatibility with the older ?celestialSim mode.
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+
     url.searchParams.set(
         "celestialSim",
-        `${formatSimulatorDate(date)}T${formatSimulatorTime(date)}`
+        `${formatSimulatorDate(date)}T${hours}:${minutes}`
     );
 
     window.history.replaceState(null, "", url.toString());
@@ -147,13 +182,31 @@ function setCelestialSimulatorTime(date, updateUrl = true) {
     updateCelestialGraphicOnly();
 }
 
-function stepCelestialSimulator(minutes) {
+function getCelestialSimulatorStep() {
+    const root = document.getElementById("celestialSimulator");
+    const select = root?.querySelector("[data-sim-step]");
+    const value = Number(select?.value);
+    return value === 60 ? 60 : value === 10 ? 10 : 1;
+}
+
+function getCelestialSimulatorPlayInterval() {
+    const root = document.getElementById("celestialSimulator");
+    const select = root?.querySelector("[data-sim-play]");
+    const value = Number(select?.value);
+    return value === 60 ? 60 : value === 10 ? 10 : 1;
+}
+
+function stepCelestialSimulator(minutes = null) {
 
     if (!(window.celestialSimulatorTime instanceof Date))
         return;
 
+    const amount = Number.isFinite(minutes)
+        ? minutes
+        : getCelestialSimulatorStep();
+
     const next = new Date(window.celestialSimulatorTime.getTime());
-    next.setMinutes(next.getMinutes() + minutes);
+    next.setMinutes(next.getMinutes() + amount);
     setCelestialSimulatorTime(next);
 }
 
@@ -177,10 +230,9 @@ function startCelestialSimulatorRun() {
     celestialSimulatorRunning = true;
     updateCelestialSimulatorControls();
 
-    // One simulated minute per real second makes long transitions practical
-    // to observe without waiting in real time.
+    // Advance by the selected simulated interval once per second.
     celestialSimulatorTimer =
-        setInterval(() => stepCelestialSimulator(1), 1000);
+        setInterval(() => stepCelestialSimulator(getCelestialSimulatorPlayInterval()), 1000);
 }
 
 function updateCelestialSimulatorControls(celestialState = null) {
@@ -191,21 +243,22 @@ function updateCelestialSimulatorControls(celestialState = null) {
         return;
 
     const dateInput = root.querySelector("[data-sim-date]");
-    const timeDisplay = root.querySelector("[data-sim-time]");
+    const timeInput = root.querySelector("[data-sim-time]");
     const runButton = root.querySelector("[data-sim-run]");
-    const pauseButton = root.querySelector("[data-sim-pause]");
+    const stepSelect = root.querySelector("[data-sim-step]");
+    const playSelect = root.querySelector("[data-sim-play]");
     const date = window.celestialSimulatorTime;
 
     if (date instanceof Date) {
         dateInput.value = formatSimulatorDate(date);
-        timeDisplay.textContent = formatSimulatorTime(date);
+        if (document.activeElement !== timeInput)
+            timeInput.value = formatSimulatorTime(date);
     }
 
-    if (runButton)
-        runButton.disabled = celestialSimulatorRunning;
-
-    if (pauseButton)
-        pauseButton.disabled = !celestialSimulatorRunning;
+    if (runButton) {
+        runButton.textContent = celestialSimulatorRunning ? "⏸ Pause" : "▶ Play";
+        runButton.setAttribute("aria-pressed", celestialSimulatorRunning ? "true" : "false");
+    }
 
     if (celestialState?.sun?.position) {
 
@@ -214,13 +267,15 @@ function updateCelestialSimulatorControls(celestialState = null) {
 
         if (diagnostics) {
             diagnostics.innerHTML = `
+                <span>Time: <strong>${window.celestialSimulatorTime instanceof Date ? formatSimulatorDateTime(window.celestialSimulatorTime) : "--"}</strong></span>
                 <span>State: <strong>${sun.presentationState || "--"}</strong></span>
                 <span>Altitude: <strong>${Number.isFinite(sun.altitude) ? sun.altitude.toFixed(2) + "°" : "--"}</strong></span>
                 <span>Azimuth: <strong>${Number.isFinite(sun.azimuth) ? sun.azimuth.toFixed(1) + "°" : "--"}</strong></span>
+                <span>Above horizon: <strong>${sun.isBelowHorizon ? "NO" : "YES"}</strong></span>
                 <span>Reveal: <strong>${Math.round(getSunDiscReveal(sun) * 100)}%</strong></span>
                 <span>Sunrise: <strong>${sun.sunriseTime ? formatSimulatorTime(sun.sunriseTime) : "--"}</strong></span>
                 <span>Sunset: <strong>${sun.sunsetTime ? formatSimulatorTime(sun.sunsetTime) : "--"}</strong></span>
-                <span>Parked: <strong>${sun.isNightParked ? "YES" : "NO"}</strong></span>
+                <span>Night parked: <strong>${sun.isNightParked ? "YES" : "NO"}</strong></span>
             `;
         }
     }
@@ -228,10 +283,24 @@ function updateCelestialSimulatorControls(celestialState = null) {
 
 function initializeCelestialSimulator(weather = null) {
 
-    const root = document.getElementById("celestialSimulator");
-
-    if (!root || !hasCelestialSimulatorParameter())
+    if (!hasCelestialSimulatorParameter())
         return;
+
+    // The simulator is development-only and is created dynamically so it does
+    // not require any change to index.html or the normal Conditions markup.
+    let root = document.getElementById("celestialSimulator");
+
+    if (!root) {
+        const celestialSky = document.getElementById("celestialSky");
+
+        if (!celestialSky)
+            return;
+
+        root = document.createElement("div");
+        root.id = "celestialSimulator";
+        root.hidden = true;
+        celestialSky.appendChild(root);
+    }
 
     root.hidden = false;
 
@@ -250,33 +319,73 @@ function initializeCelestialSimulator(weather = null) {
 
         root.innerHTML = `
             <div id="celestialSimulatorControls">
-                <strong>Celestial Simulator</strong>
-                <input data-sim-date type="date" aria-label="Simulated date">
-                <button type="button" data-sim-back10>−10 min</button>
-                <button type="button" data-sim-back1>−1 min</button>
-                <span id="celestialSimulatorTime" data-sim-time>--:--</span>
-                <button type="button" data-sim-forward1>+1 min</button>
-                <button type="button" data-sim-forward10>+10 min</button>
-                <button type="button" data-sim-run>▶ Run</button>
-                <button type="button" data-sim-pause disabled>⏸ Pause</button>
+                <div class="celestialSimulatorTitle"><strong>Celestial Simulator</strong> <span>(DEV)</span></div>
+                <label class="celestialSimulatorField">
+                    <span>Date</span>
+                    <input data-sim-date type="date" aria-label="Simulated date">
+                </label>
+                <label class="celestialSimulatorField">
+                    <span>Time</span>
+                    <input data-sim-time type="text" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" placeholder="0713" aria-label="Simulated time, four digits">
+                </label>
+                <label class="celestialSimulatorField celestialSimulatorSelectField">
+                    <span>Step</span>
+                    <select data-sim-step aria-label="Step size">
+                        <option value="1">1 min</option>
+                        <option value="10">10 min</option>
+                        <option value="60">60 min</option>
+                    </select>
+                </label>
+                <button type="button" data-sim-back aria-label="Step backward">−</button>
+                <button type="button" data-sim-forward aria-label="Step forward">+</button>
+                <label class="celestialSimulatorField celestialSimulatorSelectField">
+                    <span>Play</span>
+                    <select data-sim-play aria-label="Play interval">
+                        <option value="1">1 min</option>
+                        <option value="10">10 min</option>
+                        <option value="60">60 min</option>
+                    </select>
+                </label>
+                <button type="button" data-sim-run aria-pressed="false">▶ Play</button>
             </div>
             <div id="celestialSimulatorDiagnostics" data-sim-diagnostics aria-live="polite">
                 <span>State: <strong>--</strong></span>
             </div>
         `;
 
-        root.querySelector("[data-sim-back10]")
-            .addEventListener("click", () => stepCelestialSimulator(-10));
-        root.querySelector("[data-sim-back1]")
-            .addEventListener("click", () => stepCelestialSimulator(-1));
-        root.querySelector("[data-sim-forward1]")
-            .addEventListener("click", () => stepCelestialSimulator(1));
-        root.querySelector("[data-sim-forward10]")
-            .addEventListener("click", () => stepCelestialSimulator(10));
+        root.querySelector("[data-sim-back]")
+            .addEventListener("click", () => stepCelestialSimulator(-getCelestialSimulatorStep()));
+        root.querySelector("[data-sim-forward]")
+            .addEventListener("click", () => stepCelestialSimulator(getCelestialSimulatorStep()));
         root.querySelector("[data-sim-run]")
-            .addEventListener("click", startCelestialSimulatorRun);
-        root.querySelector("[data-sim-pause]")
-            .addEventListener("click", stopCelestialSimulatorRun);
+            .addEventListener("click", () => {
+                if (celestialSimulatorRunning)
+                    stopCelestialSimulatorRun();
+                else
+                    startCelestialSimulatorRun();
+            });
+
+        root.querySelector("[data-sim-time]")
+            .addEventListener("change", event => {
+                const parsed = parseSimulatorFourDigitTime(event.target.value);
+                if (!parsed) {
+                    updateCelestialSimulatorControls();
+                    return;
+                }
+
+                const current =
+                    window.celestialSimulatorTime instanceof Date
+                        ? new Date(window.celestialSimulatorTime.getTime())
+                        : new Date();
+
+                current.setHours(parsed.hour, parsed.minute, 0, 0);
+                setCelestialSimulatorTime(current);
+            });
+
+        root.querySelector("[data-sim-time]")
+            .addEventListener("input", event => {
+                event.target.value = event.target.value.replace(/\D/g, "").slice(0, 4);
+            });
 
         root.querySelector("[data-sim-date]")
             .addEventListener("change", event => {

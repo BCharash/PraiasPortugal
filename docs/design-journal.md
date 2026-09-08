@@ -1534,7 +1534,7 @@ The URL parameter uses the four-digit form:
     ?celestialSim=2015
     ?celestialSim=2100
 
-`2400` is accepted as the equivalent of midnight at the end of the simulated day.
+"2400" is accepted as the equivalent of midnight at the end of the simulated day.
 
 The simulation represents the continuous cycle:
 
@@ -1617,3 +1617,110 @@ This separation allows visual improvements to be made without changing the under
 ## Status
 
 Accepted
+
+# DJ0013 — Sunrise, Sunset, and Celestial Simulator Date Handling
+
+Purpose
+-------
+The celestial display was updated so that sunrise and sunset behavior remains visually correct when the simulator moves through midnight and into another calendar day.
+
+The change affects both the normal celestial rendering and the development simulator.
+
+Sunrise and Sunset Date Handling
+---------------------------------
+Sunrise and sunset are now treated as date-specific celestial events rather than simply as the sunrise and sunset values associated with the weather data's original date.
+
+The celestial service supplies the relevant horizon events, including:
+
+- sunriseTime
+- sunsetTime
+- previousSunsetTime
+- nextSunriseTime
+
+The formatter uses these events to construct the daytime astronomical path and the nighttime path appropriate to the simulated date and time.
+
+This is important when the simulator crosses midnight. For example, after advancing from today's sunset through midnight, the display must use tomorrow's sunrise rather than continuing to use today's sunrise.
+
+Nighttime Path
+--------------
+The daytime astronomical path terminates at sunset.
+
+The nighttime path begins at the sunset horizon position and continues along the horizontal night/park azimuth path toward the next sunrise.
+
+The sunset connection is produced as part of the celestial path itself. No separate sunset connector line is required.
+
+This avoids the previous situation in which an additional connector could produce an unwanted vertical line.
+
+Solar Disk Behavior
+-------------------
+The solar disk has a five-minute visual reveal transition around sunrise and sunset.
+
+At sunrise:
+
+- Before sunrise, the solar disk is hidden.
+- At the exact displayed sunrise time, the disk is still invisible.
+- Glow and solar rays are visible.
+- During the following five minutes, the solar disk progressively becomes visible.
+- After the transition, the normal fully illuminated solar disk is displayed.
+
+At sunset:
+
+- During the five minutes leading up to sunset, the solar disk progressively disappears.
+- At the exact displayed sunset time, the disk is invisible.
+- Glow and solar rays remain visible.
+- The nighttime state then takes over.
+
+Because the simulator operates in whole-minute increments, there can be a visually acceptable one-minute overlap after sunset in which the sunset glow and rays remain visible before the display switches completely to night mode. This is intentional and is considered acceptable from a visual standpoint.
+
+The important visual requirement is that the solar disk itself does not suddenly remain fully illuminated after sunset.
+
+Simulator
+---------
+A development simulator is available through the URL query parameter:
+
+?dev
+
+When the application is opened with this parameter, the celestial simulator is displayed as a compact development overlay.
+
+The simulator:
+
+- Initializes to the current date and time.
+- Allows the simulated date to be changed.
+- Allows the simulated time to be changed.
+- Provides step backward and forward controls.
+- Supports one-minute, ten-minute, and sixty-minute stepping.
+- Provides play/pause controls.
+- Supports one-minute, ten-minute, and sixty-minute playback increments.
+- Displays diagnostic information useful for verifying the celestial calculations.
+
+The simulator uses the same celestial rendering code as the normal application. Consequently, changing the simulated date and time exercises the actual sunrise, sunset, daytime-path, and nighttime-path logic rather than a separate visualization.
+
+Midnight and Multi-Day Behavior
+-------------------------------
+The simulator was specifically tested by moving forward from the current day's sunset through midnight into the following day.
+
+The critical requirement is that the celestial display continue to use the correct astronomical events for the simulated calendar date.
+
+For example:
+
+Today's sunset
+    ↓
+Nighttime
+    ↓
+Midnight
+    ↓
+Tomorrow's nighttime path
+    ↓
+Tomorrow's sunrise
+    ↓
+Tomorrow's daytime path
+    ↓
+Tomorrow's sunset
+
+The first sunrise and last sunset of a simulated day must therefore be handled using that day's actual sunrise and sunset events.
+
+Result
+------
+The resulting behavior preserves the previously correct sunrise transition, provides a smooth sunset transition, correctly follows the celestial paths across midnight, and keeps the simulator synchronized with the simulated date.
+
+The final implementation intentionally favors visual continuity and stability over eliminating a minor one-minute transition artifact after sunset.

@@ -23,51 +23,50 @@ function getSunDiscReveal(sun) {
     if (!sun || !sun.localTime)
         return 1;
 
-    const now = sun.localTime.getTime();
+    const nowDate = new Date(sun.localTime.getTime());
+    nowDate.setSeconds(0, 0);
+    const now = nowDate.getTime();
 
-    // The service resolves sunrise/sunset for the actual celestial cycle.
-    // Do not realign these timestamps by wall-clock time: after midnight
-    // the relevant sunset is yesterday's sunset, while sunrise is today's.
-    const sunrise =
-        sun.sunriseTime instanceof Date
-            ? sun.sunriseTime.getTime()
-            : null;
+    // Calculated horizon times can contain seconds/fractions of a minute.
+    // The simulator displays whole civil minutes, so normalize both sides
+    // to the displayed minute and the simulated calendar date.
+    const alignHorizonToDisplayedDate = horizonTime => {
+        if (!(horizonTime instanceof Date))
+            return null;
 
-    const sunset =
-        sun.sunsetTime instanceof Date
-            ? sun.sunsetTime.getTime()
-            : null;
+        const aligned = new Date(horizonTime.getTime());
+        aligned.setFullYear(
+            nowDate.getFullYear(),
+            nowDate.getMonth(),
+            nowDate.getDate()
+        );
+        aligned.setSeconds(0, 0);
+        return aligned.getTime();
+    };
+
+    const sunrise = alignHorizonToDisplayedDate(sun.sunriseTime);
+    const sunset = alignHorizonToDisplayedDate(sun.sunsetTime);
     const transition = 5 * 60000;
 
     if (Number.isFinite(sunrise)) {
         const elapsed = now - sunrise;
-
-        // Sunrise: 0% at sunrise, then 20/40/60/80/100%
-        // at each successive minute.
-        if (elapsed >= 0 && elapsed <= transition) {
-            return Math.max(
-                0,
-                Math.min(1, elapsed / transition)
-            );
-        }
+        if (elapsed >= 0 && elapsed <= transition)
+            return Math.max(0, Math.min(1, elapsed / transition));
     }
 
     if (Number.isFinite(sunset)) {
         const remaining = sunset - now;
+        if (remaining >= 0 && remaining <= transition)
+            return Math.max(0, Math.min(1, remaining / transition));
 
-        // Sunset: 100% five minutes before sunset, then
-        // 80/60/40/20%, reaching 0% exactly at sunset.
-        if (remaining >= 0 && remaining <= transition) {
-            return Math.max(
-                0,
-                Math.min(1, remaining / transition)
-            );
-        }
+        // Once the displayed sunset minute has arrived, the disk remains
+        // hidden through the night. Only the glow and rays remain visible.
+        if (now > sunset)
+            return 0;
     }
 
     return 1;
 }
-
 
 function getSunGraphicY(
     sun,
@@ -125,6 +124,40 @@ function getPathGraphicPosition(position, sunset, nextSunrise, weather) {
         (sunrisePosition.azimuth - sunsetPosition.azimuth) * progress;
 
     return getAzimuthGraphicPosition(relativeAzimuth);
+}
+
+
+function calculateSolarPositionForNightConnector(time, sunset, nextSunrise, weather) {
+    const sunsetPosition =
+        calculateSolarPosition(
+            sunset,
+            weather.latitude,
+            weather.longitude,
+            weather.utcOffsetSeconds
+        );
+
+    const sunrisePosition =
+        calculateSolarPosition(
+            nextSunrise,
+            weather.latitude,
+            weather.longitude,
+            weather.utcOffsetSeconds
+        );
+
+    if (!sunsetPosition || !sunrisePosition)
+        return null;
+
+    const progress =
+        Math.max(0, Math.min(1,
+            (time.getTime() - sunset.getTime()) /
+            (nextSunrise.getTime() - sunset.getTime())
+        ));
+
+    return {
+        azimuth:
+            sunsetPosition.azimuth +
+            (sunrisePosition.azimuth - sunsetPosition.azimuth) * progress
+    };
 }
 
 function getBelowHorizonAltitudeRange(weather, sunrise) {
@@ -275,6 +308,10 @@ function renderCelestialGraphic(
         const sunsetDiscReveal =
             getSunDiscReveal(sun);
 
+        // Use the same reveal value for the disk opacity. At the exact
+        // sunrise/sunset minute this is 0, leaving only glow and rays.
+        const sunDiscReveal = sunsetDiscReveal;
+
         const sunDiscTop =
             y - 12;
 
@@ -292,9 +329,9 @@ function renderCelestialGraphic(
         // applied to the interior of the curve.
         //--------------------------------------------------
 
-        // Use the cycle resolved by celestialService. This is essential
-        // after midnight: the path must be yesterday's sunset -> today's
-        // sunrise, not today's loaded forecast sunrise/sunset.
+        // Use the date-aware horizon times carried by the celestial state.
+        // These are the correct times for the simulator's displayed date,
+        // not necessarily the date on which the weather forecast was loaded.
         const sunrise =
             sun.sunriseTime || null;
 
@@ -469,6 +506,7 @@ function renderCelestialGraphic(
             pathPoints.join(" ");
 
 
+
         return `
 
             <svg
@@ -488,6 +526,7 @@ function renderCelestialGraphic(
                     stroke-linecap="round"
                     opacity="0.30"
                 />
+
 
                 <!-- Temporary horizon guide: altitude = 0 degrees -->
                 <line
@@ -566,6 +605,7 @@ function renderCelestialGraphic(
                         cy="${y}"
                         r="12"
                         fill="#ffd34d"
+                        opacity="${sunDiscReveal <= 0 ? 0 : 1}"
                         clip-path="${sun.sunsetTransition ? 'url(#sunsetDiscRevealClip)' : (sun.sunriseTransition ? 'url(#sunriseDiscRevealClip)' : 'none')}"
                     />
 
