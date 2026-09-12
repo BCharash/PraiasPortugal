@@ -11,12 +11,13 @@
 // Fixed Portuguese display envelope
 //--------------------------------------------------
 
-// South is the horizontal center of the graphic.
-// The display extends approximately 132 degrees to
-// either side of South. This is sufficient to contain
-// the maximum solar/lunar azimuth excursion anywhere
-// in mainland Portugal throughout the year.
-const CELESTIAL_AZIMUTH_HALF_RANGE = 132;
+// The horizontal graphic uses a fixed east/west azimuth projection.
+// The projection is continuous for the full 360° azimuth circle, so
+// 0°/360° never creates a screen-coordinate discontinuity.
+// West is right, east is left; north and south project to the center.
+// The fixed horizontal scale is therefore the full east/west component
+// of azimuth rather than a date-dependent angular range.
+const CELESTIAL_AZIMUTH_HALF_RANGE = 125;
 
 // Apparent solar-disc radius used only for the visual horizon transition.
 const SOLAR_DISC_RADIUS_DEGREES = 0.27;
@@ -25,6 +26,53 @@ const SOLAR_DISC_RADIUS_DEGREES = 0.27;
 //--------------------------------------------------
 // Public Functions
 //--------------------------------------------------
+// Portugal civil-time offset for a simulated local wall-clock date.
+// The simulator must use the offset that applies on the simulated date
+// (WET in winter, WEST in summer), not the offset from the weather load date.
+function getPortugalUtcOffsetSeconds(localDate) {
+
+    if (!(localDate instanceof Date) || Number.isNaN(localDate.getTime()))
+        return 0;
+
+    const pseudoUtc = Date.UTC(
+        localDate.getFullYear(),
+        localDate.getMonth(),
+        localDate.getDate(),
+        localDate.getHours(),
+        localDate.getMinutes(),
+        localDate.getSeconds(),
+        localDate.getMilliseconds()
+    );
+
+    const parts = new Intl.DateTimeFormat("en-GB", {
+        timeZone: "Europe/Lisbon",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hourCycle: "h23"
+    }).formatToParts(new Date(pseudoUtc));
+
+    const values = {};
+    for (const part of parts)
+        values[part.type] = Number(part.value);
+
+    const zonedPseudoUtc = Date.UTC(
+        values.year,
+        values.month - 1,
+        values.day,
+        values.hour,
+        values.minute,
+        values.second,
+        localDate.getMilliseconds()
+    );
+
+    return Math.round((zonedPseudoUtc - pseudoUtc) / 1000);
+
+}
+
 
 function getCelestialState(weather) {
 
@@ -90,7 +138,7 @@ function getCelestialState(weather) {
                     today,
                     weather.latitude,
                     weather.longitude,
-                    weather.utcOffsetSeconds
+                    getPortugalUtcOffsetSeconds(today)
                 );
 
         const yesterdayHorizon =
@@ -98,7 +146,7 @@ function getCelestialState(weather) {
                 yesterday,
                 weather.latitude,
                 weather.longitude,
-                weather.utcOffsetSeconds
+                getPortugalUtcOffsetSeconds(yesterday)
             );
 
         const tomorrowHorizon =
@@ -106,7 +154,7 @@ function getCelestialState(weather) {
                 tomorrow,
                 weather.latitude,
                 weather.longitude,
-                weather.utcOffsetSeconds
+                getPortugalUtcOffsetSeconds(tomorrow)
             );
 
         sunrise = todayHorizon?.sunrise || null;
@@ -139,7 +187,7 @@ function getCelestialState(weather) {
                 nextSunrise,
                 weather.latitude,
                 weather.longitude,
-                weather.utcOffsetSeconds
+                getPortugalUtcOffsetSeconds(now)
             );
     }
 
@@ -546,6 +594,18 @@ function getSunDisplayPosition(
     // for reconciling that position with the deliberately oversized Sun
     // graphic at the horizon.
     position.displayAzimuth = position.azimuth;
+    position.sunsetAzimuth = calculateSolarPosition(
+        todaySunset,
+        latitude,
+        longitude,
+        getPortugalUtcOffsetSeconds(todaySunset)
+    )?.azimuth ?? null;
+    position.sunriseAzimuth = calculateSolarPosition(
+        nextSunrise,
+        latitude,
+        longitude,
+        getPortugalUtcOffsetSeconds(nextSunrise)
+    )?.azimuth ?? null;
     position.localTime = new Date(now.getTime());
     position.previousSunsetTime = previousSunset;
     position.sunriseTime = todaySunrise;
@@ -556,18 +616,18 @@ function getSunDisplayPosition(
             todaySunrise,
             latitude,
             longitude,
-            utcOffsetSeconds
+            getPortugalUtcOffsetSeconds(todaySunrise)
         )?.altitude ?? 0;
     position.sunsetAltitude =
         calculateSolarPosition(
             todaySunset,
             latitude,
             longitude,
-            utcOffsetSeconds
+            getPortugalUtcOffsetSeconds(todaySunset)
         )?.altitude ?? 0;
     position.latitude = latitude;
     position.longitude = longitude;
-    position.utcOffsetSeconds = utcOffsetSeconds;
+    position.utcOffsetSeconds = getPortugalUtcOffsetSeconds(now);
     position.isBelowHorizon = false;
     position.isNightParked = false;
 
@@ -610,22 +670,6 @@ function getSunDisplayPosition(
     // horizon, it follows the fixed eastward night track.
     //--------------------------------------------------
 
-    const sunsetPosition =
-        calculateSolarPosition(
-            todaySunset,
-            latitude,
-            longitude,
-            utcOffsetSeconds
-        );
-
-    const sunrisePosition =
-        calculateSolarPosition(
-            nextSunrise,
-            latitude,
-            longitude,
-            utcOffsetSeconds
-        );
-
     const isBeforeSunrise =
         now < todaySunrise;
 
@@ -638,61 +682,33 @@ function getSunDisplayPosition(
 
     const nightParkStart =
         isBeforeSunrise
-            ? new Date(previousSunset.getTime() + 1 * 60000)
-            : new Date(todaySunset.getTime() + 1 * 60000);
+            ? new Date(previousSunset.getTime() + 2 * 60000)
+            : new Date(todaySunset.getTime() + 2 * 60000);
 
     const nightParkEnd =
         isBeforeSunrise
-            ? new Date(todaySunrise.getTime() - 1 * 60000)
-            : new Date(nextSunrise.getTime() - 1 * 60000);
+            ? new Date(todaySunrise.getTime() - 2 * 60000)
+            : new Date(nextSunrise.getTime() - 2 * 60000);
 
-    if (isNight && now >= nightParkStart && now <= nightParkEnd) {
+    if (isNight &&
+        now >= nightParkStart &&
+        now <= nightParkEnd) {
 
+        // From sunset+2 through sunrise-2 the complete dimmed Sun is
+        // parked on the fixed below-horizon track. Its horizontal
+        // coordinate remains its true astronomical azimuth.
         position.isNightParked = true;
         position.isBelowHorizon = true;
-
-        const parkStart =
-            isBeforeSunrise ? previousSunset : todaySunset;
-
-        const parkEnd =
-            isBeforeSunrise ? todaySunrise : nextSunrise;
-
-        const startPosition =
-            calculateSolarPosition(
-                parkStart, latitude, longitude, utcOffsetSeconds
-            );
-
-        const endPosition =
-            calculateSolarPosition(
-                parkEnd, latitude, longitude, utcOffsetSeconds
-            );
-
-        if (startPosition && endPosition) {
-            const progress = Math.max(0, Math.min(1,
-                (now.getTime() - parkStart.getTime()) /
-                (parkEnd.getTime() - parkStart.getTime())
-            ));
-
-            position.displayAzimuth =
-                startPosition.azimuth +
-                (endPosition.azimuth - startPosition.azimuth) * progress;
-        }
+        position.displayAzimuth = position.azimuth;
 
     } else if (isNight) {
 
-        // During the four-minute visual descent/rise immediately around
-        // the horizon, retain the astronomical position. Once the disk
-        // has cleared the horizon, the Sun uses the parked night track.
-        const transitionBoundary =
-            isBeforeSunrise
-                ? todaySunrise.getTime() - 4 * 60000
-                : todaySunset.getTime() + 4 * 60000;
-
-        position.isBelowHorizon =
-            isBeforeSunrise
-                ? now < transitionBoundary
-                : now >= transitionBoundary;
+        // Sunset+1 and sunrise-1 remain at the astronomical position.
+        // Only the vertical presentation/opacity changes.
+        position.isBelowHorizon = true;
+        position.displayAzimuth = position.azimuth;
     }
+
 
     if (
         now >= sunriseTransitionStart &&
@@ -702,7 +718,7 @@ function getSunDisplayPosition(
             "SUNRISE TRANSITION";
     } else if (
         now >= sunsetTransitionStart &&
-        now <= todaySunset.getTime()
+        now <= sunsetTransitionEnd
     ) {
         position.presentationState =
             "SUNSET TRANSITION";
@@ -820,16 +836,20 @@ function getSolarHorizonTimes(localDate, latitude, longitude, utcOffsetSeconds =
 
 function getRelativeAzimuth(azimuth) {
 
-    let relative =
-        azimuth - 180;
+    let a = Number(azimuth);
 
+    if (!Number.isFinite(a))
+        return 0;
 
-    while (relative < -180)
-        relative += 360;
+    // Use true astronomical azimuth as the horizontal coordinate.
+    // South (180°) is the center; east is left and west is right.
+    // Do not project through sine: that would make the Sun turn around
+    // before sunrise/sunset instead of moving monotonically along the
+    // visible solar arc.
+    let relative = a - 180;
 
-    while (relative > 180)
-        relative -= 360;
-
+    while (relative < -180) relative += 360;
+    while (relative > 180) relative -= 360;
 
     return relative;
 
@@ -842,20 +862,14 @@ function getRelativeAzimuth(azimuth) {
 
 function getAzimuthGraphicPosition(azimuth) {
 
-    const relative =
+    const projectedAngle =
         getRelativeAzimuth(azimuth);
 
-
     const normalized =
-        relative /
-        CELESTIAL_AZIMUTH_HALF_RANGE;
+        projectedAngle / CELESTIAL_AZIMUTH_HALF_RANGE;
 
-
-    // East is left; West is right.
     const x =
-        50 +
-        normalized * 50;
-
+        50 + normalized * 50;
 
     return Math.max(
         0,

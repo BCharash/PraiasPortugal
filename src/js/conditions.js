@@ -299,7 +299,7 @@ function initializeCelestialSimulator(weather = null) {
         root = document.createElement("div");
         root.id = "celestialSimulator";
         root.hidden = true;
-        celestialSky.appendChild(root);
+        celestialSky.parentNode.insertBefore(root, celestialSky.nextSibling);
     }
 
     root.hidden = false;

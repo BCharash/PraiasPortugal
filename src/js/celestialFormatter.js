@@ -8,9 +8,77 @@
 
 
 function getSunDisplayGraphicPosition(sun) {
-    return getAzimuthGraphicPosition(
-        sun.displayAzimuth != null ? sun.displayAzimuth : sun.azimuth
-    );
+
+    const isNightTime =
+        sun?.localTime instanceof Date &&
+        sun?.sunsetTime instanceof Date &&
+        sun?.nextSunriseTime instanceof Date &&
+        sun.localTime > sun.sunsetTime &&
+        sun.localTime < sun.nextSunriseTime;
+
+    if ((sun?.isBelowHorizon || sun?.isNightParked || isNightTime) &&
+        Number.isFinite(sun.azimuth) &&
+        Number.isFinite(sun.sunsetAzimuth) &&
+        Number.isFinite(sun.sunriseAzimuth)) {
+
+        return getNightProjectedX(
+            sun.azimuth,
+            sun.sunsetAzimuth,
+            sun.sunriseAzimuth
+        );
+    }
+
+    const azimuth =
+        sun.displayAzimuth != null ? sun.displayAzimuth : sun.azimuth;
+
+    // Daytime horizontal position is a linear astronomical azimuth scale
+    // centered on south (180°).  It is deliberately independent of
+    // latitude or east/west ground distance.
+    return getAzimuthGraphicPosition(azimuth);
+}
+
+function normalizeSignedAngle(degrees) {
+    let value = Number(degrees);
+    if (!Number.isFinite(value))
+        return 0;
+    value = ((value + 180) % 360 + 360) % 360 - 180;
+    return value;
+}
+
+function getNightProjectedX(azimuth, sunsetAzimuth, sunriseAzimuth) {
+
+    // The Sun's astronomical azimuth increases with time in this
+    // convention.  Therefore the nighttime arc must be the forward
+    // (clockwise) arc from sunset to the following sunrise, not the
+    // shortest signed arc between the two endpoints.
+    //
+    // This distinction is crucial in winter.  Near the winter solstice
+    // the Sun travels approximately:
+    //   southwest -> west -> north -> east -> southeast
+    // so the azimuth crosses 360° and the nighttime arc is roughly 240°,
+    // not the tempting -120° shortest path.
+    const totalArc =
+        ((Number(sunriseAzimuth) - Number(sunsetAzimuth)) % 360 + 360) % 360;
+
+    if (totalArc < 0.0001)
+        return getAzimuthGraphicPosition(sunsetAzimuth);
+
+    // Unwrap the current azimuth onto that same forward branch.
+    const traveled =
+        ((Number(azimuth) - Number(sunsetAzimuth)) % 360 + 360) % 360;
+
+    // Project the actual astronomical nighttime azimuth arc onto the
+    // horizontal interval occupied by the daytime sunset/sunrise points.
+    // The projection therefore preserves the winter turning point at
+    // north instead of sending the Sun off the right edge and back onto
+    // the left.  It is a projection of astronomical azimuth, not a
+    // time-based interpolation.
+    const progress = Math.max(0, Math.min(1, traveled / totalArc));
+
+    const sunsetX = getAzimuthGraphicPosition(sunsetAzimuth);
+    const sunriseX = getAzimuthGraphicPosition(sunriseAzimuth);
+
+    return sunsetX + progress * (sunriseX - sunsetX);
 }
 
 function smoothstep(value) {
@@ -18,54 +86,78 @@ function smoothstep(value) {
     return t * t * (3 - 2 * t);
 }
 
-function getSunDiscReveal(sun) {
+function getSunVisualState(sun) {
 
     if (!sun || !sun.localTime)
-        return 1;
+        return {
+            discReveal: 1,
+            graphicOpacity: 1,
+            parkBelowHorizon: false
+        };
 
-    const nowDate = new Date(sun.localTime.getTime());
-    nowDate.setSeconds(0, 0);
-    const now = nowDate.getTime();
+    const now = new Date(sun.localTime.getTime());
+    now.setSeconds(0, 0);
 
-    // Calculated horizon times can contain seconds/fractions of a minute.
-    // The simulator displays whole civil minutes, so normalize both sides
-    // to the displayed minute and the simulated calendar date.
-    const alignHorizonToDisplayedDate = horizonTime => {
-        if (!(horizonTime instanceof Date))
-            return null;
+    const sunrise = sun.sunriseTime instanceof Date
+        ? new Date(sun.sunriseTime.getTime())
+        : null;
 
-        const aligned = new Date(horizonTime.getTime());
-        aligned.setFullYear(
-            nowDate.getFullYear(),
-            nowDate.getMonth(),
-            nowDate.getDate()
-        );
-        aligned.setSeconds(0, 0);
-        return aligned.getTime();
+    const sunset = sun.sunsetTime instanceof Date
+        ? new Date(sun.sunsetTime.getTime())
+        : null;
+
+    if (!sunrise || !sunset)
+        return {
+            discReveal: 1,
+            graphicOpacity: 1,
+            parkBelowHorizon: false
+        };
+
+    sunrise.setSeconds(0, 0);
+    sunset.setSeconds(0, 0);
+
+    const minute = 60000;
+    const sunriseOffset = Math.round((now.getTime() - sunrise.getTime()) / minute);
+    const sunsetOffset = Math.round((now.getTime() - sunset.getTime()) / minute);
+
+    // Sunset sequence.
+    if (sunsetOffset === -3)
+        return { discReveal: 0.90, graphicOpacity: 1, parkBelowHorizon: false };
+    if (sunsetOffset === -2)
+        return { discReveal: 0.67, graphicOpacity: 1, parkBelowHorizon: false };
+    if (sunsetOffset === -1)
+        return { discReveal: 0.34, graphicOpacity: 1, parkBelowHorizon: false };
+    if (sunsetOffset === 0)
+        return { discReveal: 0.10, graphicOpacity: 1, parkBelowHorizon: false };
+    if (sunsetOffset === 1)
+        return { discReveal: 0, graphicOpacity: 1, parkBelowHorizon: false };
+
+    // From sunset+2 through sunrise-2 the complete graphic is dimmed
+    // and vertically parked below the horizon.
+    if (sunsetOffset >= 2 || sunriseOffset <= -2)
+        return { discReveal: 1, graphicOpacity: 0.30, parkBelowHorizon: true };
+
+    // Sunrise sequence.
+    if (sunriseOffset === -1)
+        return { discReveal: 0, graphicOpacity: 1, parkBelowHorizon: false };
+    if (sunriseOffset === 0)
+        return { discReveal: 0.10, graphicOpacity: 1, parkBelowHorizon: false };
+    if (sunriseOffset === 1)
+        return { discReveal: 0.34, graphicOpacity: 1, parkBelowHorizon: false };
+    if (sunriseOffset === 2)
+        return { discReveal: 0.67, graphicOpacity: 1, parkBelowHorizon: false };
+    if (sunriseOffset === 3)
+        return { discReveal: 0.90, graphicOpacity: 1, parkBelowHorizon: false };
+
+    return {
+        discReveal: 1,
+        graphicOpacity: 1,
+        parkBelowHorizon: false
     };
+}
 
-    const sunrise = alignHorizonToDisplayedDate(sun.sunriseTime);
-    const sunset = alignHorizonToDisplayedDate(sun.sunsetTime);
-    const transition = 5 * 60000;
-
-    if (Number.isFinite(sunrise)) {
-        const elapsed = now - sunrise;
-        if (elapsed >= 0 && elapsed <= transition)
-            return Math.max(0, Math.min(1, elapsed / transition));
-    }
-
-    if (Number.isFinite(sunset)) {
-        const remaining = sunset - now;
-        if (remaining >= 0 && remaining <= transition)
-            return Math.max(0, Math.min(1, remaining / transition));
-
-        // Once the displayed sunset minute has arrived, the disk remains
-        // hidden through the night. Only the glow and rays remain visible.
-        if (now > sunset)
-            return 0;
-    }
-
-    return 1;
+function getSunDiscReveal(sun) {
+    return getSunVisualState(sun).discReveal;
 }
 
 function getSunGraphicY(
@@ -81,83 +173,75 @@ function getSunGraphicY(
     // the Sun's calculated position is not altered.
     //--------------------------------------------------
 
+    // Fixed vertical scale: use nearly all available daytime height while
+    // retaining a small top margin. 82 degrees covers Portugal's highest
+    // possible midday solar altitude with a little visual headroom.
+    const TOP_MARGIN_RATIO = 0.08;
+    const HORIZON_RATIO = 0.80;
+    const MAX_SOLAR_ALTITUDE = 82;
+    const usableHeight =
+        graphicHeight * (HORIZON_RATIO - TOP_MARGIN_RATIO);
+    const pixelsPerAltitudeDegree =
+        usableHeight / MAX_SOLAR_ALTITUDE;
+
     const normalY =
-        graphicHeight *
-        (0.80 - sun.altitude / 100 * 0.80);
+        graphicHeight * HORIZON_RATIO -
+        sun.altitude * pixelsPerAltitudeDegree;
 
     const SUN_VISUAL_RADIUS_PX = 21;
 
     const nightY =
         horizonY + SUN_VISUAL_RADIUS_PX;
 
-    if (sun.isNightParked)
+    if (getSunVisualState(sun).parkBelowHorizon)
         return nightY;
 
     return normalY;
 }
 
 function getPathGraphicPosition(position, sunset, nextSunrise, weather) {
-    if (!position.isNightParked)
-        return getAzimuthGraphicPosition(position.azimuth);
 
-    if (!sunset || !nextSunrise || nextSunrise <= sunset)
-        return getAzimuthGraphicPosition(position.azimuth);
+    const isNightTime =
+        position?.localTime instanceof Date &&
+        sunset instanceof Date &&
+        nextSunrise instanceof Date &&
+        position.localTime > sunset &&
+        position.localTime < nextSunrise;
 
-    const sunsetPosition = calculateSolarPosition(
-        sunset, weather.latitude, weather.longitude, weather.utcOffsetSeconds
-    );
-    const sunrisePosition = calculateSolarPosition(
-        nextSunrise, weather.latitude, weather.longitude, weather.utcOffsetSeconds
-    );
+    if ((position?.isBelowHorizon || position?.isNightParked || isNightTime) &&
+        Number.isFinite(position.azimuth)) {
 
-    if (!sunsetPosition || !sunrisePosition)
-        return getAzimuthGraphicPosition(position.azimuth);
+        const sunsetAzimuth =
+            Number.isFinite(position.sunsetAzimuth)
+                ? position.sunsetAzimuth
+                : calculateSolarPosition(
+                    sunset,
+                    weather.latitude,
+                    weather.longitude,
+                    getPortugalUtcOffsetSeconds(sunset)
+                )?.azimuth;
 
-    const progress =
-        Math.max(0, Math.min(1,
-            (position._pathTime - sunset.getTime()) /
-            (nextSunrise.getTime() - sunset.getTime())
-        ));
+        const sunriseAzimuth =
+            Number.isFinite(position.sunriseAzimuth)
+                ? position.sunriseAzimuth
+                : calculateSolarPosition(
+                    nextSunrise,
+                    weather.latitude,
+                    weather.longitude,
+                    getPortugalUtcOffsetSeconds(nextSunrise)
+                )?.azimuth;
 
-    const relativeAzimuth =
-        sunsetPosition.azimuth +
-        (sunrisePosition.azimuth - sunsetPosition.azimuth) * progress;
+        if (Number.isFinite(sunsetAzimuth) &&
+            Number.isFinite(sunriseAzimuth)) {
+            return getNightProjectedX(
+                position.azimuth,
+                sunsetAzimuth,
+                sunriseAzimuth
+            );
+        }
+    }
 
-    return getAzimuthGraphicPosition(relativeAzimuth);
-}
-
-
-function calculateSolarPositionForNightConnector(time, sunset, nextSunrise, weather) {
-    const sunsetPosition =
-        calculateSolarPosition(
-            sunset,
-            weather.latitude,
-            weather.longitude,
-            weather.utcOffsetSeconds
-        );
-
-    const sunrisePosition =
-        calculateSolarPosition(
-            nextSunrise,
-            weather.latitude,
-            weather.longitude,
-            weather.utcOffsetSeconds
-        );
-
-    if (!sunsetPosition || !sunrisePosition)
-        return null;
-
-    const progress =
-        Math.max(0, Math.min(1,
-            (time.getTime() - sunset.getTime()) /
-            (nextSunrise.getTime() - sunset.getTime())
-        ));
-
-    return {
-        azimuth:
-            sunsetPosition.azimuth +
-            (sunrisePosition.azimuth - sunsetPosition.azimuth) * progress
-    };
+    return getAzimuthGraphicPosition(position.azimuth);
 }
 
 function getBelowHorizonAltitudeRange(weather, sunrise) {
@@ -170,7 +254,7 @@ function getBelowHorizonAltitudeRange(weather, sunrise) {
             sunrise,
             weather.latitude,
             weather.longitude,
-            weather.utcOffsetSeconds
+            getPortugalUtcOffsetSeconds(sunrise)
         );
 
     if (!horizonTimes?.sunset)
@@ -189,7 +273,7 @@ function getBelowHorizonAltitudeRange(weather, sunrise) {
             nextDay,
             weather.latitude,
             weather.longitude,
-            weather.utcOffsetSeconds
+            getPortugalUtcOffsetSeconds(nextDay)
         );
 
     if (!nextHorizon?.sunrise)
@@ -213,7 +297,7 @@ function getBelowHorizonAltitudeRange(weather, sunrise) {
                 time,
                 weather.latitude,
                 weather.longitude,
-                weather.utcOffsetSeconds
+                getPortugalUtcOffsetSeconds(time)
             );
 
         if (position)
@@ -362,29 +446,28 @@ function renderCelestialGraphic(
                     position.sunriseTime,
                     weather.latitude,
                     weather.longitude,
-                    weather.utcOffsetSeconds
+                    getPortugalUtcOffsetSeconds(position.sunriseTime)
                 )?.altitude ?? 0;
             position.sunsetAltitude =
                 calculateSolarPosition(
                     sunset,
                     weather.latitude,
                     weather.longitude,
-                    weather.utcOffsetSeconds
+                    getPortugalUtcOffsetSeconds(sunset)
                 )?.altitude ?? 0;
             position.latitude = weather.latitude;
             position.longitude = weather.longitude;
-            position.utcOffsetSeconds = weather.utcOffsetSeconds;
+            position.utcOffsetSeconds = getPortugalUtcOffsetSeconds(position.localTime);
 
             if (
-                position._pathTime >= sunset.getTime() + 1 * 60000 &&
-                position._pathTime <= nextSunrise.getTime() - 1 * 60000
+                position._pathTime >= sunset.getTime() + 2 * 60000 &&
+                position._pathTime <= nextSunrise.getTime() - 2 * 60000
             ) {
                 position.isNightParked = true;
                 position.isBelowHorizon = true;
             } else {
                 position.isNightParked = false;
-                position.isBelowHorizon =
-                    position._pathTime >= sunset.getTime() + 4 * 60000;
+                position.isBelowHorizon = false;
             }
 
             const pathXPercent =
@@ -428,7 +511,7 @@ function renderCelestialGraphic(
                         localTime,
                         weather.latitude,
                         weather.longitude,
-                        weather.utcOffsetSeconds
+                        getPortugalUtcOffsetSeconds(localTime)
                     );
 
                 if (position) {
@@ -453,7 +536,7 @@ function renderCelestialGraphic(
                     sunset,
                     weather.latitude,
                     weather.longitude,
-                    weather.utcOffsetSeconds
+                    getPortugalUtcOffsetSeconds(sunset)
                 );
 
             const sunrisePosition =
@@ -461,8 +544,10 @@ function renderCelestialGraphic(
                     nextSunrise,
                     weather.latitude,
                     weather.longitude,
-                    weather.utcOffsetSeconds
+                    getPortugalUtcOffsetSeconds(nextSunrise)
                 );
+
+            let nightPathStarted = false;
 
             for (let i = 1; i <= pathSegments; i++) {
 
@@ -478,26 +563,30 @@ function renderCelestialGraphic(
                         localTime,
                         weather.latitude,
                         weather.longitude,
-                        weather.utcOffsetSeconds
+                        getPortugalUtcOffsetSeconds(localTime)
                     );
 
                 if (position) {
                     position.isBelowHorizon =
                         position.altitude < -SOLAR_DISC_RADIUS_DEGREES;
 
-                    if (
-                        position.isBelowHorizon &&
-                        sunsetPosition &&
-                        sunrisePosition
-                    ) {
-                        position.displayAzimuth =
-                            sunsetPosition.azimuth +
-                            (sunrisePosition.azimuth - sunsetPosition.azimuth) *
-                            progress;
-                    }
-
                     position._pathTime = localTime.getTime();
-                    addPathPoint(position, "L");
+
+                    // Start the below-horizon track as a new subpath at
+                    // sunset+2. This deliberately removes the diagonal
+                    // connector from the sunset horizon to the nighttime
+                    // horizontal azimuth track.
+                    const parkStart = sunset.getTime() + 2 * 60000;
+                    const command =
+                        !nightPathStarted &&
+                        localTime.getTime() >= parkStart
+                            ? "M"
+                            : "L";
+
+                    if (command === "M")
+                        nightPathStarted = true;
+
+                    addPathPoint(position, command);
                 }
             }
         }
@@ -528,16 +617,15 @@ function renderCelestialGraphic(
                 />
 
 
-                <!-- Temporary horizon guide: altitude = 0 degrees -->
+                <!-- Fixed geometric horizon: solid blue-green guide. -->
                 <line
                     x1="0"
                     y1="${horizonY}"
                     x2="${width}"
                     y2="${horizonY}"
-                    stroke="#ffffff"
-                    stroke-width="1"
-                    stroke-dasharray="4 5"
-                    opacity="0.28"
+                    stroke="#4f9f9a"
+                    stroke-width="1.5"
+                    opacity="0.65"
                 />
 
 
@@ -587,7 +675,7 @@ function renderCelestialGraphic(
                 </defs>
 
                 <g
-                    opacity="${sun.isBelowHorizon || (sun.sunsetTime && sun.localTime && sun.localTime.getTime() >= sun.sunsetTime.getTime() + 1 * 60000) ? 0.30 : 1}"
+                    opacity="${getSunVisualState(sun).graphicOpacity}"
                 >
 
                     <!-- Soft glow -->

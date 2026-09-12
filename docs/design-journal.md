@@ -1724,3 +1724,154 @@ Result
 The resulting behavior preserves the previously correct sunrise transition, provides a smooth sunset transition, correctly follows the celestial paths across midnight, and keeps the simulator synchronized with the simulated date.
 
 The final implementation intentionally favors visual continuity and stability over eliminating a minor one-minute transition artifact after sunset.
+
+
+---
+
+## Status**
+
+Accepted
+
+# DJ0014 — Astronomical Sun Path and Nighttime Azimuth Projection**
+
+Purpose
+
+-------
+
+The celestial Sun display was refined so that its horizontal movement follows the astronomical solar azimuth throughout the complete daily cycle.
+
+The principal objective was to eliminate artificial horizontal reversals and discontinuities while preserving a visually continuous transition between the daytime and nighttime portions of the Sun's path.
+
+Daytime Astronomical Path
+
+---------------------------
+
+The daytime horizontal position of the Sun is now based directly on astronomical solar azimuth.
+
+The horizontal scale is fixed throughout the year, with south represented as the center of the display.
+
+Consequently:
+
+- Sunrise, when the Sun is in the eastern sky, appears toward the left.
+
+- The Sun's passage through the southern sky moves progressively from left toward right.
+
+- Sunset, when the Sun is in the western sky, appears toward the right.
+
+The horizontal scale is fixed at approximately ±125° relative to south.
+
+This fixed scale avoids changing the apparent geometry of the celestial display between seasons.
+
+The previous east/west sine projection was removed because it caused the Sun to reach a horizontal maximum before sunset and then reverse direction. That behavior did not represent the desired astronomical azimuth movement.
+
+Nighttime Astronomical Path
+
+----------------------------
+
+The nighttime path is derived from the actual astronomical azimuth of the Sun below the horizon.
+
+Because the Sun's nighttime azimuth does not always follow the shortest angular route between sunset and the following sunrise, the nighttime projection preserves the appropriate continuous astronomical direction.
+
+This distinction is particularly important during the winter half of the year.
+
+At the winter solstice, the Sun's azimuth progresses through the western sky, across north, and then toward the eastern sky before sunrise. The display therefore follows the corresponding full astronomical azimuth progression rather than treating the sunset-to-sunrise interval as a simple shortest-angle transition.
+
+This prevents the Sun from leaving the right side of the display and reappearing on the left.
+
+The nighttime astronomical path is projected onto the horizontal nighttime line. The vertical component of the below-horizon Sun is intentionally compressed so that the Sun remains visible as part of the nighttime celestial path.
+
+Seasonal Behavior
+
+-----------------
+
+The implementation was tested against both summer and winter behavior.
+
+During the summer half of the year, the nighttime projection remains continuous from sunset through the following sunrise.
+
+During the winter half of the year, including the winter solstice, the nighttime projection follows the appropriate longer azimuth progression without wrapping across the screen.
+
+The same underlying astronomical calculations are therefore used throughout the year rather than employing separate seasonal visual approximations.
+
+Sunset and Sunrise Continuity
+
+------------------------------
+
+The transition between the daytime and nighttime paths is designed to maintain horizontal continuity.
+
+The Sun does not suddenly jump horizontally when the display changes from the daytime astronomical path to the nighttime projected path.
+
+Likewise, the transition from the nighttime path into the following sunrise remains continuous.
+
+The previously established solar-disk transition behavior is retained:
+
+- Sunset progressively removes the solar disk.
+
+- At sunset the disk is hidden while glow and rays remain visible.
+
+- The nighttime state then places the complete dimmed solar graphic on the nighttime path.
+
+- Before sunrise the solar disk remains hidden while the glow and rays become fully visible.
+
+- The solar disk progressively appears during the sunrise transition.
+
+Fixed Vertical Scale
+
+-------------------
+
+The vertical scale remains fixed throughout the year.
+
+The horizon is represented by a solid horizontal line.
+
+The daytime solar altitude is mapped against the fixed vertical scale so that the high summer Sun occupies most of the available vertical range without changing the scale seasonally.
+
+Below the horizon, the Sun is vertically parked on the nighttime line while its horizontal position continues to represent its astronomical azimuth progression.
+
+Simulator Verification
+
+----------------------
+
+The development simulator remains available through:
+
+?dev
+
+The simulator uses the same celestial service and formatter as the normal application.
+
+Testing was performed at the critical transition points around:
+
+- Sunset −2 minutes
+
+- Sunset −1 minute
+
+- Sunset
+
+- Sunset +1 minute
+
+- Sunset +2 minutes
+
+- Midnight
+
+- Sunrise −2 minutes
+
+- Sunrise −1 minute
+
+- Sunrise
+
+The simulator was also used to compare summer and winter solstice behavior.
+
+Result
+
+------
+
+The celestial display now provides a consistent astronomical horizontal coordinate system during daylight and an appropriate projected representation of the Sun's actual below-horizon azimuth during nighttime.
+
+The previously observed artificial daytime reversal has been eliminated.
+
+The previously observed winter nighttime wraparound, in which the Sun disappeared off the right side of the display and reappeared on the left, has also been eliminated.
+
+The implementation is considered stable and accepted for the current version of the application.
+
+---
+
+## Status**
+
+Accepted
