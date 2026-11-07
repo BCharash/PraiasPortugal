@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sky preview — Praias de Portugal</title>
+    <link rel="stylesheet" href="sky-preview.css">
+    <script src="sky-fixtures.js" defer></script>
+    <script src="sky-preview.js" defer></script>
+</head>
+<body>
+    <header class="preview-controls">
+        <strong>Sky lab · Checkpoint 1</strong>
+        <label for="fixtureSelect">Fixed weather</label>
+        <select id="fixtureSelect" disabled></select>
+        <button id="resetPreview" type="button" disabled>Reset preview</button>
+        <span id="previewStatus" role="status">Loading actual app layout…</span>
+        <small>Fixtures only · Temporary settings · Original background</small>
+    </header>
+    <iframe id="previewFrame" title="Praias de Portugal fixture preview"></iframe>
+</body>
+</html>

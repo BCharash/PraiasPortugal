@@ -18,6 +18,12 @@ This file should be updated whenever the project structure changes or an existin
 
 # Project Structure
 
+The isolated sky-background experiment lives in `labs/`. Open
+`labs/sky-preview.html` using the instructions in `labs/README.md`. Its fixture
+data, adapter, loader and stylesheet are used only by the lab; the normal
+application does not load them. `tests/sky-preview-check.py` verifies this preview
+with a temporary browser profile.
+
 ```text
 PraiasPortugal/
 

@@ -1,0 +1,31 @@
+/* This stylesheet belongs to the lab shell, outside the application frame. */
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+    display: flex;
+    flex-direction: column;
+    background: #0b1530;
+    color: #f4f7fb;
+    font: 14px/1.4 Arial, Helvetica, sans-serif;
+}
+.preview-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+    padding: 10px 14px;
+    border-bottom: 1px solid #52617d;
+    background: #1b2747;
+}
+.preview-controls select, .preview-controls button {
+    font: inherit;
+    color: inherit;
+    background: #0b1530;
+    border: 1px solid #7891b5;
+    border-radius: 5px;
+    padding: 6px 8px;
+}
+.preview-controls :focus-visible { outline: 2px solid #35c7e8; outline-offset: 2px; }
+.preview-controls small { flex-basis: 100%; color: #c4d0e3; }
+#previewStatus { overflow-wrap: anywhere; }
+#previewFrame { display: block; width: 100%; flex: 1; min-height: 0; border: 0; }
