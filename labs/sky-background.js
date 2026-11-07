@@ -1,5 +1,5 @@
-/* Static lab renderer adapted from ipma-radar's accepted interim sky.
- * No weather requests, timers, motion or production hooks.
+/* Lab renderer adapted from ipma-radar's accepted interim sky.
+ * CSS owns motion; no weather requests, JavaScript timers or production hooks.
  */
 (() => {
     "use strict";
@@ -153,6 +153,7 @@ function renderSkyClouds(group,tier,cover,opacity,id){
         const id = `preview-sky-${++nextInstance}`;
         const root = document.createElement("div");
         root.className = "preview-sky";
+        root.dataset.motion = "on";
         root.setAttribute("aria-hidden", "true");
         root.innerHTML = `
             <svg class="preview-sky-stars" viewBox="0 0 1400 900" preserveAspectRatio="xMidYMid slice" hidden>
@@ -170,7 +171,9 @@ function renderSkyClouds(group,tier,cover,opacity,id){
                             <stop offset="100%" stop-color="#172b4d" stop-opacity=".12"/>
                         </linearGradient>` : ""}
                     </defs>
-                    <g class="preview-sky-tier" filter="url(#${id}-${tier}-blur)"></g>
+                    <g class="preview-sky-drift">
+                        <g class="preview-sky-tier" filter="url(#${id}-${tier}-blur)"></g>
+                    </g>
                 </svg>`).join("")}`;
         const groups = Object.fromEntries(["high", "mid", "low"].map(tier =>
             [tier, root.querySelector(`[data-tier="${tier}"] .preview-sky-tier`)]));
@@ -188,6 +191,13 @@ function renderSkyClouds(group,tier,cover,opacity,id){
             root,
             update(beach, weather) {
                 if (destroyed) return;
+                // First appearance and a newly selected beach commit immediately.
+                // A separate wrapper moves each tier without replacing patch nodes.
+                const immediate = !root.hasAttribute("data-clouds-ready") || root.dataset.beachId !== beach.id;
+                if (immediate) {
+                    root.removeAttribute("data-clouds-ready");
+                    void root.offsetWidth;
+                }
                 const time = parseCelestialTime(weather.currentTime);
                 const position = calculateSolarPosition(time, beach.latitude, beach.longitude, getPortugalUtcOffsetSeconds(time));
                 const cover = value => Number.isFinite(value) ? Math.max(0, Math.min(100, value)) : null;
@@ -205,6 +215,14 @@ function renderSkyClouds(group,tier,cover,opacity,id){
                 stars.hidden = !(elevation < -4 && normalized.total !== null && normalized.total < 85);
                 root.dataset.beachId = beach.id;
                 root.dataset.solarElevation = String(elevation);
+                if (immediate) {
+                    void root.offsetWidth;
+                    root.setAttribute("data-clouds-ready", "");
+                }
+            },
+            setMotionEnabled(enabled) {
+                if (destroyed) return;
+                root.dataset.motion = enabled ? "on" : "off";
             },
             setEnabled(enabled) {
                 if (destroyed) return;

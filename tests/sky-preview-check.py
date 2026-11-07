@@ -177,6 +177,48 @@ try:
     assert all(results.values()), results
     print('STARTUP', results, flush=True)
 
+    motion = client.evaluate('''(async () => {
+        const sky = lab.document.querySelector('.preview-sky');
+        const result = {};
+        result.immediateStartup = !sky.getAnimations({subtree:true}).some(a => a instanceof lab.CSSTransition) &&
+            [...sky.querySelectorAll('.sky-cloud-patch')].every(p => Math.abs(Number(lab.getComputedStyle(p).opacity) - Number(p.style.opacity)) < .001);
+        const layers = [...sky.querySelectorAll('.preview-sky-drift')];
+        const animations = layers.map(node => node.getAnimations()[0]);
+        const deltas = layers.map((node, i) => {
+            const animation = animations[i];
+            const previous = animation.currentTime;
+            const x = () => new lab.DOMMatrix(lab.getComputedStyle(node).transform).m41;
+            animation.pause(); animation.currentTime = 0; const start = x();
+            animation.currentTime = 10000; const delta = x() - start;
+            animation.currentTime = previous; animation.play();
+            return delta;
+        });
+        result.independentMotion = deltas[0] > 0 && deltas[1] > deltas[0] && deltas[2] < 0;
+        result.timings = animations.every((a, i) => a.effect.getTiming().duration === [320000,240000,160000][i] &&
+            a.effect.getTiming().delay === [-117000,-83000,-41000][i] && a.effect.getTiming().direction === 'alternate');
+        const first = sky.querySelector('[data-tier="low"] .sky-cloud-patch');
+        await lab.skyPreview.setFixture('low20');
+        sky.getAnimations({subtree:true}).filter(a => a instanceof lab.CSSTransition).forEach(a => a.finish());
+        void sky.offsetWidth;
+        await lab.skyPreview.setFixture('low95');
+        const transitions = first.getAnimations().filter(a => a instanceof lab.CSSTransition);
+        result.gentleUpdates = transitions.length === 2 && transitions.every(a => a.effect.getTiming().duration === 5000);
+        transitions.forEach(a => { a.pause(); a.currentTime = 0; });
+        const start = Number(lab.getComputedStyle(first).opacity);
+        transitions.forEach(a => a.currentTime = 2500);
+        const middle = Number(lab.getComputedStyle(first).opacity);
+        transitions.forEach(a => a.currentTime = 5000);
+        const end = Number(lab.getComputedStyle(first).opacity);
+        result.interpolates = start < middle && middle < end && end === 1;
+        result.stableNodesAndDrift = first === sky.querySelector('[data-tier="low"] .sky-cloud-patch') &&
+            layers.every((node, i) => node.getAnimations()[0] === animations[i]);
+        await lab.skyPreview.setFixture('mixed');
+        sky.getAnimations({subtree:true}).filter(a => a instanceof lab.CSSTransition).forEach(a => a.finish());
+        return result;
+    })()''')
+    assert all(motion.values()), motion
+    print('MOTION', motion, flush=True)
+
     # Exercise real app controls, not a second implementation of navigation or selection.
     client.evaluate("lab.document.getElementById('beachesNavButton').click()")
     assert client.evaluate("!lab.document.getElementById('beachesPage').hidden")
@@ -217,7 +259,6 @@ try:
                 result[tier] = group.children.length === 24 && Math.abs(visible - (cover ?? 0) * 24 / 100) < .001;
             }
             result.stars = sky.querySelector('.preview-sky-stars').hidden === !(Number(sky.dataset.solarElevation) < -4 && weather.cloudCover !== null && weather.cloudCover < 85);
-            result.static = sky.getAnimations({subtree:true}).length === 0;
             return result;
         })()''')
         assert all(result.values()), (fixture, result)
@@ -248,6 +289,19 @@ try:
     assert client.evaluate("lab.document.querySelector('.preview-sky').getAnimations({subtree:true}).length === 0")
     client.call('Emulation.setEmulatedMedia', {'features': []})
     assert client.evaluate('''(() => {
+        const sky = lab.document.querySelector('.preview-sky');
+        const before = JSON.stringify(lab.skyPreview.snapshot());
+        const requests = lab.skyPreview.weatherRequests;
+        const toggle = document.getElementById('skyMotion');
+        toggle.click();
+        const paused = [...sky.querySelectorAll('.preview-sky-drift')].every(node =>
+            node.getAnimations().every(a => a.playState === 'paused'));
+        const noTransitions = lab.getComputedStyle(sky.querySelector('.sky-cloud-patch')).transitionDuration === '0s';
+        toggle.click();
+        return paused && noTransitions && sky.dataset.motion === 'on' &&
+            JSON.stringify(lab.skyPreview.snapshot()) === before && lab.skyPreview.weatherRequests === requests;
+    })()''')
+    assert client.evaluate('''(() => {
         const before = JSON.stringify(lab.skyPreview.snapshot());
         const requests = lab.skyPreview.weatherRequests;
         const slider = document.getElementById('panelOpacity');
@@ -262,7 +316,7 @@ try:
         document.getElementById('skyEnabled').click();
         return original && JSON.stringify(lab.skyPreview.snapshot()) === before && lab.skyPreview.weatherRequests === requests;
     })()''')
-    print('PASS: background comparison, 0/30/100% panel opacity without fading content, static/reduced motion, filter bounds and attribution', flush=True)
+    print('PASS: background comparison, panel opacity, pause/resume and reduced motion, filter bounds and attribution', flush=True)
 
     for width, height in [(1280, 900), (390, 844)]:
         client.call('Emulation.setDeviceMetricsOverride', {

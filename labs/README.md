@@ -1,9 +1,10 @@
 # Sky preview checkpoints
 
 This is an isolated lab for evaluating an eventual weather-driven background.
-Checkpoint 2 adds a static sky behind the real application layout with synthetic
-fixed data. Production `index.html`, services and styles remain unchanged.
-Motion, precipitation effects, freshness behavior and live integration are deferred.
+Checkpoint 3 adds independent cloud drift and gentle coverage updates behind
+the real application layout with synthetic fixed data. Production `index.html`,
+services and styles remain unchanged. Precipitation effects, freshness behavior
+and live integration are deferred.
 
 ## Open the preview
 
@@ -27,14 +28,14 @@ then loads it into a full-height frame. It uses the existing markup, CSS,
 controller, navigation, data manager, celestial calculations and formatters.
 There is no copied dashboard or production preview flag.
 
-## Checkpoint 2 review
+## Checkpoint 3 review
 
-1. Confirm the toolbar says **Checkpoint 2** and **Show static sky** is checked.
+1. Confirm the toolbar says **Checkpoint 3**, with **Show sky** and **Animate sky** checked.
 2. Start with Mixed clouds. Check the combined cloud composition behind Dashboard,
    Beaches and Settings. Panels now default to 30% opacity so the sky is visible
    through them. **Panel opacity** ranges from 0% (fully transparent) to 100%
    (opaque). Text and graphics stay fully visible, with shadows for contrast.
-3. Uncheck **Show static sky** to compare with the original app background using
+3. Uncheck **Show sky** to compare with the original app background using
    the same beach, weather and settings. The comparison does not reset the app
    or request weather. Recheck it to restore the sky.
    The original-background comparison also restores the original opaque panels.
@@ -47,6 +48,18 @@ There is no copied dashboard or production preview flag.
 6. Review desktop and narrow mobile sizes. Check text readability, cloud edges,
    overlap and repetition. Visual acceptance remains yours; passing technical
    checks does not establish natural-looking clouds.
+7. Select Mixed clouds and watch for 20–30 seconds. High and mid layers initially
+   move right at different speeds; low initially moves left. Movement is deliberately
+   slow and decorative, with independent phases and smooth reversals at the limits.
+8. Switch Low clouds 20% to Low clouds 95%. Additional patches should appear
+   gently over five seconds; existing patches and drift should stay stable.
+9. Uncheck **Animate sky** to pause drift at its current position and apply fixture
+   changes immediately. Recheck it to resume. Reset retains this toolbar choice.
+   The operating system's reduced-motion setting always disables drift and transitions,
+   even if the checkbox is checked. Stars remain static.
+10. Reset the preview with clouds selected: the first cloud state should appear
+    immediately. Selecting another beach also commits its sky immediately so the
+    previous beach's conditions do not linger during a transition.
 
 The renderer reuses the reference's soft artwork, tier opacity, 24-patch growth,
 independent activation seeds, shared illumination and 8/7/5 blur. Rows are spread
@@ -64,11 +77,14 @@ links are visible in the footer, explicitly labelled as future live-data credits
 the displayed data are synthetic fixtures.
 
 Rain/Snow fixtures currently select a subdued palette and clouds only. Falling
-precipitation is reserved for checkpoint 4. All sky updates are immediate and
-static at this checkpoint; five-second subsequent transitions and independent
-320/240/160-second drift belong to checkpoint 3. Preserve the reference's
-negative phases (-117/-83/-41 seconds), directions and reduced-motion behavior
-when that step is authorized.
+precipitation is reserved for checkpoint 4. Subsequent cloud coverage updates use
+five-second opacity/scale transitions; initial display and beach changes are
+immediate. Palette selection still uses the reference's solar thresholds.
+Independent High/Mid/Low drift uses 320/240/160-second traversals with negative
+phases of -117/-83/-41 seconds. Linear alternate animation reverses at the limits.
+Drift runs on a separate SVG group from patch growth, preserving stable patch
+nodes and ongoing movement during weather updates. The renderer adds no JavaScript
+timers or requests. Removing the frame also removes its CSS animations.
 
 ## Earlier checkpoint 1
 
@@ -112,7 +128,8 @@ python3 tests/sky-preview-check.py
 
 The dependency-free check uses a temporary Chrome profile and a local server.
 It exercises real navigation and beach-selection controls, all 17 fixtures,
-independent cloud tiers, static/reduced-motion behavior, comparison without state
+independent cloud tiers, immediate startup, drift direction/timing, five-second
+transition interpolation, stable patch nodes, pause/resume, reduced motion, comparison without state
 changes, 0/30/100% panel backgrounds without fading their content, filter bounds,
 attribution, unit conversion, desktop/mobile widths,
 largest text size, reset and isolation from normal app preferences. It also checks
@@ -133,15 +150,19 @@ Checkpoint 2 also passed the expanded Chrome checks on 7 November 2026.
 Desktop and mobile screenshots of Dashboard and Settings were inspected.
 Physical iPhone/Safari rendering and visual acceptance remain open.
 
+Checkpoint 3 passed the expanded Chrome motion and regression checks on
+7 November 2026. Physical iPhone/Safari sustained animation performance and
+visual motion acceptance remain open.
+
 ## Durable stop / resume
 
 - Branch: `preview/sky-background`.
 - Original app baseline: `476d190922870a39bc76cc91c68e9c9ba0bc20a7`.
-- Current stop: checkpoint 2, static composition and readability. No global changes.
+- Current stop: checkpoint 3, cloud movement and transitions. No global changes.
 - Checkpoint 2's original opaque-panel version is saved as `9eec0ce`. The follow-up
-  adds adjustable panel transparency for sky evaluation; motion is still deferred.
-- Next checkpoint, after approval: movement and transitions, followed separately
-  by precipitation/freshness fixtures and preview acceptance.
+  adds adjustable panel transparency for sky evaluation (`b77d714`), preserved here.
+- Next checkpoint, after approval: precipitation/freshness fixtures, followed
+  separately by preview acceptance.
 - Live-data integration and global activation require later approval.
 
 To run the normal app, simply use `index.html`. To remove this experiment,

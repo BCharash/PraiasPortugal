@@ -6,6 +6,7 @@
     const reset = document.getElementById("resetPreview");
     const status = document.getElementById("previewStatus");
     const skyEnabled = document.getElementById("skyEnabled");
+    const skyMotion = document.getElementById("skyMotion");
     const panelOpacity = document.getElementById("panelOpacity");
     const panelOpacityValue = document.getElementById("panelOpacityValue");
     const appBase = new URL("../", location.href);
@@ -64,6 +65,7 @@
             }
             showStatus();
             frame.contentWindow.skyPreview.setSkyEnabled(skyEnabled.checked);
+            frame.contentWindow.skyPreview.setMotionEnabled(skyMotion.checked);
             frame.contentWindow.skyPreview.setPanelOpacity(Number(panelOpacity.value) / 100);
             select.disabled = reset.disabled = false;
         } catch (error) {
@@ -89,6 +91,9 @@
     reset.addEventListener("click", loadPreview);
     skyEnabled.addEventListener("change", () => {
         frame.contentWindow.skyPreview?.setSkyEnabled(skyEnabled.checked);
+    });
+    skyMotion.addEventListener("change", () => {
+        frame.contentWindow.skyPreview?.setMotionEnabled(skyMotion.checked);
     });
     panelOpacity.addEventListener("input", () => {
         panelOpacityValue.value = `${panelOpacity.value}%`;

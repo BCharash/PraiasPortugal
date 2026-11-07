@@ -64,6 +64,7 @@
         get weatherRequests() { return weatherRequests; },
         get fixtureKey() { return fixtureKey; },
         setSkyEnabled: enabled => sky.setEnabled(enabled),
+        setMotionEnabled: enabled => sky.setMotionEnabled(enabled),
         setPanelOpacity: value => {
             if (Number.isFinite(value)) {
                 document.body.style.setProperty("--preview-panel-opacity", String(Math.max(0, Math.min(1, value))));

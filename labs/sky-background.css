@@ -15,8 +15,39 @@ body[data-sky-preview] { isolation: isolate; }
     width: 100%;
     height: 100%;
 }
-/* Static at checkpoint 2, including under reduced motion. */
-.preview-sky *, .preview-sky { animation: none; transition: none; }
+/* Drift and patch growth use different elements so updates never restart drift. */
+.preview-sky .preview-sky-drift { transform-box: view-box; }
+.preview-sky [data-tier="high"] .preview-sky-drift {
+    animation: previewSkyDriftHigh 320s linear -117s infinite alternate;
+}
+.preview-sky [data-tier="mid"] .preview-sky-drift {
+    animation: previewSkyDriftMid 240s linear -83s infinite alternate;
+}
+.preview-sky [data-tier="low"] .preview-sky-drift {
+    animation: previewSkyDriftLow 160s linear -41s infinite alternate;
+}
+@keyframes previewSkyDriftHigh {
+    from { transform: translate(-4%, 0); }
+    to { transform: translate(5%, -1px); }
+}
+@keyframes previewSkyDriftMid {
+    from { transform: translate(-6%, 0); }
+    to { transform: translate(7%, -1px); }
+}
+@keyframes previewSkyDriftLow {
+    from { transform: translate(7%, 0); }
+    to { transform: translate(-7%, 1px); }
+}
+.preview-sky .sky-cloud-patch { transition: transform 5s ease, opacity 5s ease; }
+.preview-sky .preview-sky-tier { transition: opacity 5s ease; }
+.preview-sky:not([data-clouds-ready]) .sky-cloud-patch,
+.preview-sky:not([data-clouds-ready]) .preview-sky-tier,
+.preview-sky[data-motion="off"] .sky-cloud-patch,
+.preview-sky[data-motion="off"] .preview-sky-tier { transition: none; }
+.preview-sky[data-motion="off"] .preview-sky-drift { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) {
+    .preview-sky *, .preview-sky { animation: none !important; transition: none !important; }
+}
 
 /* Change background alpha only: text, graphics and controls stay fully visible. */
 body[data-sky-preview="enabled"] :is(.dashboard-widget, .settings-section) {
