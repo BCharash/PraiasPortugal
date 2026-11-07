@@ -30,6 +30,25 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         super().__init__(*args, directory=str(ROOT), **kwargs)
     def log_message(self, *args):
         pass
+    def do_GET(self):
+        if self.path.split('?')[0] == '/index.html':
+            # Reproduce Live Server's injected script markers and srcdoc URL issue.
+            # Only the outer page should run a live-reload client.
+            injected = '''<!-- Code injected by live-server --><script>
+                if (location.protocol === 'about:') {
+                    const address = 'ws://' + location.host + location.pathname + '/ws';
+                    new WebSocket(address);
+                }
+                console.log('Live reload enabled.');
+            </script>'''
+            content = (ROOT / 'index.html').read_text().replace('</body>', injected + '</body>').encode()
+            self.send_response(200)
+            self.send_header('Content-Type', 'text/html; charset=utf-8')
+            self.send_header('Content-Length', str(len(content)))
+            self.end_headers()
+            self.wfile.write(content)
+        else:
+            super().do_GET()
 
 class CDP:
     def __init__(self, url):
@@ -149,7 +168,7 @@ try:
             independentSettings: s.settings.language === 'en' && s.settings.temperatureUnit === 'celsius',
             cloudBands: s.weather.cloudCoverLow === 20 && s.weather.cloudCoverMid === 60 && s.weather.cloudCoverHigh === 95,
             initialDashboard: s.page === 'dashboard' && !lab.document.getElementById('dashboardPage').hidden,
-            originalBackground: lab.document.body.classList.contains('background-sunny'),
+            originalThemePreserved: lab.document.body.classList.contains('background-sunny'),
             layoutBase: lab.document.baseURI.endsWith('/'),
             noExternalCalls: lab.skyPreview.blockedRequests.length === 0,
             noErrors: previewErrors.length === 0 && lab.previewErrors.length === 0
@@ -167,6 +186,7 @@ try:
         select.dispatchEvent(new lab.Event('change'));
     })()''')
     wait_for(client, "lab.skyPreview.snapshot().weather.latitude === 39.17118")
+    assert client.evaluate("lab.document.querySelector('.preview-sky').dataset.beachId === 'praia-de-santa-rita-sul'")
     client.evaluate("lab.document.getElementById('dashboardNavButton').click()")
     assert client.evaluate("lab.document.getElementById('dashboardBeachName').textContent.includes('Santa Rita Sul')")
     client.evaluate("lab.document.getElementById('settingsNavButton').click()")
@@ -176,7 +196,8 @@ try:
         select.dispatchEvent(new lab.Event('change'));
     })()''')
     wait_for(client, "lab.skyPreview.snapshot().settings.temperatureUnit === 'fahrenheit'")
-    for fixture in ['rain', 'snow', 'night', 'clear', 'mixed']:
+    fixture_keys = client.evaluate('Object.keys(skyPreviewFixtures.cases)')
+    for fixture in fixture_keys:
         client.evaluate(f'''(() => {{
             const select = document.getElementById('fixtureSelect');
             select.value = {json.dumps(fixture)};
@@ -185,10 +206,48 @@ try:
         wait_for(client, ready)
         assert client.evaluate(f"lab.skyPreview.fixtureKey === {json.dumps(fixture)}")
         assert client.evaluate("lab.skyPreview.snapshot().page === 'settings'")
+        result = client.evaluate('''(() => {
+            const weather = lab.skyPreview.snapshot().weather;
+            const sky = lab.document.querySelector('.preview-sky');
+            const result = {};
+            for (const tier of ['low', 'mid', 'high']) {
+                const group = sky.querySelector(`[data-tier="${tier}"] .preview-sky-tier`);
+                const cover = weather[`cloudCover${tier[0].toUpperCase() + tier.slice(1)}`];
+                const visible = [...group.children].reduce((sum, node) => sum + Number(node.firstElementChild.style.opacity), 0);
+                result[tier] = group.children.length === 24 && Math.abs(visible - (cover ?? 0) * 24 / 100) < .001;
+            }
+            result.stars = sky.querySelector('.preview-sky-stars').hidden === !(Number(sky.dataset.solarElevation) < -4 && weather.cloudCover !== null && weather.cloudCover < 85);
+            result.static = sky.getAnimations({subtree:true}).length === 0;
+            return result;
+        })()''')
+        assert all(result.values()), (fixture, result)
         client.evaluate("lab.document.getElementById('dashboardNavButton').click()")
         assert client.evaluate("lab.document.getElementById('dashboardAirTemp').textContent.includes('°F')")
         client.evaluate("lab.document.getElementById('settingsNavButton').click()")
-    print('PASS: navigation, selected-beach coordinates, units and all five fixtures', flush=True)
+    print(f'PASS: navigation, selected-beach coordinates, units, independent cloud tiers and all {len(fixture_keys)} fixtures', flush=True)
+
+    # Comparison must keep the same app state and service request count.
+    assert client.evaluate('''(() => {
+        const before = JSON.stringify(lab.skyPreview.snapshot());
+        const requests = lab.skyPreview.weatherRequests;
+        const toggle = document.getElementById('skyEnabled');
+        const sky = lab.document.querySelector('.preview-sky');
+        toggle.click();
+        const hidden = sky.hidden && lab.document.body.dataset.skyPreview === 'disabled';
+        toggle.click();
+        return hidden && !sky.hidden && before === JSON.stringify(lab.skyPreview.snapshot()) && requests === lab.skyPreview.weatherRequests;
+    })()''')
+    assert client.evaluate('''(() => {
+        const sky = lab.document.querySelector('.preview-sky');
+        return sky.getAttribute('aria-hidden') === 'true' && lab.getComputedStyle(sky).pointerEvents === 'none' &&
+            [...sky.querySelectorAll('filter')].every(f => f.getAttribute('y') === '-100%' && f.getAttribute('height') === '300%') &&
+            lab.getComputedStyle(lab.document.getElementById('conditionsWidget')).backgroundColor === 'rgb(27, 39, 71)' &&
+            lab.document.querySelector('.preview-sky-credits a').href === 'https://open-meteo.com/';
+    })()''')
+    client.call('Emulation.setEmulatedMedia', {'features': [{'name':'prefers-reduced-motion','value':'reduce'}]})
+    assert client.evaluate("lab.document.querySelector('.preview-sky').getAnimations({subtree:true}).length === 0")
+    client.call('Emulation.setEmulatedMedia', {'features': []})
+    print('PASS: original-background comparison preserves state, static/reduced motion, filter bounds, solid cards and attribution', flush=True)
 
     for width, height in [(1280, 900), (390, 844)]:
         client.call('Emulation.setDeviceMetricsOverride', {
@@ -201,6 +260,12 @@ try:
                 assert client.evaluate("document.documentElement.scrollWidth <= innerWidth")
                 preview_width = client.evaluate('lab.document.documentElement.scrollWidth')
                 assert preview_width <= baseline_widths[(width, size, page)], (width, size, page, preview_width, baseline_widths)
+                assert client.evaluate("lab.document.querySelectorAll('.preview-sky').length === 1 && !lab.document.querySelector('.preview-sky').hidden")
+                assert client.evaluate("lab.document.querySelector('.preview-sky').getBoundingClientRect().height === lab.innerHeight")
+                if args.screenshot and size == '1' and page in ['dashboard', 'settings']:
+                    shot = pathlib.Path(args.screenshot)
+                    image = client.call('Page.captureScreenshot', {'format': 'png'})
+                    shot.with_name(f'{shot.stem}-{width}-{page}.png').write_bytes(base64.b64decode(image['data']))
     print('PASS: desktop/mobile layout and largest text match existing app widths', flush=True)
     print('BASELINE mobile widths:', {size: baseline_widths[(390, size, 'dashboard')] for size in ['1', '3']}, flush=True)
 

@@ -44,9 +44,13 @@
     };
 
     let weatherRequests = 0;
+    const sky = createPreviewSkyBackground();
+    sky.setEnabled(true);
     getCurrentWeather = async beach => {
         weatherRequests += 1;
-        return fixtures.weather(fixtureKey, beach);
+        const weather = fixtures.weather(fixtureKey, beach);
+        sky.update(beach, weather);
+        return weather;
     };
     getCurrentMarineConditions = async () => fixtures.marine();
     DATASETS.weather.service = getCurrentWeather;
@@ -59,6 +63,7 @@
         blockedRequests,
         get weatherRequests() { return weatherRequests; },
         get fixtureKey() { return fixtureKey; },
+        setSkyEnabled: enabled => sky.setEnabled(enabled),
         isReady: () => typeof currentDashboardData !== "undefined" && !!currentDashboardData,
         async setFixture(key) {
             if (!Object.hasOwn(fixtures.cases, key)) throw new Error("Unknown preview fixture");

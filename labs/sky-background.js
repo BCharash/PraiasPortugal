@@ -1,0 +1,222 @@
+/* Static lab renderer adapted from ipma-radar's accepted interim sky.
+ * No weather requests, timers, motion or production hooks.
+ */
+(() => {
+    "use strict";
+    let nextInstance = 0;
+
+function getSkyPalette(elevation, weather) {
+  const totalClouds = weather?.total ?? 0;
+  const overcastFactor = Math.max(0, Math.min(1, (totalClouds - 50) / 45)); // 0 (clear) to 1 (full overcast)
+  const isRaining = [51,53,55,56,57,61,63,65,66,67,71,73,75,77,80,81,82,85,86,95,96,97,99].includes(weather?.weatherCode);
+
+  let gradient = "";
+  let cloudHighFill = "#ffffff";
+  let isDark = false;
+
+  if (elevation > 12) {
+    // Broad Daylight
+    if (isRaining) {
+      gradient = "linear-gradient(180deg, #374151 0%, #4b5563 50%, #6b7280 100%)";
+      cloudHighFill = "#cbd5e1";
+      isDark = true;
+    } else if (overcastFactor > 0.4) {
+      // Overcast silver/slate sky
+      gradient = "linear-gradient(180deg, #5c6b7a 0%, #8292a1 50%, #a4b3c2 100%)";
+      cloudHighFill = "#e2e8f0";
+      isDark = false;
+    } else {
+      // Clear azure / sky blue
+      gradient = "linear-gradient(180deg, #1d6fe9 0%, #4facfe 50%, #8ec5fc 100%)";
+      cloudHighFill = "#ffffff";
+      isDark = false;
+    }
+  } else if (elevation > 3) {
+    // Golden Hour
+    if (overcastFactor > 0.5) {
+      gradient = "linear-gradient(180deg, #334155 0%, #64748b 50%, #94a3b8 100%)";
+      cloudHighFill = "#cbd5e1";
+      isDark = false;
+    } else {
+      gradient = "linear-gradient(180deg, #25559c 0%, #d97706 65%, #fbbf24 100%)";
+      cloudHighFill = "#fed7aa";
+      isDark = false;
+    }
+  } else if (elevation > -4) {
+    // Sunset / Sunrise / Civil Twilight
+    if (overcastFactor > 0.6) {
+      gradient = "linear-gradient(180deg, #1e293b 0%, #475569 50%, #64748b 100%)";
+      cloudHighFill = "#94a3b8";
+      isDark = true;
+    } else {
+      gradient = "linear-gradient(180deg, #1e293b 0%, #9a3412 40%, #ea580c 70%, #f97316 100%)";
+      cloudHighFill = "#fed7aa";
+      isDark = true;
+    }
+  } else if (elevation > -12) {
+    // Nautical Twilight / Dusk
+    gradient = "linear-gradient(180deg, #090d1a 0%, #1e1b4b 50%, #312e81 100%)";
+    cloudHighFill = "#4338ca";
+    isDark = true;
+  } else {
+    // Full Night
+    if (overcastFactor > 0.6) {
+      gradient = "linear-gradient(180deg, #020617 0%, #0b1120 55%, #151f38 100%)";
+    } else {
+      gradient = "linear-gradient(180deg, #030712 0%, #0b1329 55%, #111d3d 100%)";
+    }
+    cloudHighFill = "#1e293b";
+    isDark = true;
+  }
+
+  // Shared illumination: altitude does not determine cloud darkness.
+  const cloudMidFill=cloudHighFill;
+  const cloudLowFill=cloudHighFill;
+
+  // Coverage controls patch count/size; tier opacity remains independently tuned.
+  const opacity=(cover,maximum)=>Number.isFinite(cover) && cover>0 ? maximum : 0;
+  const highOpacity=opacity(weather?.high,0.75);
+  const midOpacity=opacity(weather?.mid,0.85);
+  const lowOpacity=opacity(weather?.low,0.95);
+
+  return {
+    gradient,
+    cloudHighFill,
+    cloudMidFill,
+    cloudLowFill,
+    highOpacity,
+    midOpacity,
+    lowOpacity,
+    isDark
+  };
+}
+
+function renderSkyClouds(group,tier,cover,opacity,id){
+  if(!group) return;
+  const count=24;
+  const widths={high:1400,mid:1200,low:1300};
+  const layouts={high:{seed:5,step:7,offset:3},mid:{seed:13,step:11,offset:13},low:{seed:23,step:5,offset:7}};
+  const layout=layouts[tier];
+  if(!group.children.length){
+    const ns="http://www.w3.org/2000/svg";
+    for(let i=0;i<count;i++){
+      const outer=document.createElementNS(ns,"g");
+      const x=(i%8+0.5)*widths[tier]/8+((i*17+layout.seed*11)%23-11)*2;
+      const y=100+Math.floor(i/8)*300+((i*13+layout.seed*7)%29-14);
+      outer.setAttribute("transform",`translate(${x} ${y})`);
+      const patch=document.createElementNS(ns,"g");
+      patch.classList.add("sky-cloud-patch");
+      patch.style.opacity="0";
+      patch.style.transform="scale(0)";
+      const width=0.9+((i*11+layout.seed)%19)/50;
+      if(tier==="high"){
+        const tilt=-3+(i*5%7);
+        patch.innerHTML=`<g fill="var(--cloud-high-fill)" transform="scale(${width} 1) rotate(${tilt})">
+          <path d="M -120 12 Q -50 -17 30 -14 Q 80 -13 118 -23 Q 68 -1 4 4 Q -66 6 -120 12 Z" opacity=".5"/>
+          <path d="M -92 25 Q -26 2 48 4 Q 91 6 125 -2 Q 71 20 5 17 Q -53 18 -92 25 Z" opacity=".24"/>
+        </g>`;
+      }else if(tier==="mid"){
+        const thickness=.8+(i*5%7)/10;
+        patch.innerHTML=`<g fill="var(--cloud-mid-fill)" transform="scale(${width} ${thickness})">
+          <path d="M -116 2 Q -89 -22 -48 -16 Q -12 -28 26 -15 Q 70 -22 116 -1 Q 84 13 42 10 Q 0 22 -38 12 Q -84 20 -116 2 Z"/>
+          <path d="M -82 17 Q -35 7 9 16 Q 43 11 83 21 Q 41 31 2 26 Q -45 31 -82 17 Z" opacity=".35"/>
+        </g>`;
+      }else{
+        const height=.75+(i*3%7)/15;
+        const tops=[
+          "M -104 15 Q -110 -13 -79 -16 Q -74 -45 -41 -36 Q -23 -69 10 -43 Q 42 -52 55 -23 Q 89 -29 96 -1 Q 115 2 110 24",
+          "M -104 15 Q -112 -7 -88 -13 Q -89 -37 -59 -33 Q -44 -63 -15 -43 Q 16 -58 35 -28 Q 66 -38 77 -13 Q 106 -17 110 24",
+          "M -104 15 Q -106 -19 -73 -17 Q -57 -51 -29 -31 Q -6 -65 22 -39 Q 52 -41 60 -16 Q 91 -24 97 3 Q 113 7 110 24"
+        ];
+        const outline=`${tops[i%3]} Q 53 32 0 28 Q -63 33 -104 24 Z`;
+        patch.innerHTML=`<g transform="scale(${width} ${height})">
+          <path d="${outline}" fill="var(--cloud-low-fill)"/>
+          <path d="${outline}" fill="url(#${id}-low-volume)"/>
+        </g>`;
+      }
+      outer.appendChild(patch);group.appendChild(outer);
+    }
+  }
+  const amount=Number.isFinite(cover) ? Math.max(0,Math.min(100,cover))/100 : 0;
+  group.setAttribute("opacity",opacity.toFixed(2));
+  Array.from(group.children).forEach((outer,i)=>{
+    const rank=(i*layout.step+layout.offset)%count;
+    const growth=Math.max(0,Math.min(1,amount*count-rank));
+    const patch=outer.firstElementChild;
+    patch.style.opacity=String(growth);
+    patch.style.transform=`scale(${growth ? 0.3+0.85*growth : 0})`;
+  });
+}
+
+
+    window.createPreviewSkyBackground = function () {
+        const id = `preview-sky-${++nextInstance}`;
+        const root = document.createElement("div");
+        root.className = "preview-sky";
+        root.setAttribute("aria-hidden", "true");
+        root.innerHTML = `
+            <svg class="preview-sky-stars" viewBox="0 0 1400 900" preserveAspectRatio="xMidYMid slice" hidden>
+                ${Array.from({length: 48}, (_, i) => `<circle cx="${(i * 317 + 73) % 1400}" cy="${(i * 173 + 29) % 900}" r="${i % 3 === 0 ? 1.5 : 1}" fill="white" opacity=".6"/>`).join("")}
+            </svg>
+            ${["high", "mid", "low"].map((tier, index) => `
+                <svg class="preview-sky-clouds" data-tier="${tier}" viewBox="0 0 ${[1400,1200,1300][index]} 900" preserveAspectRatio="xMidYMid slice" fill="none">
+                    <defs>
+                        <filter id="${id}-${tier}-blur" x="-20%" y="-100%" width="140%" height="300%">
+                            <feGaussianBlur stdDeviation="${[8,7,5][index]}"/>
+                        </filter>
+                        ${tier === "low" ? `<linearGradient id="${id}-low-volume" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stop-color="#172b4d" stop-opacity="0"/>
+                            <stop offset="45%" stop-color="#172b4d" stop-opacity="0"/>
+                            <stop offset="100%" stop-color="#172b4d" stop-opacity=".12"/>
+                        </linearGradient>` : ""}
+                    </defs>
+                    <g class="preview-sky-tier" filter="url(#${id}-${tier}-blur)"></g>
+                </svg>`).join("")}`;
+        const groups = Object.fromEntries(["high", "mid", "low"].map(tier =>
+            [tier, root.querySelector(`[data-tier="${tier}"] .preview-sky-tier`)]));
+        const stars = root.querySelector(".preview-sky-stars");
+        const credits = document.createElement("footer");
+        credits.className = "preview-sky-credits";
+        credits.innerHTML = `Synthetic fixtures · Illustrative sky · Weather provider for future live data:
+            <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a>
+            (<a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>)`;
+        document.body.prepend(root);
+        document.body.append(credits);
+        let destroyed = false;
+
+        return {
+            root,
+            update(beach, weather) {
+                if (destroyed) return;
+                const time = parseCelestialTime(weather.currentTime);
+                const position = calculateSolarPosition(time, beach.latitude, beach.longitude, getPortugalUtcOffsetSeconds(time));
+                const cover = value => Number.isFinite(value) ? Math.max(0, Math.min(100, value)) : null;
+                const normalized = {
+                    total: cover(weather.cloudCover), low: cover(weather.cloudCoverLow),
+                    mid: cover(weather.cloudCoverMid), high: cover(weather.cloudCoverHigh), weatherCode: weather.weatherCode
+                };
+                const elevation = position.altitude;
+                const palette = getSkyPalette(elevation, normalized);
+                root.style.setProperty("--sky-gradient", palette.gradient);
+                for (const tier of ["high", "mid", "low"]) {
+                    root.style.setProperty(`--cloud-${tier}-fill`, palette.cloudHighFill);
+                    renderSkyClouds(groups[tier], tier, normalized[tier], palette[`${tier}Opacity`], id);
+                }
+                stars.hidden = !(elevation < -4 && normalized.total !== null && normalized.total < 85);
+                root.dataset.beachId = beach.id;
+                root.dataset.solarElevation = String(elevation);
+            },
+            setEnabled(enabled) {
+                if (destroyed) return;
+                root.hidden = !enabled;
+                document.body.dataset.skyPreview = enabled ? "enabled" : "disabled";
+            },
+            destroy() {
+                destroyed = true;
+                root.remove();
+                credits.remove();
+                delete document.body.dataset.skyPreview;
+            }
+        };
+    };
+})();

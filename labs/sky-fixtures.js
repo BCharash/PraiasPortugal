@@ -7,8 +7,20 @@
         mixed: { label: "Mixed clouds", time: "12:00", temperature: 17, code: 2, total: 60, low: 20, mid: 60, high: 95 },
         rain: { label: "Rain", time: "12:00", temperature: 13, code: 63, total: 95, low: 95, mid: 60, high: 20 },
         snow: { label: "Snow", time: "12:00", temperature: 0, code: 73, total: 95, low: 95, mid: 60, high: 20 },
-        night: { label: "Clear night", time: "22:00", temperature: 10, code: 0, total: 0, low: 0, mid: 0, high: 0 }
+        night: { label: "Clear night", time: "22:00", temperature: 10, code: 0, total: 0, low: 0, mid: 0, high: 0 },
+        overcast: { label: "Near-overcast", time: "12:00", temperature: 15, code: 3, total: 95, low: 95, mid: 95, high: 95 },
+        dusk: { label: "Dusk", time: "17:45", temperature: 14, code: 2, total: 20, low: 20, mid: 0, high: 20 },
+        missing: { label: "Cloud data missing", time: "22:00", temperature: 10, code: null, total: null, low: null, mid: null, high: null }
     };
+    for (const tier of ["low", "mid", "high"]) {
+        for (const amount of [20, 60, 95]) {
+            cases[`${tier}${amount}`] = {
+                label: `${tier[0].toUpperCase() + tier.slice(1)} clouds ${amount}%`,
+                time: "12:00", temperature: 17, code: amount === 95 ? 3 : 2,
+                total: amount, low: 0, mid: 0, high: 0, [tier]: amount
+            };
+        }
+    }
 
     function civilTime(key) {
         return `2026-11-07T${cases[key].time}`;
@@ -21,6 +33,7 @@
 
     function weather(key, beach) {
         const fixture = cases[key];
+        const isDay = fixture.time >= "07:12" && fixture.time <= "17:29";
         return {
             latitude: beach.latitude, longitude: beach.longitude,
             timezone: "Europe/Lisbon", utcOffsetSeconds: 0,
@@ -31,17 +44,17 @@
             windSpeed: 15, windDirection: 315, windGusts: 24,
             cloudCover: fixture.total, cloudCoverLow: fixture.low,
             cloudCoverMid: fixture.mid, cloudCoverHigh: fixture.high,
-            precipitationProbability: fixture.code === 0 ? 0 : 70,
-            precipitationProbabilityMax: fixture.code === 0 ? 0 : 80,
+            precipitationProbability: key === "rain" || key === "snow" ? 70 : 0,
+            precipitationProbabilityMax: key === "rain" || key === "snow" ? 80 : 0,
             precipitation: key === "rain" ? 2 : 0,
             rain: key === "rain" ? 2 : 0, showers: 0, snowfall: key === "snow" ? 0.5 : 0,
             weatherCode: fixture.code,
             description: fixture.label,
-            icon: ({ clear: "clear-day", mixed: "partly-cloudy-day", rain: "rain", snow: "snow", night: "clear-night" })[key],
-            uvIndex: key === "night" ? 0 : 3, uvIndexMax: 4,
+            icon: ({ clear: "clear-day", mixed: "partly-cloudy-day", rain: "rain", snow: "snow", night: "clear-night", missing: "unknown" })[key] || (isDay ? "cloudy" : "partly-cloudy-night"),
+            uvIndex: isDay ? 3 : 0, uvIndexMax: 4,
             sunrise: "2026-11-07T07:12", sunset: "2026-11-07T17:29",
             moonPhase: 0.94, moonrise: "2026-11-07T05:00", moonset: "2026-11-07T15:50",
-            isDay: key !== "night",
+            isDay,
             hourly: {
                 time: [...times], temperature_2m: repeat(fixture.temperature),
                 relative_humidity_2m: repeat(70), dew_point_2m: repeat(fixture.temperature - 5),
