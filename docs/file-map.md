@@ -20,10 +20,12 @@ This file should be updated whenever the project structure changes or an existin
 
 The isolated sky-background experiment lives in `labs/`. Open
 `labs/sky-preview.html` using the instructions in `labs/README.md`. Its fixture
-data, adapter, loader, static sky renderer (`labs/sky-background.js`) and
+data, adapter, loader, animated sky renderer (`labs/sky-background.js`) and
 stylesheets are used only by the lab; the normal
 application does not load them. `tests/sky-preview-check.py` verifies this preview
 with a temporary browser profile.
+`labs/README.md` is the authoritative experiment handoff, including saved commits,
+verification evidence, limitations and the remaining checkpoint plan.
 
 ```text
 PraiasPortugal/

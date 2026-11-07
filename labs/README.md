@@ -6,6 +6,86 @@ the real application layout with synthetic fixed data. Production `index.html`,
 services and styles remain unchanged. Precipitation effects, freshness behavior
 and live integration are deferred.
 
+## Current handoff
+
+Updated 7 November 2026. This is the authoritative guide for the sky experiment.
+The current implementation stops after checkpoint 3 plus the cloud-placement
+correction. The next development step has **not** been started or authorized by
+this documentation request.
+
+- Branch: `preview/sky-background`.
+- Current implementation commit: `6eef2aa`.
+- Normal application baseline: `476d190922870a39bc76cc91c68e9c9ba0bc20a7`.
+- Normal app entry: `index.html`; experiment entry: `labs/sky-preview.html`.
+- No global activation, live weather integration, deployment or push was performed.
+- All implementation commits are local save points. No manual commit is needed
+  before resuming from the documented checkpoint.
+
+The original read-only investigation covered repository rules, layout, navigation,
+weather service/formatter, data manager, `background.js`, and celestial services.
+The reference implementation and handoff were read from
+`/Users/williamcharash/Documents/GitHub/ipma-radar/docs/sky-header-architecture.md`,
+with its `skyTheme.js`, SVG markup, CSS and browser checks. **ipma-radar was not
+modified.** Its softer artwork remains an interim baseline, not an accepted final
+realism design. The user's selected-beach requirement supersedes the reference's
+startup-GPS location policy.
+
+## Saved checkpoints
+
+| Checkpoint | Commit | Completed work |
+| --- | --- | --- |
+| 1 — fixture shell | `52ad242` | Actual app markup and scripts in an isolated frame; five initial fixtures; navigation, beach selection, settings and storage isolation. |
+| 2 — static sky | `9eec0ce` | Full-screen sky, host solar calculation, independent cloud tiers, 17 fixtures, original-background comparison and provider/licence credits. Also handles Live Server's injected reload script. |
+| 2 follow-up — transparency | `b77d714` | Adjustable 0–100% panel backgrounds, default 30%; text and graphics remain fully visible. |
+| 3 — motion | `d556b3d` | Independent drift, five-second coverage updates, immediate initial/beach display, pause/resume and reduced motion. |
+| 3 follow-up — placement | `6eef2aa` | Removed the repeated three-row vertical layout that made every cloud type look like three horizontal bands; retained artwork, coverage and motion. |
+
+Checkpoint 0's baseline preservation was performed before implementation by
+recording the original commit and creating the preview branch. The normal app's
+`index.html`, `src/`, data and manifest have remained unchanged throughout.
+
+To inspect history without changing files:
+
+```sh
+git status --short --branch
+git log --oneline -8
+git show --stat 6eef2aa
+git diff 476d190 HEAD -- index.html src data manifest.json
+```
+
+The last command should show no production-file changes at this checkpoint.
+
+## File responsibilities and current data flow
+
+| File | Responsibility |
+| --- | --- |
+| `labs/sky-preview.html` | Full-screen shell, fixture selector, reset, Show sky, Animate sky and opacity controls. |
+| `labs/sky-preview.js` | Fetches current app markup, sets base URLs, inserts lab assets before startup, removes the embedded Live Server reload client and coordinates toolbar changes. |
+| `labs/sky-preview.css` | Styles only the outer toolbar and frame. |
+| `labs/sky-fixtures.js` | Synthetic normalized weather and marine results, fixed civil times and all 17 scenarios. |
+| `labs/sky-preview-adapter.js` | Replaces services and storage inside the frame, freezes its clock, updates the sky from the same fixture weather returned to the app and exposes preview controls. |
+| `labs/sky-background.js` | Instance-scoped SVG sky, palette selection, independent patch coverage, solar-service reuse, update/visibility/motion methods and cleanup. |
+| `labs/sky-background.css` | Scoped drift/transitions, reduced motion, panel transparency and contrast support. |
+| `tests/sky-preview-check.py` | Dependency-free isolated Chrome verification, local server, temporary profile and optional screenshots. |
+| `docs/file-map.md` | Repository navigation entry pointing to this guide. |
+
+The app still starts through its real controller. Its existing data manager
+calls the frame's substituted weather service. That service returns fixture
+weather to the app and passes the same snapshot and requested beach to the sky.
+Marine fixtures support the existing cards and tide calculation. Only local
+area/beach JSON and app assets are fetched. There is no second sky weather fetch.
+
+The sky is mounted outside the three view containers, so navigation does not
+remount it. Coverage updates reuse existing SVG patch nodes. CSS moves a separate
+wrapper per tier, keeping movement independent from patch growth. All DOM queries
+for sky artwork are scoped to the instance; SVG definition IDs are prefixed.
+
+The fixture list is Clear day, Mixed clouds, Rain, Snow, Clear night,
+Near-overcast, Dusk, Cloud data missing, and Low/Mid/High clouds at 20/60/95% each.
+Clear day also covers the 0% case. All beaches share the selected synthetic
+scenario; choosing a beach changes its geographic/solar context, not the fixture's
+invented weather measurements.
+
 ## Open the preview
 
 In VS Code, right-click `labs/sky-preview.html` and select **Open with Live Server**.
@@ -106,7 +186,8 @@ Its original checks remain useful:
    beach, settings and favorites to the lab defaults.
 6. Open the normal app. Its saved settings, favorites and beach must be unchanged.
 
-The fixed civil date is 7 November 2026, at 12:00 or 22:00 for the night fixture.
+The fixed civil date is 7 November 2026, usually at 12:00, at 22:00 for night and
+missing-cloud fixtures, and at 17:45 for dusk.
 The frame freezes its own clock to that civil time, matching the existing host
 services' local wall-clock contract. The parent page and normal app clock are
 unchanged. This does not validate cross-timezone live-data handling.
@@ -139,6 +220,15 @@ ordinary app startup/navigation and simulates the Live Server injection markers
 to verify that its reload client stays out of the embedded app.
 Set `CHROME_BIN` to use another Chrome executable.
 
+For temporary review screenshots:
+
+```sh
+python3 tests/sky-preview-check.py --screenshot /private/tmp/praias-sky-review.png
+```
+
+This also writes desktop/mobile Dashboard and Settings variants next to the
+named PNG. Those screenshots are temporary artifacts, not committed project files.
+
 These checks do not validate live provider responses or physical iPhone/Safari.
 The normal app's current weather-fetch and refresh behavior is unchanged.
 
@@ -155,6 +245,135 @@ Physical iPhone/Safari rendering and visual acceptance remain open.
 Checkpoint 3 passed the expanded Chrome motion and regression checks on
 7 November 2026. Physical iPhone/Safari sustained animation performance and
 visual motion acceptance remain open.
+
+The transparency and placement follow-ups also passed the existing regression
+checks. Desktop/mobile stills were inspected after the placement change. The
+motion tests sample animation progress deterministically; they do not constitute
+a sustained physical-device performance test.
+
+## Known limitations and unfinished behavior
+
+- Rain/Snow scenarios currently change colours and cloud coverage only. There
+  are no falling rain/snow layers, precipitation intensity classes or complete
+  WMO condition mapping for effects yet.
+- Fresh/stale/expired/offline status, valid-time metadata and delayed-response
+  simulations are not implemented. The renderer currently expects a weather
+  object with valid location/time context; a null-weather startup needs an
+  explicit solar-only path in checkpoint 4.
+- The live host already returns total/low/mid/high cloud values and numeric
+  weather codes. Formatters handle units/translations; the sky must continue to
+  consume numeric values instead of parsing their display strings.
+- The host data manager has refresh/retry bookkeeping and request deduplication,
+  but lacks an active automatic weather scheduler, beach-bound response safety,
+  cancellation/timeouts and condition-age expiry. Pending refresh flags do not
+  currently provide a complete latest-beach request queue. These are future
+  live-integration tasks, not features established by the fixture tests.
+- Host weather times are civil strings. Unambiguous condition/fetch instants,
+  Lisbon DST handling and use from browsers outside Portugal still need live
+  integration verification. Do not change the host's existing time format
+  without considering its celestial and tide consumers.
+- Cloud cover is an active patch budget, not a measured pixel area. Cropping,
+  overlap, repetition and procedural appearance remain visual limitations.
+  Independent atmospheric tiers must not be summed or normalized.
+- Movement is decorative, not derived from winds aloft. No pressure-level wind
+  requests, viewing-bearing model or new astronomy implementation was added.
+- Solar palette thresholds still switch discretely; five-second smoothing
+  applies to cloud growth/opacity, not continuous sky-colour interpolation.
+- Physical iPhone/Safari, sustained performance, full accessibility acceptance
+  and final visual acceptance remain open. Existing mobile navigation overflow
+  is measured above and has not been repaired as part of the sky experiment.
+- Panel transparency is an evaluation control in the lab, not an approved global
+  readability design. Keep the original app available for comparison.
+
+## Remaining steps and stop points
+
+Estimates cover implementation and local verification. They exclude time for
+user review, visual redesign and physical-device investigation. Work remains
+incremental; finish checks and save a working local commit before stopping at
+each checkpoint. A failure must be resolved or its increment reverted before
+calling the checkpoint complete.
+
+| Next step | Estimate | Scope and completion criteria |
+| --- | --- | --- |
+| 4 — precipitation and freshness fixtures | 45–75 minutes | Rain/snow effects and intensity, explicit status/expiry, missing/offline data and delayed beach responses, all confined to the lab. Regression checks pass and a local checkpoint is saved. |
+| 5 — preview acceptance | 30–60 minutes | Whole-app visual/interaction review, clipping, scrolling, contrast, reduced motion and reset/cleanup; record physical-device checks and unresolved findings. Save the reviewed preview without activating it globally. |
+| Later — live integration design and implementation | Estimate after audit | Strengthen the existing weather/data-manager lifecycle, adapt its shared snapshots and preserve current app function through separate small checkpoints. Requires approval after preview review. |
+| Later — global activation | Estimate after integration review | Explicit visual/device acceptance and approval before changing the normal app's background. Preserve a reversible fallback. |
+
+### Checkpoint 4 implementation order
+
+1. Read this guide, Git status, the current lab files and the reference handoff.
+   Preserve `6eef2aa` as the implementation baseline; do not modify ipma-radar.
+2. Add an explicit lab weather-state contract: selected beach/requested coordinates,
+   fetched-at and condition-time instants, injected evaluation time and validity.
+   Keep state validation separate from drawing. A small new
+   `labs/sky-weather-state.js` is an option, not an existing file.
+3. Add one code mapping for rain, drizzle/freezing drizzle, freezing rain, snow,
+   snow grains/showers, thunderstorms/hail and unknown codes. Keep rain/snow
+   mutually exclusive; derive light/moderate/heavy presentation from the reference
+   codes. No lightning, hailstone or accumulation simulation is required.
+4. Add scoped CSS rain/snow layers, respecting Animate sky, reduced motion,
+   pointer transparency and existing contrast/opacity controls. Check this increment
+   before implementing the freshness cases.
+5. Classify age using the older of fetch age and condition age. Below 15 minutes
+   is fresh; 15 to under 60 minutes is stale, with a visible label while retaining
+   valid matching conditions; 60 minutes or more is unavailable. Expired/invalid
+   data must remove weather-driven clouds/precipitation and retain solar colours.
+   Unknown weather must not imply clear-night stars. New fetch time cannot make
+   an old model condition fresh.
+6. Add fixed scenarios for missing/invalid times and cloud values, offline startup,
+   stale refresh success/failure and expiry. Allow a solar-only sky without making
+   the existing Dashboard crash when it expects a weather object. Use explicit
+   state in the lab rather than pretending that the host already handles null data.
+7. Simulate a 10-second request timeout and late responses, including a transport
+   that ignores cancellation. Use generation and selected-beach/coordinate checks:
+   an older beach's response must never replace current conditions. This tests
+   the intended contract; it does not implement a second production fetch loop.
+8. Verify the first usable state appears immediately, later same-beach updates
+   stay gentle, and a beach change cannot leave old effects visible. Verify
+   repeated reset/unmount releases owned work and prevents late writes.
+9. Run the expanded isolated Chrome checks, inspect desktop/mobile compositions,
+   confirm production files are unchanged, update this guide and save a local
+   checkpoint. Stop before checkpoint 5 or live integration unless authorized.
+
+### Checkpoint 5 review
+
+Review the combined sky first, including single tiers and mixed/near-overcast,
+then short motion sequences with the same fixed data and viewport. Check that
+all three views, text sizes, controls, credits, scrolling and low/high panel
+opacities remain usable. Check expanded SVG blur bounds and the removal of the
+earlier three-row appearance at desktop/mobile sizes. Record user visual feedback
+separately from technical test results. Physical iPhone/Safari rendering and
+sustained animation should be checked before calling the feature ready.
+
+### Later live integration boundaries
+
+Use the selected beach as the location; do not acquire GPS for the sky. Reuse
+`weatherService.js` snapshots and `dataManager.js` refresh ownership, with explicit
+beach identity, reliable time metadata, timeout/cancellation and late-response
+protection. Keep weather scheduling outside the renderer and share the geographic
+and temporal context with the existing celestial service. Preserve independent
+cover, immediate initial display, gentle later updates, precipitation, expiry,
+reduced motion, provider attribution and readable controls. The normal
+`background.js` replacement and any new default panel appearance belong only
+to that later approved integration.
+
+## Copy-paste resume prompt
+
+```text
+Resume PraiasPortugal's isolated sky lab on branch preview/sky-background.
+First read labs/README.md and the repository development rules, inspect Git
+status and current code, and preserve existing user changes. The completed
+implementation baseline is 6eef2aa (checkpoint 3 plus the placement correction).
+Follow the documented checkpoint 4 only: precipitation and freshness fixtures,
+with the existing actual-layout preview, panel opacity and motion controls.
+Read ipma-radar/docs/sky-header-architecture.md as a reference, but do not modify
+ipma-radar. Keep production index.html, src/, data and manifest unchanged.
+Do not fetch live weather, activate the sky globally, deploy or publish.
+Verify each meaningful increment, run the expanded isolated browser checks,
+document results/limitations and save a clean local checkpoint. Stop before
+checkpoint 5 or live integration and report what remains for user review.
+```
 
 ## Durable stop / resume
 
