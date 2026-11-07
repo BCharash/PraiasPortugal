@@ -18,13 +18,21 @@ body[data-sky-preview] { isolation: isolate; }
 /* Static at checkpoint 2, including under reduced motion. */
 .preview-sky *, .preview-sky { animation: none; transition: none; }
 
-/* Keep the existing solid cards. Back exposed text without changing layout. */
+/* Change background alpha only: text, graphics and controls stay fully visible. */
+body[data-sky-preview="enabled"] :is(.dashboard-widget, .settings-section) {
+    background: rgba(27, 39, 71, var(--preview-panel-opacity, .3));
+}
+body[data-sky-preview="enabled"] :is(
+    #applicationHeader, #dashboardPage, #beachesPage, #settingsPage
+) {
+    text-shadow: 0 1px 3px #000, 0 0 4px #000;
+}
 body[data-sky-preview="enabled"] :is(
     #applicationHeader, #dashboardStatus, #dashboardDataCards,
     #beachesPage > h2, #beachSelection, #settingsPage > h2
 ) {
-    background: #0b1530;
-    box-shadow: 0 0 0 5px #0b1530;
+    background: rgba(11, 21, 48, var(--preview-panel-opacity, .3));
+    box-shadow: 0 0 0 5px rgba(11, 21, 48, var(--preview-panel-opacity, .3));
     border-radius: 5px;
 }
 .preview-sky-credits {
@@ -37,3 +45,7 @@ body[data-sky-preview="enabled"] :is(
     font-size: 12px;
 }
 .preview-sky-credits a { color: #8adcf0; }
+body[data-sky-preview="enabled"] .preview-sky-credits {
+    background: rgba(11, 21, 48, var(--preview-panel-opacity, .3));
+    text-shadow: 0 1px 3px #000, 0 0 4px #000;
+}

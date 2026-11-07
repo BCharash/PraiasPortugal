@@ -241,13 +241,28 @@ try:
         const sky = lab.document.querySelector('.preview-sky');
         return sky.getAttribute('aria-hidden') === 'true' && lab.getComputedStyle(sky).pointerEvents === 'none' &&
             [...sky.querySelectorAll('filter')].every(f => f.getAttribute('y') === '-100%' && f.getAttribute('height') === '300%') &&
-            lab.getComputedStyle(lab.document.getElementById('conditionsWidget')).backgroundColor === 'rgb(27, 39, 71)' &&
+            lab.getComputedStyle(lab.document.getElementById('conditionsWidget')).backgroundColor === 'rgba(27, 39, 71, 0.3)' &&
             lab.document.querySelector('.preview-sky-credits a').href === 'https://open-meteo.com/';
     })()''')
     client.call('Emulation.setEmulatedMedia', {'features': [{'name':'prefers-reduced-motion','value':'reduce'}]})
     assert client.evaluate("lab.document.querySelector('.preview-sky').getAnimations({subtree:true}).length === 0")
     client.call('Emulation.setEmulatedMedia', {'features': []})
-    print('PASS: original-background comparison preserves state, static/reduced motion, filter bounds, solid cards and attribution', flush=True)
+    assert client.evaluate('''(() => {
+        const before = JSON.stringify(lab.skyPreview.snapshot());
+        const requests = lab.skyPreview.weatherRequests;
+        const slider = document.getElementById('panelOpacity');
+        const tile = lab.document.getElementById('conditionsWidget');
+        for (const [value, expected] of [['0', 'rgba(27, 39, 71, 0)'], ['100', 'rgb(27, 39, 71)'], ['30', 'rgba(27, 39, 71, 0.3)']]) {
+            slider.value = value;
+            slider.dispatchEvent(new Event('input'));
+            if (lab.getComputedStyle(tile).backgroundColor !== expected || lab.getComputedStyle(tile).opacity !== '1') return false;
+        }
+        document.getElementById('skyEnabled').click();
+        const original = lab.getComputedStyle(tile).backgroundColor === 'rgb(27, 39, 71)';
+        document.getElementById('skyEnabled').click();
+        return original && JSON.stringify(lab.skyPreview.snapshot()) === before && lab.skyPreview.weatherRequests === requests;
+    })()''')
+    print('PASS: background comparison, 0/30/100% panel opacity without fading content, static/reduced motion, filter bounds and attribution', flush=True)
 
     for width, height in [(1280, 900), (390, 844)]:
         client.call('Emulation.setDeviceMetricsOverride', {

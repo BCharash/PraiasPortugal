@@ -15,6 +15,9 @@
         <select id="fixtureSelect" disabled></select>
         <button id="resetPreview" type="button" disabled>Reset preview</button>
         <label><input id="skyEnabled" type="checkbox" checked> Show static sky</label>
+        <label for="panelOpacity">Panel opacity</label>
+        <input id="panelOpacity" type="range" min="0" max="100" step="5" value="30">
+        <output id="panelOpacityValue" for="panelOpacity">30%</output>
         <span id="previewStatus" role="status">Loading actual app layout…</span>
         <small>Fixtures only · Temporary settings · Uncheck sky to compare original background</small>
     </header>

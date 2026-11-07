@@ -31,11 +31,14 @@ There is no copied dashboard or production preview flag.
 
 1. Confirm the toolbar says **Checkpoint 2** and **Show static sky** is checked.
 2. Start with Mixed clouds. Check the combined cloud composition behind Dashboard,
-   Beaches and Settings. Cards remain solid; exposed controls and metrics receive
-   dark backing in the lab only.
+   Beaches and Settings. Panels now default to 30% opacity so the sky is visible
+   through them. **Panel opacity** ranges from 0% (fully transparent) to 100%
+   (opaque). Text and graphics stay fully visible, with shadows for contrast.
 3. Uncheck **Show static sky** to compare with the original app background using
    the same beach, weather and settings. The comparison does not reset the app
    or request weather. Recheck it to restore the sky.
+   The original-background comparison also restores the original opaque panels.
+   Reset preserves the toolbar's opacity setting; reopening the lab defaults to 30%.
 4. Compare Clear day, the individual Low/Mid/High 20/60/95% fixtures, Near-overcast,
    Dusk and Clear night. Zero coverage is represented by Clear day. Cloud data
    missing must show neither clouds nor stars, even at night.
@@ -110,7 +113,8 @@ python3 tests/sky-preview-check.py
 The dependency-free check uses a temporary Chrome profile and a local server.
 It exercises real navigation and beach-selection controls, all 17 fixtures,
 independent cloud tiers, static/reduced-motion behavior, comparison without state
-changes, filter bounds, attribution, unit conversion, desktop/mobile widths,
+changes, 0/30/100% panel backgrounds without fading their content, filter bounds,
+attribution, unit conversion, desktop/mobile widths,
 largest text size, reset and isolation from normal app preferences. It also checks
 ordinary app startup/navigation and simulates the Live Server injection markers
 to verify that its reload client stays out of the embedded app.
@@ -134,6 +138,8 @@ Physical iPhone/Safari rendering and visual acceptance remain open.
 - Branch: `preview/sky-background`.
 - Original app baseline: `476d190922870a39bc76cc91c68e9c9ba0bc20a7`.
 - Current stop: checkpoint 2, static composition and readability. No global changes.
+- Checkpoint 2's original opaque-panel version is saved as `9eec0ce`. The follow-up
+  adds adjustable panel transparency for sky evaluation; motion is still deferred.
 - Next checkpoint, after approval: movement and transitions, followed separately
   by precipitation/freshness fixtures and preview acceptance.
 - Live-data integration and global activation require later approval.

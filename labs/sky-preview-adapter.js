@@ -64,6 +64,11 @@
         get weatherRequests() { return weatherRequests; },
         get fixtureKey() { return fixtureKey; },
         setSkyEnabled: enabled => sky.setEnabled(enabled),
+        setPanelOpacity: value => {
+            if (Number.isFinite(value)) {
+                document.body.style.setProperty("--preview-panel-opacity", String(Math.max(0, Math.min(1, value))));
+            }
+        },
         isReady: () => typeof currentDashboardData !== "undefined" && !!currentDashboardData,
         async setFixture(key) {
             if (!Object.hasOwn(fixtures.cases, key)) throw new Error("Unknown preview fixture");
