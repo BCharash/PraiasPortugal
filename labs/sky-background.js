@@ -102,7 +102,9 @@ function renderSkyClouds(group,tier,cover,opacity,id){
     for(let i=0;i<count;i++){
       const outer=document.createElementNS(ns,"g");
       const x=(i%8+0.5)*widths[tier]/8+((i*17+layout.seed*11)%23-11)*2;
-      const y=100+Math.floor(i/8)*300+((i*13+layout.seed*7)%29-14);
+      // Spread patches through the full scene instead of repeating three rows.
+      // A fixed low-discrepancy sequence keeps each tier stable and distinct.
+      const y=50+((i*0.61803398875+layout.seed*0.137)%1)*800;
       outer.setAttribute("transform",`translate(${x} ${y})`);
       const patch=document.createElementNS(ns,"g");
       patch.classList.add("sky-cloud-patch");

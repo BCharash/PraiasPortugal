@@ -62,9 +62,11 @@ There is no copied dashboard or production preview flag.
     previous beach's conditions do not linger during a transition.
 
 The renderer reuses the reference's soft artwork, tier opacity, 24-patch growth,
-independent activation seeds, shared illumination and 8/7/5 blur. Rows are spread
-over a taller 900-unit scene, and the SVGs crop to fill the viewport while keeping
-shape proportions. This changes placement for the full-screen canvas; it does
+independent activation seeds, shared illumination and 8/7/5 blur. Patches use
+stable, tier-specific vertical positions across a 900-unit scene, rather than
+three repeated rows. The earlier row layout made each type look like three
+horizontal bands; the follow-up changes placement only. The SVGs crop to fill
+the viewport while keeping shape proportions. This adapts the full-screen canvas; it does
 not stretch the original shallow banner vertically. On narrow screens, cropping
 means some patches fall outside the visible region. Percentages remain patch
 budgets rather than literal fractions of cloudy pixels.
