@@ -36,6 +36,11 @@ preview has the same readout, labeled Synthetic fixture. Values are normalized
 renderer inputs, not a reconstruction of measured pixel coverage. Decorative
 movement does not follow the wind reading.
 
+The later [dense-cloud comparison](cloud-composite-comparison.md) adds a **Cloud
+rendering** selector to both previews. Revised composite is the current preview
+default; Previous patches restores the accepted interim artwork/palette. This is
+a visual candidate awaiting review, not new global activation or 6G verification.
+
 6F automated testing uses mocked providers only. Actual provider response quality,
 Mac live appearance and physical-device performance are separate acceptance work.
 
@@ -110,7 +115,8 @@ preference isolation; reset/unsubscribe cleanup; no-selection fallback; first
 selection in Beaches; persisted history restore; and exact live-renderer clock/
 elevation agreement across Lisbon, Los Angeles and Tokyo at summer midnight
 and both autumn repeated hours.
-The full suite also retains 36 fixtures, clock/DST checks in three timezones,
+The full suite retains the original 36 fixtures plus the reported overcast case
+(37 total), clock/DST checks in three timezones,
 request/lifecycle races, normal-app behavior and preview layout checks.
 
 Desktop (1280px) and narrow (390px) mocked live-preview screenshots were inspected

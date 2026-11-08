@@ -10,6 +10,15 @@ Updated 8 November 2026. This is the authoritative guide for the sky experiment.
 6F is complete; see [the live preview guide](../docs/sky-live-preview.md) for files,
 request ownership, checks, limits and rollback. The renderer is shared under src/,
 but only the two preview entries load it. Global activation remains deferred.
+A new **Cloud rendering** control in both previews compares **Revised composite**
+(default) with **Previous patches**. The revised candidate closes up dense low/mid
+cloud while preserving independent coverage/motion and the sparse/high-cloud cases.
+In the fixture preview, choose **Reported showers · 96/77/90/23** to see the user's
+reference at a calculated 4.2° sun angle. Uncheck Animate sky for a still comparison.
+See [the comparison checkpoint](../docs/cloud-composite-comparison.md). This visual
+candidate is awaiting user review; the previous Mac acceptance applies to the
+baseline, not this new treatment. The normal app remains unchanged.
+
 Both previews now include a **Sky inputs** disclosure below the weather-status
 row. Its summary shows low/mid/high cover; expand it for total cover, weather code
 and effect, actual solar elevation, selected palette, source and freshness/age.
@@ -66,6 +75,7 @@ startup-GPS location policy.
 | 6E — shared location/clock | `1d52a93` | Selected-beach/Lisbon clock boundary, immutable model times and cross-zone celestial/date checks. |
 | 6F — opt-in live sky preview | `cfa1be8` | Shared accepted artwork and actual app environment subscription; temporary-preference live entry, no global activation. |
 | 6F follow-up — appearance inputs | `0ba97d1` | Collapsible readout of normalized cloud coverage, condition/effect, solar elevation/palette and freshness in both previews. |
+| Dense-cloud visual candidate | `0be01fb` | Revised composite plus previous-patches selector; reported 96/77/90/23 fixture at 4.2°, awaiting visual review. |
 
 Checkpoint 0 preserved the baseline before implementation by recording its commit
 and creating the preview branch. Through Mac visual acceptance, normal app files
@@ -96,9 +106,10 @@ the default body background and card stylesheet remain unchanged.
 | `labs/preview-frame.js` | Loads actual app markup for both entries, inserts explicit preview assets, removes embedded Live Server reload client, and replaces old preview frames. |
 | `labs/sky-live-preview.html`, `labs/sky-live-preview.js` | Live-data preview shell with comparison, motion and opacity controls; no fixture selectors. |
 | `labs/sky-live-preview-adapter.js` | Temporary preferences and subscription to application-published environment; no service or clock replacement and no weather scheduling. |
+| `docs/cloud-composite-comparison.md` | Dense-cloud visual candidate, reported fixture, baseline comparison and review boundary. |
 | `docs/sky-live-preview.md` | Completed 6F implementation, run instructions, test evidence and deferred 6G boundary. |
 | `labs/sky-preview.css` | Styles only the outer toolbar and frame. |
-| `labs/sky-fixtures.js` | Synthetic weather/marine results, metadata envelopes, 36 weather fixtures and 13 data scenarios. |
+| `labs/sky-fixtures.js` | Synthetic weather/marine results, metadata envelopes, 37 weather fixtures (including the reported overcast case) and 13 data scenarios. |
 | `labs/sky-weather-state.js` | Lab request simulation; delegates pure condition/freshness rules to the shared production helper. No provider calls. |
 | `src/js/weatherTime.js`, `src/js/weatherState.js` | Pure timestamp conversion and shared condition/freshness rules; no requests, DOM or timers. |
 | `src/js/weatherRequests.js` | Data-manager-owned weather cache, cancellation, generation, timeout and per-location retry; no DOM or refresh loop. |
@@ -336,7 +347,7 @@ python3 tests/sky-preview-check.py
 ```
 
 The dependency-free check uses a temporary Chrome profile and a local server.
-It exercises real navigation and beach-selection controls, all 36 weather fixtures and the data scenarios,
+It exercises real navigation and beach-selection controls, all 37 weather fixtures and the data scenarios,
 independent cloud tiers, immediate startup, drift direction/timing, five-second
 transition interpolation, stable patch nodes, pause/resume, reduced motion, comparison without state
 changes, 0/30/100% panel backgrounds without fading their content, filter bounds,
@@ -405,7 +416,8 @@ a sustained physical-device performance test.
   Lisbon DST handling and use from browsers outside Portugal still need live
   integration verification. Do not change the host's existing time format
   without considering its celestial and tide consumers.
-- Cloud cover is an active patch budget, not a measured pixel area. Cropping,
+- The baseline uses an active patch budget; the revised mode adds dense low/mid
+  sheets. Neither promises a measured screen fraction. Cropping,
   overlap, repetition and procedural appearance remain visual limitations.
   Independent atmospheric tiers must not be summed or normalized.
 - Movement is decorative, not derived from winds aloft. No pressure-level wind
@@ -499,7 +511,7 @@ The next checkpoint is 6G. Preserve the completed 6A contract, 6B request owner,
 
 - Branch: `preview/sky-background`.
 - Original app baseline: `476d190922870a39bc76cc91c68e9c9ba0bc20a7`.
-- Current stop: checkpoint 6F complete (`cfa1be8`), inputs-readout follow-up `0ba97d1`; see docs/sky-live-preview.md; interim Mac appearance
+- Current stop: checkpoint 6F complete (`cfa1be8`), inputs-readout follow-up `0ba97d1`, dense-cloud candidate `0be01fb`; see docs/sky-live-preview.md; interim Mac appearance
   remains accepted. Live preview is opt-in; the normal app sky is not activated.
 - Checkpoint 2's original opaque-panel version is saved as `9eec0ce`. The follow-up
   adds adjustable panel transparency for sky evaluation (`b77d714`), preserved here.

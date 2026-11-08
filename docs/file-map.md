@@ -29,6 +29,8 @@ adapter only isolates preferences and subscribes to published app environment.
 `docs/sky-live-preview.md` records 6F behavior, run instructions and verification.
 `labs/sky-inputs.js` reports actual normalized renderer inputs in both previews;
 its readout is preview-only and owns no requests/timers.
+`docs/cloud-composite-comparison.md` records the dense-cloud visual candidate,
+reported 96/77/90/23 fixture and reversible baseline selector in both previews.
 `tests/sky-preview-check.py` and `tests/sky_live_preview_check.py` verify both previews
 with a temporary browser profile.
 `labs/README.md` is the authoritative experiment handoff, including saved commits,
