@@ -12,7 +12,8 @@ The current implementation stops after checkpoint 4. Checkpoint 5 acceptance
 review has not started. No live-data or global integration is authorized yet.
 
 - Branch: `preview/sky-background`.
-- Current implementation commit: `8aa12bd`.
+- Checkpoint 4 foundation commit: `8aa12bd`; retain the subsequent snow visual
+  follow-up at the current branch HEAD when resuming.
 - Normal application baseline: `476d190922870a39bc76cc91c68e9c9ba0bc20a7`.
 - Normal app entry: `index.html`; experiment entry: `labs/sky-preview.html`.
 - No global activation, live weather integration, deployment or push was performed.
@@ -217,6 +218,16 @@ Drift runs on a separate SVG group from patch growth, preserving stable patch
 nodes and ongoing movement during weather updates. The renderer adds no JavaScript
 timers or requests. Removing the frame also removes its CSS animations.
 
+Snow visual follow-up: the small repeating dot grid was too geometric,
+particularly at heavy intensity. Snow now uses three larger, independently
+seeded SVG background fields with irregular positions, varied flake sizes and
+opacity, different fall speeds and gentle lateral sway. Light/moderate/heavy
+select progressively denser, stable subsets of each field. The patterns are
+created once, with no per-flake timers or JavaScript animation loop. Vertical
+movement loops over each field's full tile height without a visible reset.
+Pause/resume and reduced motion apply to all three fields. This remains
+illustrative snow; user visual acceptance is still open.
+
 ## Earlier checkpoint 1
 
 Saved as commit `52ad242`: fixture shell with the original background only.
@@ -394,7 +405,8 @@ to that later approved integration.
 Resume PraiasPortugal's isolated sky lab on branch preview/sky-background.
 First read labs/README.md and the repository development rules, inspect Git
 status and current code, and preserve existing user changes. The completed
-implementation baseline is 8aa12bd (checkpoint 4).
+implementation foundation is 8aa12bd (checkpoint 4); retain the subsequent
+irregular-snow visual follow-up at the current branch HEAD.
 Follow checkpoint 5 only: preview acceptance, with the existing actual-layout
 preview, precipitation/data scenarios, panel opacity and motion controls.
 Review and document findings first; do not assume visual or device acceptance.

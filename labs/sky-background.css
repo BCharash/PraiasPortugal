@@ -116,24 +116,34 @@ body[data-sky-preview="enabled"] .preview-sky-credits {
   pointer-events:none;
   z-index:1;
   opacity:.7;
-  background-image:radial-gradient(circle, #fff 1.5px, transparent 2px),
-    radial-gradient(circle, #fff 1px, transparent 1.7px);
-  background-size:var(--snow-cell, 43px) var(--snow-cell, 43px), 67px 61px;
-  background-position:0 0, 19px 23px;
-  animation:previewSkySnowFall 8s linear infinite
+  overflow:hidden
 }
+.preview-sky .preview-snow-field {
+  position:absolute;
+  inset:-12px;
+  background-image:var(--snow-moderate);
+  background-repeat:repeat;
+  animation:previewSkySnowFall var(--snow-fall-duration) linear var(--snow-phase) infinite,
+    previewSkySnowSway var(--snow-sway-duration) ease-in-out var(--snow-phase) infinite alternate;
+}
+.preview-sky .preview-sky-snow[data-intensity="light"] .preview-snow-field { background-image:var(--snow-light); }
+.preview-sky .preview-sky-snow[data-intensity="heavy"] .preview-snow-field { background-image:var(--snow-heavy); }
 
 .preview-sky .preview-sky-rain[data-intensity="light"]{--rain-gap:28px;opacity:.2}
 .preview-sky .preview-sky-rain[data-intensity="moderate"]{--rain-gap:18px;opacity:.34}
 .preview-sky .preview-sky-rain[data-intensity="heavy"]{--rain-gap:10px;opacity:.48}
 .preview-sky .preview-sky-rain[data-drizzle="true"]{background-size:80px 100px;opacity:.18}
-.preview-sky .preview-sky-snow[data-intensity="light"]{--snow-cell:65px;opacity:.35}
-.preview-sky .preview-sky-snow[data-intensity="moderate"]{--snow-cell:43px;opacity:.55}
-.preview-sky .preview-sky-snow[data-intensity="heavy"]{--snow-cell:28px;opacity:.75}
+.preview-sky .preview-sky-snow[data-intensity="light"]{opacity:.35}
+.preview-sky .preview-sky-snow[data-intensity="moderate"]{opacity:.55}
+.preview-sky .preview-sky-snow[data-intensity="heavy"]{opacity:.75}
 
 @keyframes previewSkySnowFall{
-  to{background-position:43px 94px, 86px 145px}
+  to{background-position:0 var(--snow-fall-distance)}
+}
+@keyframes previewSkySnowSway {
+  from { transform:translateX(-6px); }
+  to { transform:translateX(6px); }
 }
 
 
-.preview-sky[data-motion="off"] :is(.preview-sky-rain,.preview-sky-snow) { animation-play-state: paused; }
+.preview-sky[data-motion="off"] :is(.preview-sky-rain,.preview-sky-snow,.preview-snow-field) { animation-play-state: paused; }

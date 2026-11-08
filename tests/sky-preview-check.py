@@ -378,7 +378,7 @@ try:
         const requests = lab.skyPreview.weatherRequests;
         const toggle = document.getElementById('skyMotion');
         toggle.click();
-        const paused = [...sky.querySelectorAll('.preview-sky-drift,.preview-sky-rain:not([hidden]),.preview-sky-snow:not([hidden])')].every(node =>
+        const paused = [...sky.querySelectorAll('.preview-sky-drift,.preview-sky-rain:not([hidden]),.preview-sky-snow:not([hidden]) .preview-snow-field')].every(node =>
             node.getAnimations().every(a => a.playState === 'paused'));
         const noTransitions = lab.getComputedStyle(sky.querySelector('.sky-cloud-patch')).transitionDuration === '0s';
         toggle.click();
@@ -401,6 +401,19 @@ try:
         return original && JSON.stringify(lab.skyPreview.snapshot()) === before && lab.skyPreview.weatherRequests === requests;
     })()''')
     print('PASS: background comparison, panel opacity, pause/resume and reduced motion, filter bounds and attribution', flush=True)
+    client.evaluate("lab.skyPreview.setFixture('code75')")
+    assert client.evaluate('''(() => {
+        const fields = [...lab.document.querySelectorAll('.preview-snow-field')];
+        document.getElementById('skyMotion').click();
+        const paused = fields.length === 3 && fields.every(field => field.getAnimations().length === 2 && field.getAnimations().every(a=>a.playState === 'paused'));
+        document.getElementById('skyMotion').click();
+        return paused && fields.every(field=>field.getAnimations().every(a=>a.playState === 'running'));
+    })()''')
+    client.call('Emulation.setEmulatedMedia', {'features':[{'name':'prefers-reduced-motion','value':'reduce'}]})
+    assert client.evaluate("lab.document.querySelector('.preview-sky').getAnimations({subtree:true}).length === 0")
+    client.call('Emulation.setEmulatedMedia', {'features':[]})
+    client.evaluate("lab.skyPreview.setFixture('rain')")
+    print('PASS: irregular heavy-snow fields pause/resume and respect reduced motion', flush=True)
 
     for width, height in [(1280, 900), (390, 844)]:
         client.call('Emulation.setDeviceMetricsOverride', {
@@ -447,9 +460,9 @@ try:
     if args.screenshot:
         image = client.call('Page.captureScreenshot', {'format': 'png'})
         pathlib.Path(args.screenshot).write_bytes(base64.b64decode(image['data']))
-        for key in ['snow', 'offline']:
-            if key == 'snow':
-                client.evaluate("document.getElementById('fixtureSelect').value='snow'; document.getElementById('fixtureSelect').dispatchEvent(new Event('change'))")
+        for key in ['snow', 'code75', 'offline']:
+            if key != 'offline':
+                client.evaluate(f"document.getElementById('fixtureSelect').value={json.dumps(key)}; document.getElementById('fixtureSelect').dispatchEvent(new Event('change'))")
             else:
                 client.evaluate("document.getElementById('scenarioSelect').value='offline'; document.getElementById('scenarioSelect').dispatchEvent(new Event('change'))")
             wait_for(client, ready)

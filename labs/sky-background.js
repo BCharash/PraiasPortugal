@@ -184,6 +184,29 @@ function renderSkyClouds(group,tier,cover,opacity,id){
         const stars = root.querySelector(".preview-sky-stars");
         const rain = root.querySelector(".preview-sky-rain");
         const snow = root.querySelector(".preview-sky-snow");
+        // Large, independently seeded fields avoid the former small repeating
+        // dot grid. Build once; intensity selects a denser prefix of each field.
+        for (const [depth, width, height] of [[0,521,587],[1,613,541],[2,487,647]]) {
+            const field = document.createElement("span");
+            field.className = "preview-snow-field";
+            let seed = 731 + depth * 193;
+            const random = () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; };
+            const flakes = Array.from({length:85}, () => {
+                const x = 3 + random() * (width - 6), y = 3 + random() * (height - 6);
+                const radius = .5 + random() * (depth === 2 ? 1.6 : 1.1);
+                return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${radius.toFixed(2)}" opacity="${(.3 + random() * .65).toFixed(2)}"/>`;
+            });
+            for (const [level, count] of [["light",18],["moderate",40],["heavy",85]]) {
+                const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" fill="white">${flakes.slice(0,count).join("")}</svg>`;
+                field.style.setProperty(`--snow-${level}`, `url("data:image/svg+xml,${encodeURIComponent(svg)}")`);
+            }
+            field.style.backgroundSize = `${width}px ${height}px`;
+            field.style.setProperty("--snow-fall-distance", `${height}px`);
+            field.style.setProperty("--snow-fall-duration", `${[19,14,10][depth]}s`);
+            field.style.setProperty("--snow-phase", `${[-7,-5,-2][depth]}s`);
+            field.style.setProperty("--snow-sway-duration", `${[11,8,13][depth]}s`);
+            snow.append(field);
+        }
         const credits = document.createElement("footer");
         credits.className = "preview-sky-credits";
         credits.innerHTML = `Synthetic fixtures · Illustrative sky · Weather provider for future live data:
