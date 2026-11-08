@@ -157,6 +157,11 @@ still available for repeatable appearance and failure-scenario comparisons.
 
 In VS Code, right-click `labs/sky-preview.html` and select **Open with Live Server**.
 Keep PraiasPortugal open as the workspace folder. Refresh the preview after changes.
+The status-bar **Go Live** button follows the active editor. If `README.md` is
+active, Live Server opens the workspace root (the ordinary app), not this preview.
+Activate the desired HTML tab first, or right-click its file in Explorer and use
+**Open with Live Server**. The browser path should end in `/labs/sky-preview.html`
+for fixtures or `/labs/sky-live-preview.html` for real weather.
 The outer lab handles Live Server reloads; its injected reload client is removed
 from the embedded app to avoid an invalid WebSocket URL inside the frame.
 
