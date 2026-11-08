@@ -133,15 +133,16 @@ in either unit. The mocked main-app check now verifies 14°–21° in Celsius,
 57°–70° in Fahrenheit, an unchanged marker position and switching back to Celsius.
 The full service/app/lab suite passed again. This does not start checkpoint 6B.
 
-6A is complete. **Stop before 6B until authorized.** Request identity in the data
-manager, same-location promise joining, timeout, retry isolation, refresh cadence
-and late-display guards are still pending. Adding metadata does not establish
-those protections by itself.
+6A is complete. The subsequently authorized 6B work is now saved as `b7806a7`;
+see [weather request ownership](weather-request-ownership.md) for location-keyed
+memory, joined requests, timeout, retries and basic display result guards.
+The current stopping point is before 6C. Metadata alone did not establish those
+protections; they are implemented in the separate request owner.
 
 Unknown optional values now reach consumers as null. Complete unavailable-state
 presentation, including unknown lunar values and old reading/marker cleanup,
-remains in 6C. The current production manager's freshness label has not yet been
-changed to use condition age. Live weather smoke testing remains in 6G; cold
+remains in 6C. 6B now evaluates condition/fetch age on reads; UI freshness
+notifications and automatic refresh remain 6D. Live weather smoke testing remains in 6G; cold
 offline readiness and new persistent caching are outside this work.
 
 Use [the integration plan](sky-live-integration-plan.md) for the remaining

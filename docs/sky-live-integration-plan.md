@@ -1,14 +1,16 @@
 # Sky live-data integration plan
 
-Updated 8 November 2026. **Checkpoint 6A implemented and verified; 6B–6G not started.**
+Updated 8 November 2026. **Checkpoints 6A and 6B implemented and verified; 6C–6G not started.**
 Current branch: `preview/sky-background`. Planning baseline: `ff92eb3`.
 Accepted visual implementation: `ee8be74`, with the star-visibility correction
 and review checks in `22eed6f`. Mac interim appearance acceptance is recorded
 in `ff92eb3`; its scope is in [the acceptance record](../labs/ACCEPTANCE.md).
 
-The user approved checkpoint 6A after planning. Its implementation is saved as
+The user approved checkpoints 6A and 6B separately after planning. 6A is saved as
 `fd6722a`, starting from `0976be3`; see [the service contract](weather-service-contract.md)
-for exact behavior, tests and limitations. Further checkpoints require approval.
+for exact behavior, tests and limitations. 6B is now implemented as `b7806a7`,
+starting from `fca7450`; see [weather request ownership](weather-request-ownership.md).
+Further checkpoints require approval.
 Global activation remains a separate later decision.
 
 ## Intended result and boundaries
@@ -33,8 +35,9 @@ physical-device performance or readiness to activate the background globally.
 ## Pre-6A source audit (baseline `0976be3`)
 
 These baseline findings came from source inspection, not live weather calls.
-6A resolves the service/query items below; data-manager and display items remain
-for later checkpoints:
+6A resolves the service/query items below. 6B resolves weather request ownership
+and binds display reads/results. Full unavailable display and automatic lifecycle
+refresh remain for later checkpoints:
 
 | Existing file | Finding and implication |
 | --- | --- |
@@ -128,7 +131,7 @@ with a verified local commit and updated handoff. Start only the authorized one.
 | Checkpoint | Estimate | Expected files and behavior | Stop criteria |
 | --- | --- | --- | --- |
 | 6A — service contract (complete: `fd6722a`) | Verified | `src/js/weatherService.js`, `src/js/weatherTime.js`, `src/js/weatherState.js` and deterministic tests. Requested identity, timestamps, optional signal, HTTP/schema checks and safe values are implemented. Query repaired; no renderer or refresh changes. | Legacy-field, formatter/celestial and actual-main-app checks passed in addition to the fixture suite. Saved and stopped. |
-| 6B — weather request ownership | 60–90 min | `dataManager.js`, shared state helpers and request tests. Location-keyed memory, joined same-location requests, latest-location selection, generation guards, 10-second timeout and cancellation. Preserve an explicit result for existing callers. | A/B/A switches, ignored aborts, timeouts and retry isolation cannot publish wrong-beach data. Superseded callers settle; no stranded pending flags. Stop and save. |
+| 6B — weather request ownership (complete: `b7806a7`) | Verified | `dataManager.js`, shared state helpers and request tests. Location-keyed memory, joined same-location requests, latest-location selection, generation guards, 10-second timeout and cancellation. Preserve an explicit result for existing callers. | A/B/A switches, ignored aborts, timeouts and retry isolation cannot publish wrong-beach data. Superseded callers settle; no stranded pending flags. Stop and save. |
 | 6C — safe display and unavailable data | 45–75 min | `display.js`, `conditions.js`, application call sites and display tests. Guard every asynchronous publication; read weather by identity; handle unavailable/expired weather without fixture substitution. Weather publication must survive marine delay/failure. Settings-only changes rerender loaded data. | Fresh, stale and unavailable Dashboard paths work; old marine/weather continuations cannot overwrite the selected beach; translations, units and selection still work. Stop and save. |
 | 6D — refresh and lifecycle | 45–75 min | `dataManager.js`, lifecycle wiring in `app.js` and scheduler tests. One weather scheduler, retry/backoff, freshness notifications and resume reconciliation. | No duplicate loops, request storms or accumulated timers after repeated hide/show; expiry occurs without a successful new fetch. Stop and save. |
 | 6E — shared location and clock | 30–60 min | Proposed environment-context helper; small controller/celestial entry changes and timezone tests. Use selected-beach coordinates and a Lisbon clock consistently for sky and detailed Conditions. Keep model times immutable. | Lisbon/other-browser-zone, midnight and DST cases agree; existing sunrise/sunset path checks pass. No weather fetch on a solar clock tick. Stop and save. |
@@ -136,7 +139,7 @@ with a verified local commit and updated handoff. Start only the authorized one.
 | 6G — live Mac verification | 30–60 min | Live-preview checks and acceptance evidence, with a small explicitly authorized live-weather smoke test. No activation change. | One weather owner, correct selected location, failure/expiry behavior and no duplicate fetch on navigation/settings; record actual provider evidence and remaining device checks. Stop for user review. |
 
 Estimated total: **5–8¼ hours**, split across independently stoppable sessions.
-6A is complete and stopped. Continue with 6B only after approval; do not
+6B is complete and stopped. Continue with 6C only after approval; do not
 automatically run the remaining checkpoints together.
 
 ### 6A completed: compatible service metadata
@@ -157,7 +160,7 @@ automatically run the remaining checkpoints together.
    second production transport controller. During extraction, compare the pure
    functions against the fixture lab's accepted cases.
 
-### 6B details: location and request safety
+### 6B completed: location and request safety
 
 - Key weather by beach ID plus requested coordinates. Decide active identity at
   selection time; never read an arbitrary retained slot as the new beach's data.
@@ -172,7 +175,11 @@ automatically run the remaining checkpoints together.
   a compatibility wrapper, but data returned to `displayBeach()` must be bound
   to the request's identity. Update only audited call sites.
 
-### 6C details: prevent late display writes
+### 6C details: safe display and unavailable data
+
+6B already checks the weather result token after weather/marine awaits. Retain
+those guards; complete the broader display generation and failure/placeholder
+work below rather than removing the binding or assuming all of 6C is done.
 
 - Add a display generation tied to selected beach and verify it after weather
   and marine awaits and before any DOM/state publication.
@@ -239,17 +246,16 @@ readability treatment and a decision about the inherited narrow navigation layou
 ## Exact prompt for the next implementation session
 
 ```text
-Implement checkpoint 6B only from docs/sky-live-integration-plan.md in
+Implement checkpoint 6C only from docs/sky-live-integration-plan.md in
 /Users/williamcharash/Documents/GitHub/PraiasPortugal.
-First inspect Git status, repository instructions, labs/README.md,
-labs/ACCEPTANCE.md and the current source; preserve user changes.
-Read docs/weather-service-contract.md. Checkpoint 6A is implemented as fd6722a.
-Record the new starting commit. Implement weather request ownership in the
-existing data manager: location-keyed snapshots, same-location promise joining,
-latest-location supersession, cancellation/generation guards, ten-second timeout
-and retry isolation. Preserve the service contract and accepted fixture behavior.
-Keep the normal background/cards unchanged. Do not connect the sky, add the
-6D automatic refresh scheduler, modify ipma-radar, fetch live weather for tests,
-deploy, publish, push or begin 6C. Use deterministic transports and the existing
-regression checks. Save a working local checkpoint, update the handoff and stop.
+First inspect Git status, repository instructions and current source. Read
+labs/README.md, docs/weather-service-contract.md and docs/weather-request-ownership.md.
+Preserve the 6A contract, 6B request owner and user changes; record the starting commit.
+Complete safe display generation, explicit unavailable/expired values and independent
+weather/marine failure handling. Keep 6B's bound-result guards and make settings-only
+changes rerender loaded data. Preserve units, translations, selected-beach behavior
+and accepted fixtures. Keep the default background/cards unchanged; do not connect
+the sky, add 6D automatic refresh, modify ipma-radar, fetch live weather for tests,
+deploy, publish, push or begin 6D. Use deterministic transports and regression checks.
+Save a working local checkpoint, update the handoff, report results and stop.
 ```

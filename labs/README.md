@@ -1,24 +1,25 @@
 # Sky preview checkpoints
 
 This is an isolated lab for evaluating an eventual weather-driven background.
-The fixture sky remains accepted on Mac. Checkpoint 6A now adds metadata and
-validation to the normal app weather service; its background, cards, display and
-refresh behavior remain unchanged. Sky connection and global activation are deferred.
+The fixture sky remains accepted on Mac. Checkpoints 6A/6B now provide weather
+metadata, validation and beach-bound request ownership. The normal background
+and cards are unchanged; automatic refresh and sky connection remain deferred.
 
 ## Current handoff
 
 Updated 8 November 2026. This is the authoritative guide for the sky experiment.
 The sky renderer remains isolated in the lab; the first shared-data foundation
-change is complete in checkpoint 6A (`fd6722a`).
+changes are complete in 6A (`fd6722a`) and 6B (`b7806a7`).
 Checkpoint 5's local technical review is recorded in [ACCEPTANCE.md](ACCEPTANCE.md).
 The user accepted the interim Mac appearance on 8 November 2026 at 30% panel
 opacity, including the requested short motion review. Physical iPhone/Safari is deferred because
-the user has only a Mac browser available. No live-data or global integration is
-authorized yet.
+the user has only a Mac browser available. Data foundations are authorized through
+6B; sky connection and global activation are not authorized yet.
 
 The remaining sequence is in [the live integration plan](../docs/sky-live-integration-plan.md).
-6A is complete; see [the service contract](../docs/weather-service-contract.md).
-Continue with 6B only after approval. No live weather calls have been used for tests.
+6B is complete; see [request ownership](../docs/weather-request-ownership.md) and
+[the service contract](../docs/weather-service-contract.md). Continue with 6C only
+after approval. No live weather calls have been used for tests.
 After the user confirmed the normal app worked, a pre-existing temperature-graphic
 bug was corrected: its low/high labels now follow Celsius/Fahrenheit preferences.
 This small display follow-up is separate from 6B; refresh behavior is unchanged.
@@ -53,11 +54,13 @@ startup-GPS location policy.
 | 3 follow-up — placement | `6eef2aa` | Removed the repeated three-row vertical layout that made every cloud type look like three horizontal bands; retained artwork, coverage and motion. |
 | 4 — precipitation and freshness | `8aa12bd` | Rain/snow intensity, explicit status and expiry, missing/offline data, refresh success/failure, timeout and late-response protection; 36 weather fixtures and 13 data scenarios. |
 | 6A — weather service contract | `fd6722a` | Requested identity, valid/fetch instants, safe response/query normalization and optional cancellation; shared pure helpers and deterministic compatibility checks. |
+| 6B — request ownership | `b7806a7` | Identity-keyed memory, duplicate joining, supersession/generation guards, timeout and retry isolation; display reads bound results. |
 
 Checkpoint 0 preserved the baseline before implementation by recording its commit
 and creating the preview branch. Through Mac visual acceptance, normal app files
 were unchanged. In 6A, only its weather service and pure-helper script loading
-changed; the default background, cards and refresh behavior remain unchanged.
+changed; the default background and cards remain unchanged. 6B adds weather caching and
+request ownership, with no automatic refresh scheduler.
 
 To inspect history without changing files:
 
@@ -70,7 +73,8 @@ git diff 0976be3 HEAD -- index.html src
 ```
 
 The first diff confirms the isolated visual checkpoints changed no production
-files. The second shows the intentionally limited 6A service/helper changes.
+files. The second shows the 6A/6B data-path changes and temperature-scale fix;
+the default body background and card stylesheet remain unchanged.
 
 ## File responsibilities and current data flow
 
@@ -82,6 +86,8 @@ files. The second shows the intentionally limited 6A service/helper changes.
 | `labs/sky-fixtures.js` | Synthetic weather/marine results, metadata envelopes, 36 weather fixtures and 13 data scenarios. |
 | `labs/sky-weather-state.js` | Lab request simulation; delegates pure condition/freshness rules to the shared production helper. No provider calls. |
 | `src/js/weatherTime.js`, `src/js/weatherState.js` | Pure timestamp conversion and shared condition/freshness rules; no requests, DOM or timers. |
+| `src/js/weatherRequests.js` | Data-manager-owned weather cache, cancellation, generation, timeout and per-location retry; no DOM or refresh loop. |
+| `docs/weather-request-ownership.md` | Implemented 6B behavior, compatibility, tests and remaining display/lifecycle work. |
 | `docs/weather-service-contract.md` | Implemented 6A service interface, metadata, compatibility checks and remaining limits. |
 | `labs/sky-preview-adapter.js` | Replaces services and storage inside the frame, freezes its clock, coordinates fixture state, updates sky/status/cards and owns simulated requests and cleanup. |
 | `labs/sky-background.js` | Instance-scoped SVG sky, palette selection, independent patch coverage, solar-service reuse, update/visibility/motion methods and cleanup. |
@@ -311,8 +317,9 @@ This also writes desktop/mobile Dashboard and Settings variants next to the
 named PNG. Those screenshots are temporary artifacts, not committed project files.
 
 These checks do not validate live provider responses or physical iPhone/Safari.
-The normal app's refresh behavior is unchanged. Its 6A weather contract is tested
-with deterministic responses; live provider verification remains a later checkpoint.
+The normal app now has 6B request ownership and fresh-memory reuse. Its 6A service
+contract and 6B owner are tested with deterministic responses; automatic refresh
+and live provider verification remain later checkpoints.
 
 For the fixed-scene acceptance gallery and all-view/text-size measurements:
 
@@ -353,11 +360,10 @@ a sustained physical-device performance test.
 - The live host already returns total/low/mid/high cloud values and numeric
   weather codes. Formatters handle units/translations; the sky must continue to
   consume numeric values instead of parsing their display strings.
-- The host data manager has refresh/retry bookkeeping and request deduplication,
-  but lacks an active automatic weather scheduler, beach-bound response safety,
-  cancellation/timeouts and condition-age expiry. Pending refresh flags do not
-  currently provide a complete latest-beach request queue. These are future
-  live-integration tasks, not features established by the fixture tests.
+- The host data manager now has location-keyed memory, joined requests, cancellation,
+  timeout and per-location retries (6B). Full unavailable-state display and marine
+  failure handling remain 6C; an earlier visible view can remain when new weather
+  is unusable. Automatic freshness notifications and scheduling remain 6D.
 - Host weather times are civil strings. Unambiguous condition/fetch instants,
   Lisbon DST handling and use from browsers outside Portugal still need live
   integration verification. Do not change the host's existing time format
@@ -387,7 +393,8 @@ calling the checkpoint complete.
 | --- | --- | --- |
 | 5 — preview acceptance | Local technical review complete; interim Mac appearance accepted | See ACCEPTANCE.md for scope. Physical iPhone/Safari deferred. No global activation. |
 | 6A — service contract | Complete: `fd6722a` | Metadata, safe normalization and signal support verified with fixed responses; no sky connection or refresh changes. |
-| 6B–6G — remaining integration | Next 6B: 60–90 min | See docs/sky-live-integration-plan.md. Continue one approved checkpoint at a time; default background remains unchanged. |
+| 6B — request ownership | Complete: `b7806a7` | Cached/joined location-bound weather, timeout, cancellation and retries verified. |
+| 6C–6G — remaining integration | Next 6C: 45–75 min | See docs/sky-live-integration-plan.md. Continue one approved checkpoint at a time; default background remains unchanged. |
 | Later — global activation | Estimate after integration review | Explicit visual/device acceptance and approval before changing the normal app's background. Preserve a reversible fallback. |
 
 ### Checkpoint 4 completed verification
@@ -442,25 +449,26 @@ to that later approved integration.
 
 ## Copy-paste resume prompt
 
-For an approved implementation session, use the exact **checkpoint 6B only**
+For an approved implementation session, use the exact **checkpoint 6C only**
 prompt in [the live integration plan](../docs/sky-live-integration-plan.md).
-The next checkpoint is 6B. Preserve the completed 6A contract and accepted fixture
-appearance; do not repeat 6A or activate the sky globally when resuming.
+The next checkpoint is 6C. Preserve the completed 6A contract, 6B request owner
+and accepted fixture appearance; do not repeat those steps or activate the sky globally.
 
 ## Durable stop / resume
 
 - Branch: `preview/sky-background`.
 - Original app baseline: `476d190922870a39bc76cc91c68e9c9ba0bc20a7`.
-- Current stop: checkpoint 6A complete (`fd6722a`); interim Mac appearance
+- Current stop: checkpoint 6B complete (`b7806a7`); interim Mac appearance
   remains accepted. No sky activation or refresh changes.
 - Checkpoint 2's original opaque-panel version is saved as `9eec0ce`. The follow-up
   adds adjustable panel transparency for sky evaluation (`b77d714`), preserved here.
 - Live integration planning is complete in `docs/sky-live-integration-plan.md`.
-  Next action, after approval: checkpoint 6B only (60–90 minutes). Physical
+  Next action, after approval: checkpoint 6C only (45–75 minutes). Physical
   iPhone/Safari stays deferred. No later checkpoint or global activation is
-  authorized by completing 6A.
+  authorized by completing 6B.
 - Live-data integration and global activation require later approval.
 
 To run the normal app, simply use `index.html`. To remove this experiment,
 remove `labs/` and `tests/sky-preview-check.py`, and its file-map entry.
-No production code needs to be reverted.
+This removes the visual experiment, not the accepted 6A/6B data foundations.
+Those shared production modules do not depend on the lab.
