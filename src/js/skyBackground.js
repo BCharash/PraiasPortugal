@@ -1,5 +1,5 @@
-/* Lab renderer adapted from ipma-radar's accepted interim sky.
- * CSS owns motion; no weather requests, JavaScript timers or production hooks.
+/* Shared opt-in renderer adapted from ipma-radar's accepted interim sky.
+ * CSS owns motion; no weather requests, JavaScript timers or application state.
  */
 (() => {
     "use strict";
@@ -8,7 +8,7 @@
 function getSkyPalette(elevation, weather) {
   const totalClouds = weather?.total ?? 0;
   const overcastFactor = Math.max(0, Math.min(1, (totalClouds - 50) / 45)); // 0 (clear) to 1 (full overcast)
-  const isRaining = !!skyWeatherState.condition(weather?.weatherCode).precipitation;
+  const isRaining = !!weatherState.condition(weather?.weatherCode).precipitation;
 
   let gradient = "";
   let cloudHighFill = "#ffffff";
@@ -151,7 +151,7 @@ function renderSkyClouds(group,tier,cover,opacity,id){
 }
 
 
-    window.createPreviewSkyBackground = function () {
+    window.createSkyBackground = function ({creditLabel = "Illustrative sky · Weather data:"} = {}) {
         const id = `preview-sky-${++nextInstance}`;
         const root = document.createElement("div");
         root.className = "preview-sky";
@@ -209,9 +209,9 @@ function renderSkyClouds(group,tier,cover,opacity,id){
         }
         const credits = document.createElement("footer");
         credits.className = "preview-sky-credits";
-        credits.innerHTML = `Synthetic fixtures · Illustrative sky · Weather provider for future live data:
-            <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a>
-            (<a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>)`;
+        credits.textContent = creditLabel + " ";
+        credits.insertAdjacentHTML("beforeend", `<a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a>
+            (<a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>)`);
         document.body.prepend(root);
         document.body.append(credits);
         let destroyed = false;
@@ -222,19 +222,20 @@ function renderSkyClouds(group,tier,cover,opacity,id){
                 if (destroyed) return;
                 // First appearance and a newly selected beach commit immediately.
                 // A separate wrapper moves each tier without replacing patch nodes.
-                const immediate = !weather || !root.hasAttribute("data-clouds-ready") || root.dataset.beachId !== beach.id;
+                const locationKey = JSON.stringify([beach.id, beach.latitude, beach.longitude]);
+                const immediate = !weather || !root.hasAttribute("data-clouds-ready") || root.dataset.locationKey !== locationKey;
                 if (immediate) {
                     root.removeAttribute("data-clouds-ready");
                     void root.offsetWidth;
                 }
                 const time = parseCelestialTime(options.time || weather?.currentTime);
-                const position = calculateSolarPosition(time, beach.latitude, beach.longitude, getPortugalUtcOffsetSeconds(time));
+                const position = calculateSolarPosition(time, beach.latitude, beach.longitude, options.utcOffsetSeconds ?? getPortugalUtcOffsetSeconds(time));
                 const cover = value => Number.isFinite(value) ? Math.max(0, Math.min(100, value)) : null;
                 const normalized = {
                     total: cover(weather?.cloudCover), low: cover(weather?.cloudCoverLow),
                     mid: cover(weather?.cloudCoverMid), high: cover(weather?.cloudCoverHigh), weatherCode: weather?.weatherCode
                 };
-                const elevation = position.altitude;
+                const elevation = position?.altitude ?? -12;
                 const palette = getSkyPalette(elevation, normalized);
                 root.style.setProperty("--sky-gradient", palette.gradient);
                 for (const tier of ["high", "mid", "low"]) {
@@ -242,12 +243,13 @@ function renderSkyClouds(group,tier,cover,opacity,id){
                     renderSkyClouds(groups[tier], tier, normalized[tier], palette[`${tier}Opacity`], id);
                 }
                 stars.toggleAttribute("hidden", !(elevation < -4 && normalized.total !== null && normalized.total < 85));
-                const condition = skyWeatherState.condition(normalized.weatherCode);
+                const condition = weatherState.condition(normalized.weatherCode);
                 rain.hidden = condition.precipitation !== "rain";
                 snow.hidden = condition.precipitation !== "snow";
                 rain.dataset.intensity = snow.dataset.intensity = condition.intensity || "light";
                 rain.dataset.drizzle = String(!!condition.drizzle);
                 root.dataset.beachId = beach.id;
+                root.dataset.locationKey = locationKey;
                 root.dataset.solarElevation = String(elevation);
                 if (immediate && weather) {
                     void root.offsetWidth;

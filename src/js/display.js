@@ -60,8 +60,11 @@ let beachDisplayGeneration = 0;
 
 // Re-render accepted state only. Never fetch on units/language/text-size changes.
 function renderCurrentDashboard() {
+    publishApplicationEnvironment();
     const data = currentDashboardData;
     if (!data || appState.selectedBeachId !== data.beach.id) return;
+    // Reuse the single solar tick even when selection starts in Beaches/Settings.
+    startCelestialAutoUpdate();
     if (data.weather) {
         const weather = data.weather;
         const state = weatherState.evaluate({beachId:weather.requestedBeachId,

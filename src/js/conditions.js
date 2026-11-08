@@ -516,6 +516,8 @@ function initializeConditions() {
 // This uses the already-loaded weather data; it never requests new API data.
 function updateCelestialGraphicOnly() {
 
+    publishApplicationEnvironment();
+
     if (!latestCelestialWeather)
         return;
 

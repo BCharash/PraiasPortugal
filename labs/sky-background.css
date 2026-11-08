@@ -1,54 +1,4 @@
-/* Loaded only into the fixture preview. The normal app never loads this file. */
-body[data-sky-preview] { isolation: isolate; }
-.preview-sky {
-    position: fixed;
-    inset: 0;
-    z-index: -1;
-    overflow: hidden;
-    pointer-events: none;
-    background: var(--sky-gradient, #0b1530);
-}
-.preview-sky [hidden], .preview-sky[hidden] { display: none !important; }
-.preview-sky-clouds, .preview-sky-stars {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-}
-/* Drift and patch growth use different elements so updates never restart drift. */
-.preview-sky .preview-sky-drift { transform-box: view-box; }
-.preview-sky [data-tier="high"] .preview-sky-drift {
-    animation: previewSkyDriftHigh 320s linear -117s infinite alternate;
-}
-.preview-sky [data-tier="mid"] .preview-sky-drift {
-    animation: previewSkyDriftMid 240s linear -83s infinite alternate;
-}
-.preview-sky [data-tier="low"] .preview-sky-drift {
-    animation: previewSkyDriftLow 160s linear -41s infinite alternate;
-}
-@keyframes previewSkyDriftHigh {
-    from { transform: translate(-4%, 0); }
-    to { transform: translate(5%, -1px); }
-}
-@keyframes previewSkyDriftMid {
-    from { transform: translate(-6%, 0); }
-    to { transform: translate(7%, -1px); }
-}
-@keyframes previewSkyDriftLow {
-    from { transform: translate(7%, 0); }
-    to { transform: translate(-7%, 1px); }
-}
-.preview-sky .sky-cloud-patch { transition: transform 5s ease, opacity 5s ease; }
-.preview-sky .preview-sky-tier { transition: opacity 5s ease; }
-.preview-sky:not([data-clouds-ready]) .sky-cloud-patch,
-.preview-sky:not([data-clouds-ready]) .preview-sky-tier,
-.preview-sky[data-motion="off"] .sky-cloud-patch,
-.preview-sky[data-motion="off"] .preview-sky-tier { transition: none; }
-.preview-sky[data-motion="off"] .preview-sky-drift { animation-play-state: paused; }
-@media (prefers-reduced-motion: reduce) {
-    .preview-sky *, .preview-sky { animation: none !important; transition: none !important; }
-}
-
+/* Preview-only panel opacity, contrast and status; never loaded by the normal entry. */
 /* Change background alpha only: text, graphics and controls stay fully visible. */
 body[data-sky-preview="enabled"] :is(.dashboard-widget, .settings-section) {
     background: rgba(27, 39, 71, var(--preview-panel-opacity, .3));
@@ -66,16 +16,6 @@ body[data-sky-preview="enabled"] :is(
     box-shadow: 0 0 0 5px rgba(11, 21, 48, var(--preview-panel-opacity, .3));
     border-radius: 5px;
 }
-.preview-sky-credits {
-    max-width: 1000px;
-    margin: 14px auto 0;
-    padding: 8px;
-    color: #c4d0e3;
-    background: #0b1530;
-    border-radius: 5px;
-    font-size: 12px;
-}
-.preview-sky-credits a { color: #8adcf0; }
 body[data-sky-preview="enabled"] .preview-sky-credits {
     background: rgba(11, 21, 48, var(--preview-panel-opacity, .3));
     text-shadow: 0 1px 3px #000, 0 0 4px #000;
@@ -90,60 +30,3 @@ body[data-sky-preview="enabled"] .preview-sky-credits {
     font-size: 12px;
     overflow-wrap: anywhere;
 }
-
-/* Decorative precipitation, below the application content. */
-.preview-sky .preview-sky-rain{
-  position:absolute;
-  inset:0;
-  pointer-events:none;
-  z-index:1;
-  opacity:.42;
-  background-image:
-    repeating-linear-gradient(108deg, transparent, transparent var(--rain-gap, 18px), rgba(255,255,255,.4) calc(var(--rain-gap, 18px) + 1px), transparent calc(var(--rain-gap, 18px) + 2px)),
-    repeating-linear-gradient(108deg, transparent, transparent 38px, rgba(255,255,255,.28) 39px, transparent 40px);
-  background-size:60px 100px;
-  animation:previewSkyRainFall .75s linear infinite
-}
-
-@keyframes previewSkyRainFall{
-  0%{ background-position:0 0, 0 0 }
-  100%{ background-position:-20px 100px, -15px 100px }
-}
-
-.preview-sky .preview-sky-snow{
-  position:absolute;
-  inset:0;
-  pointer-events:none;
-  z-index:1;
-  opacity:.7;
-  overflow:hidden
-}
-.preview-sky .preview-snow-field {
-  position:absolute;
-  inset:-12px;
-  background-image:var(--snow-moderate);
-  background-repeat:repeat;
-  animation:previewSkySnowFall var(--snow-fall-duration) linear var(--snow-phase) infinite,
-    previewSkySnowSway var(--snow-sway-duration) ease-in-out var(--snow-phase) infinite alternate;
-}
-.preview-sky .preview-sky-snow[data-intensity="light"] .preview-snow-field { background-image:var(--snow-light); }
-.preview-sky .preview-sky-snow[data-intensity="heavy"] .preview-snow-field { background-image:var(--snow-heavy); }
-
-.preview-sky .preview-sky-rain[data-intensity="light"]{--rain-gap:28px;opacity:.2}
-.preview-sky .preview-sky-rain[data-intensity="moderate"]{--rain-gap:18px;opacity:.34}
-.preview-sky .preview-sky-rain[data-intensity="heavy"]{--rain-gap:10px;opacity:.48}
-.preview-sky .preview-sky-rain[data-drizzle="true"]{background-size:80px 100px;opacity:.18}
-.preview-sky .preview-sky-snow[data-intensity="light"]{opacity:.35}
-.preview-sky .preview-sky-snow[data-intensity="moderate"]{opacity:.55}
-.preview-sky .preview-sky-snow[data-intensity="heavy"]{opacity:.75}
-
-@keyframes previewSkySnowFall{
-  to{background-position:0 var(--snow-fall-distance)}
-}
-@keyframes previewSkySnowSway {
-  from { transform:translateX(-6px); }
-  to { transform:translateX(6px); }
-}
-
-
-.preview-sky[data-motion="off"] :is(.preview-sky-rain,.preview-sky-snow,.preview-snow-field) { animation-play-state: paused; }

@@ -31,6 +31,27 @@ const appState = {
 };
 
 
+// Application-published environment for optional consumers. Data acquisition
+// remains in the manager; subscribing and reading never request weather.
+const environmentSubscribers = new Set();
+function getApplicationEnvironment() {
+    const beach = findBeach(appState.selectedBeachId);
+    if (!beach) return {beach:null,weather:null,status:null,clock:environmentContext.clock()};
+    const status = getDataStatus("weather",beach);
+    const context = environmentContext.create(beach,status.data);
+    return {beach:{...beach},weather:status.data,status,clock:context?.clock ?? null};
+}
+function publishApplicationEnvironment() {
+    if (!environmentSubscribers.size) return;
+    const snapshot = getApplicationEnvironment();
+    environmentSubscribers.forEach(listener => listener(snapshot));
+}
+function subscribeApplicationEnvironment(listener) {
+    environmentSubscribers.add(listener);
+    listener(getApplicationEnvironment());
+    return () => environmentSubscribers.delete(listener);
+}
+
 //--------------------------------------------------
 // User Interface
 //--------------------------------------------------

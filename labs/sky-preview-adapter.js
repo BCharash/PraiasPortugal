@@ -53,7 +53,7 @@
     };
     const unschedule = timer => { clearTimeout(timer); timers.delete(timer); };
     const evaluationTime = () => RealDate.parse(fixtures.civilTime(fixtureKey) + ":00Z") + ageOffset;
-    const sky = createPreviewSkyBackground();
+    const sky = createSkyBackground({creditLabel:"Synthetic fixtures · Illustrative sky · Weather provider for future live data:"});
     sky.setEnabled(true);
     const status = document.createElement("div");
     status.className = "preview-weather-status";

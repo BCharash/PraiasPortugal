@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Live sky preview — Praias de Portugal</title>
+    <link rel="stylesheet" href="sky-preview.css">
+    <script src="preview-frame.js" defer></script>
+    <script src="sky-live-preview.js" defer></script>
+</head>
+<body>
+    <header class="preview-controls">
+        <strong>Live sky preview</strong>
+        <button id="resetPreview" type="button" disabled>Reset preview</button>
+        <label><input id="skyEnabled" type="checkbox" checked> Show sky</label>
+        <label><input id="skyMotion" type="checkbox" checked> Animate sky</label>
+        <label for="panelOpacity">Panel opacity</label>
+        <input id="panelOpacity" type="range" min="0" max="100" step="5" value="30">
+        <output id="panelOpacityValue" for="panelOpacity">30%</output>
+        <span id="previewStatus" role="status">Loading actual app layout…</span>
+        <small>Live weather for the selected beach · Temporary preferences · Uncheck sky to compare original background</small>
+    </header>
+    <iframe id="previewFrame" title="Praias de Portugal live sky preview"></iframe>
+</body>
+</html>

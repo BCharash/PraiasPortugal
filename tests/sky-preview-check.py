@@ -19,6 +19,7 @@ import tempfile
 import threading
 import time
 import urllib.request
+from sky_live_preview_check import check_live_preview
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 CHROME = os.environ.get("CHROME_BIN", "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome")
@@ -27,6 +28,7 @@ parser.add_argument('--screenshot', help='Save a mobile preview screenshot to th
 parser.add_argument('--review-dir', help='Write a fixed-scene acceptance gallery and layout measurements here')
 parser.add_argument('--service-only', action='store_true', help='Run only the deterministic weather-service contract checks')
 parser.add_argument('--requests-only', action='store_true', help='Run deterministic service and weather-request ownership checks only')
+parser.add_argument("--live-only", action="store_true", help="Run service/request contracts and only the live-preview integration checks")
 args = parser.parse_args()
 
 class Handler(http.server.SimpleHTTPRequestHandler):
@@ -185,7 +187,7 @@ try:
         if(location.search.includes('alternate-startup')) localStorage.setItem('praiasDePortugalSettings',JSON.stringify({startupBeach:'praia-de-santa-rita-sul'}));
         const originalFetch=window.fetch.bind(window);
         window.fetch=async(input,options)=>{
-            const url=new URL(input instanceof Request ? input.url : input,location.href);
+            const url=new URL(input instanceof Request ? input.url : input,document.baseURI);
             if(url.origin==='https://api.open-meteo.com') {
                 serviceProbe.weatherRequests++;
                 const payload=WEATHER_FIXTURE;
@@ -205,10 +207,13 @@ try:
                     ()=>resolve(response)));
                 return response;
             }
-            if(url.origin!==location.origin) throw new Error('External request forbidden in service smoke test');
+            if(url.origin!==new URL(document.baseURI).origin) throw new Error('External request forbidden in service smoke test');
             return originalFetch(input,options);
         };
     '''.replace('WEATHER_FIXTURE',json.dumps(weather_fixture)).replace('MARINE_FIXTURE',json.dumps(marine_fixture))
+    if args.live_only:
+        check_live_preview(client, wait_for, origin, bootstrap, args)
+        raise SystemExit(0)
     probe=client.call('Page.addScriptToEvaluateOnNewDocument',{'source':bootstrap})['identifier']
     client.call('Emulation.setDeviceMetricsOverride',{'width':1280,'height':900,'deviceScaleFactor':1,'mobile':False})
     client.call('Page.navigate',{'url':origin+'/index.html?service-probe'})
@@ -781,7 +786,7 @@ try:
     for page in ['settings', 'dashboard', 'beaches']:
         client.evaluate(f"document.getElementById('{page}NavButton').click()")
         assert client.evaluate(f"!document.getElementById('{page}Page').hidden")
-    assert client.evaluate("typeof skyPreview === 'undefined' && previewErrors.length === 0")
+    assert client.evaluate("typeof skyPreview === 'undefined' && typeof createSkyBackground === 'undefined' && !document.querySelector('.preview-sky,link[href*=sky-background]') && !document.body.hasAttribute('data-sky-preview') && previewErrors.length === 0")
     if args.review_dir:
         baseline = []
         for width,height in [(1280,900),(768,1024),(390,844),(320,740)]:
@@ -802,6 +807,8 @@ try:
         (directory/'measurements.json').write_text(json.dumps(report,indent=2))
         print('PASS: all 48 review layouts match normal-app widths; no new horizontal overflow',flush=True)
     print('PASS: normal app startup/navigation unaffected', flush=True)
+    check_live_preview(client, wait_for, origin, bootstrap, args)
+
 finally:
     if chrome:
         chrome.terminate()
