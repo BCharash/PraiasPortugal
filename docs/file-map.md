@@ -27,7 +27,7 @@ by the lab; the normal application does not load them.
 with a temporary browser profile.
 `labs/README.md` is the authoritative experiment handoff, including saved commits,
 verification evidence, limitations and the remaining checkpoint plan.
-`labs/ACCEPTANCE.md` records checkpoint 5 evidence and pending user/device decisions.
+`labs/ACCEPTANCE.md` records checkpoint 5 evidence, interim Mac acceptance and deferred device review.
 
 ```text
 PraiasPortugal/

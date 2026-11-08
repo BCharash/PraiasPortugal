@@ -10,7 +10,8 @@ unchanged. Live integration and global activation remain deferred.
 Updated 8 November 2026. This is the authoritative guide for the sky experiment.
 The implementation remains isolated at checkpoint 4 plus visual follow-ups.
 Checkpoint 5's local technical review is recorded in [ACCEPTANCE.md](ACCEPTANCE.md).
-User Mac visual acceptance is pending; physical iPhone/Safari is deferred because
+The user accepted the interim Mac appearance on 8 November 2026 at 30% panel
+opacity, including the requested short motion review. Physical iPhone/Safari is deferred because
 the user has only a Mac browser available. No live-data or global integration is
 authorized yet.
 
@@ -72,7 +73,7 @@ The last command should show no production-file changes at this checkpoint.
 | `labs/sky-background.js` | Instance-scoped SVG sky, palette selection, independent patch coverage, solar-service reuse, update/visibility/motion methods and cleanup. |
 | `labs/sky-background.css` | Scoped drift/transitions, reduced motion, panel transparency and contrast support. |
 | `tests/sky-preview-check.py` | Dependency-free isolated Chrome verification, local server, temporary profile and optional screenshots. |
-| `labs/ACCEPTANCE.md` | Checkpoint 5 evidence, inherited layout findings, review scope and pending user/device decisions. |
+| `labs/ACCEPTANCE.md` | Checkpoint 5 evidence, interim Mac acceptance, inherited layout findings and deferred device review. |
 | `docs/file-map.md` | Repository navigation entry pointing to this guide. |
 
 The app still starts through its real controller and data manager. The frame's
@@ -231,7 +232,7 @@ select progressively denser, stable subsets of each field. The patterns are
 created once, with no per-flake timers or JavaScript animation loop. Vertical
 movement loops over each field's full tile height without a visible reset.
 Pause/resume and reduced motion apply to all three fields. This remains
-illustrative snow; user visual acceptance is still open.
+illustrative snow; the user accepted its interim Mac appearance on 8 November 2026.
 
 ## Earlier checkpoint 1
 
@@ -368,7 +369,7 @@ calling the checkpoint complete.
 
 | Next step | Estimate | Scope and completion criteria |
 | --- | --- | --- |
-| 5 — preview acceptance | Local technical review completed; user review pending | See ACCEPTANCE.md. Mac-only availability confirmed; physical iPhone/Safari deferred. No global activation. |
+| 5 — preview acceptance | Local technical review complete; interim Mac appearance accepted | See ACCEPTANCE.md for scope. Physical iPhone/Safari deferred. No global activation. |
 | Later — live integration design and implementation | Estimate after audit | Strengthen the existing weather/data-manager lifecycle, adapt its shared snapshots and preserve current app function through separate small checkpoints. Requires approval after preview review. |
 | Later — global activation | Estimate after integration review | Explicit visual/device acceptance and approval before changing the normal app's background. Preserve a reversible fallback. |
 
@@ -405,7 +406,8 @@ sustained animation should be checked before calling the feature ready.
 
 The 8 November local review measured all 48 layout combinations, generated the
 fixed-scene gallery and corrected a rendered SVG star-visibility bug. All final
-checks passed. User visual acceptance has not been assumed. The inherited
+checks passed. The user subsequently accepted the interim Mac appearance at
+30% opacity with a short motion review. The inherited
 navigation overflow and low-opacity readability questions remain visible in
 [ACCEPTANCE.md](ACCEPTANCE.md).
 
@@ -429,9 +431,10 @@ First read labs/README.md and the repository development rules, inspect Git
 status and current code, and preserve existing user changes. The completed
 implementation foundation is 8aa12bd (checkpoint 4); retain ee8be74's snow
 follow-up and the current branch HEAD's acceptance-review correction/checks.
-Read labs/ACCEPTANCE.md. Local technical review is complete; collect and record
-the pending Mac visual decision. Physical iPhone/Safari is deferred because only
-a Mac browser is available. Do not assume visual or device acceptance.
+Read labs/ACCEPTANCE.md. Local technical review is complete, and the user accepted
+the interim Mac appearance on 8 November 2026 at 30% panel opacity with a short
+motion review. Preserve that checkpoint. Physical iPhone/Safari is deferred;
+live integration and global activation still require explicit approval.
 Make only fixes separately authorized by the user.
 Read ipma-radar/docs/sky-header-architecture.md as a reference, but do not modify
 ipma-radar. Keep production index.html, src/, data and manifest unchanged.
@@ -445,11 +448,11 @@ live integration and report outstanding user/device acceptance.
 
 - Branch: `preview/sky-background`.
 - Original app baseline: `476d190922870a39bc76cc91c68e9c9ba0bc20a7`.
-- Current stop: checkpoint 5 local technical review completed; user visual
-  acceptance pending. No global changes.
+- Current stop: checkpoint 5 local technical review completed; interim Mac
+  appearance accepted. No global changes.
 - Checkpoint 2's original opaque-panel version is saved as `9eec0ce`. The follow-up
   adds adjustable panel transparency for sky evaluation (`b77d714`), preserved here.
-- Next action: record the user's Mac visual review, or make separately requested
+- Next action, when authorized: plan live integration or make separately requested
   lab fixes. Physical iPhone/Safari stays deferred. Live integration is a separate
   later task requiring approval.
 - Live-data integration and global activation require later approval.

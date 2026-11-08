@@ -4,7 +4,7 @@ Review date: 8 November 2026. Reviewed implementation: `ee8be74` plus the
 night-star visibility correction recorded with this review checkpoint.
 Branch: `preview/sky-background`.
 
-**Status: local technical review completed; user visual acceptance is pending.**
+**Status: local technical review completed; interim Mac appearance accepted.**
 The user confirmed that only a Mac browser is available for this review.
 Physical iPhone/Safari acceptance is deferred. No live integration, global
 activation, deployment or publishing is approved by this record.
@@ -99,9 +99,10 @@ needs user review, and the 100% comparison remains available. No quantitative
 contrast/WCAG certification is claimed.
 
 Motion tests sample direction, phase, duration and transitions deterministically.
-The still gallery freezes animation phases for consistent comparison. Sustained
-animation smoothness, screen readability and user preference must still be
-reviewed in the actual Mac browser. Safari on Mac was not tested by this Chrome
+The still gallery freezes animation phases for consistent comparison.
+The user accepted the interim Mac appearance and short motion review described
+below. This does not extend the automated evidence to other browsers or devices.
+Safari on Mac was not tested by this Chrome
 run; physical iPhone/Safari and Windows were not tested.
 
 ## User acceptance checklist
@@ -109,9 +110,9 @@ run; physical iPhone/Safari and Windows were not tested.
 Use Live Server on `labs/sky-preview.html`, on the Mac at a comfortable normal
 browser zoom. Review these items and record a decision before live integration:
 
-- [ ] Clear day, Mixed clouds and Near-overcast: overall composition, overlap,
+- [x] Clear day, Mixed clouds and Near-overcast: overall composition, overlap,
   repetition and cloud edges are acceptable as an interim design.
-- [ ] Rain and Heavy snow: density and movement are acceptable; snow no longer
+- [x] Rain and Heavy snow: density and movement are acceptable; snow no longer
   reads as a geometric dot grid.
 - [ ] Dusk and Clear night: colours, text and night stars are acceptable.
 - [ ] Dashboard, Beaches and Settings remain readable at the chosen panel
@@ -121,11 +122,17 @@ browser zoom. Review these items and record a decision before live integration:
 - [ ] Existing narrow-width navigation overflow is acknowledged, or a separate
   fix is requested. Do not silently count it as passed mobile layout acceptance.
 
-Mac visual decision: **pending user response**.
+Mac visual decision: **interim appearance accepted on 8 November 2026**.
+
+The user's exact response was: "Accept this interim appearance on Mac".
+The review question covered Clear day, Mixed clouds, Near-overcast, Rain and
+Heavy snow at 30% panel opacity, including a short motion check. Additional
+unchecked checklist items above have not been inferred from that response.
+
 Physical iPhone/Safari decision: **deferred; device unavailable for this review**.
 Global readiness decision: **not approved**.
 
-After the Mac review, either address specifically requested visual/layout fixes
-as reversible lab increments, or preserve the accepted interim checkpoint.
+Preserve this accepted interim Mac checkpoint. Address further requested fixes
+as separate reversible lab increments.
 Any live-data integration needs its own explicit approval, lifecycle audit and
 implementation checkpoints. Global activation remains a later decision.
