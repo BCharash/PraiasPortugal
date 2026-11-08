@@ -60,6 +60,8 @@
     status.setAttribute("role", "status");
     document.getElementById("applicationHeader").after(status);
 
+    const inputsReadout = createSkyInputsReadout(status,"Synthetic fixture");
+
     function fixturePayload(state) {
         if (!state.weather) return null;
         return {...state.weather,requestedBeachId:state.beach.id,requestedLatitude:state.beach.latitude,
@@ -72,6 +74,7 @@
             if (destroyed || (appState.selectedBeachId && appState.selectedBeachId !== state.beach.id)) return;
             sky.update(state.beach, state.weather, {time: fixtures.civilTime(fixtureKey)});
             sky.root.dataset.weatherStatus = state.status;
+            inputsReadout.update(sky.getInputs(),state.status,state.ageMs);
             const condition = skyWeatherState.condition(state.weather?.weatherCode);
             const age = state.ageMs === null ? "" : ` · ${Math.floor(state.ageMs / 60000)} min old`;
             const result = {timeout:" · refresh timed out",error:" · refresh failed",invalid:" · invalid response ignored"}[state.requestResult] || "";
@@ -134,6 +137,7 @@
         controller.destroy();
         for (const timer of timers) clearTimeout(timer);
         timers.clear();
+        inputsReadout.destroy();
         sky.destroy();
         status.remove();
     }

@@ -23,6 +23,7 @@
         const status = document.createElement("div");
         status.className = "preview-weather-status"; status.setAttribute("role","status");
         document.getElementById("applicationHeader").after(status);
+        const inputsReadout = createSkyInputsReadout(status,"Live model data");
         unsubscribe = subscribeApplicationEnvironment(state => {
             if (destroyed) return;
             snapshot = state;
@@ -37,6 +38,7 @@
                 const age = state.status.ageMs === null ? "" : ` · ${Math.floor(state.status.ageMs/60000)} min old`;
                 status.textContent = `${state.beach.name} · ${state.status.freshness}${age}${state.status.refreshing ? " · updating…" : state.status.error ? " · refresh failed" : ""}`;
             }
+            inputsReadout.update(state.beach ? sky.getInputs() : null,state.status?.freshness,state.status?.ageMs);
             announce();
         });
         window.skyLivePreview = {
@@ -51,7 +53,7 @@
             },
             destroy() {
                 if (destroyed) return;
-                destroyed = true; unsubscribe();sky.destroy();status.remove();
+                destroyed = true; unsubscribe();sky.destroy();status.remove();inputsReadout.destroy();
             }
         };
         sky.setEnabled(enabled && !!snapshot?.beach);

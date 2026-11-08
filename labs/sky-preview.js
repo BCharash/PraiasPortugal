@@ -31,7 +31,7 @@
         try {
             await loadSkyPreviewFrame({frame,
                 styles:["src/css/sky-background.css","labs/sky-background.css"],
-                scripts:["labs/sky-weather-state.js","labs/sky-fixtures.js","src/js/skyBackground.js","labs/sky-preview-adapter.js"],
+                scripts:["labs/sky-weather-state.js","labs/sky-fixtures.js","src/js/skyBackground.js","labs/sky-inputs.js","labs/sky-preview-adapter.js"],
                 dataset:{previewFixture:select.value,previewScenario:scenarioSelect.value}
             });
 

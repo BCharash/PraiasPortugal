@@ -425,6 +425,7 @@ try:
         };
     })()''')
     assert all(results.values()), results
+    assert client.evaluate("lab.document.querySelector('.preview-sky-inputs summary').textContent.includes('Low 20% · Mid 60% · High 95%') && lab.document.querySelector('[data-input=condition]').textContent.includes('WMO 2') && lab.document.querySelector('[data-input=freshness]').textContent.includes('Synthetic fixture')")
     print('STARTUP', results, flush=True)
 
     motion = client.evaluate('''(async () => {
@@ -560,6 +561,8 @@ try:
                 const visible = [...group.children].reduce((sum, node) => sum + Number(node.firstElementChild.style.opacity), 0);
                 const expected = Number.isFinite(cover) ? Math.max(0, Math.min(100, cover)) * 24 / 100 : 0;
                 result[tier] = group.children.length === 24 && Math.abs(visible - expected) < .001;
+                const reported = Number.isFinite(cover) ? `${Math.round(Math.max(0,Math.min(100,cover)))}%` : "unknown";
+                result[tier+"Readout"] = lab.document.querySelector('.preview-sky-inputs summary').textContent.includes(`${tier[0].toUpperCase()+tier.slice(1)} ${reported}`);
             }
             const stars = sky.querySelector('.preview-sky-stars');
             const starsHidden = !(Number(sky.dataset.solarElevation) < -4 && weather.cloudCover !== null && weather.cloudCover < 85);

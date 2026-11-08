@@ -11,6 +11,7 @@ function getSkyPalette(elevation, weather) {
   const isRaining = !!weatherState.condition(weather?.weatherCode).precipitation;
 
   let gradient = "";
+  let label = "";
   let cloudHighFill = "#ffffff";
   let isDark = false;
 
@@ -18,16 +19,19 @@ function getSkyPalette(elevation, weather) {
     // Broad Daylight
     if (isRaining) {
       gradient = "linear-gradient(180deg, #374151 0%, #4b5563 50%, #6b7280 100%)";
+      label = "Daylight · precipitation";
       cloudHighFill = "#cbd5e1";
       isDark = true;
     } else if (overcastFactor > 0.4) {
       // Overcast silver/slate sky
       gradient = "linear-gradient(180deg, #5c6b7a 0%, #8292a1 50%, #a4b3c2 100%)";
+      label = "Daylight · overcast";
       cloudHighFill = "#e2e8f0";
       isDark = false;
     } else {
       // Clear azure / sky blue
       gradient = "linear-gradient(180deg, #1d6fe9 0%, #4facfe 50%, #8ec5fc 100%)";
+      label = "Daylight · clear";
       cloudHighFill = "#ffffff";
       isDark = false;
     }
@@ -35,10 +39,12 @@ function getSkyPalette(elevation, weather) {
     // Golden Hour
     if (overcastFactor > 0.5) {
       gradient = "linear-gradient(180deg, #334155 0%, #64748b 50%, #94a3b8 100%)";
+      label = "Golden hour · overcast";
       cloudHighFill = "#cbd5e1";
       isDark = false;
     } else {
       gradient = "linear-gradient(180deg, #25559c 0%, #d97706 65%, #fbbf24 100%)";
+      label = "Golden hour · warm";
       cloudHighFill = "#fed7aa";
       isDark = false;
     }
@@ -46,24 +52,29 @@ function getSkyPalette(elevation, weather) {
     // Sunset / Sunrise / Civil Twilight
     if (overcastFactor > 0.6) {
       gradient = "linear-gradient(180deg, #1e293b 0%, #475569 50%, #64748b 100%)";
+      label = "Twilight · overcast";
       cloudHighFill = "#94a3b8";
       isDark = true;
     } else {
       gradient = "linear-gradient(180deg, #1e293b 0%, #9a3412 40%, #ea580c 70%, #f97316 100%)";
+      label = "Twilight · warm";
       cloudHighFill = "#fed7aa";
       isDark = true;
     }
   } else if (elevation > -12) {
     // Nautical Twilight / Dusk
     gradient = "linear-gradient(180deg, #090d1a 0%, #1e1b4b 50%, #312e81 100%)";
+      label = "Dusk";
     cloudHighFill = "#4338ca";
     isDark = true;
   } else {
     // Full Night
     if (overcastFactor > 0.6) {
       gradient = "linear-gradient(180deg, #020617 0%, #0b1120 55%, #151f38 100%)";
+      label = "Night · overcast";
     } else {
       gradient = "linear-gradient(180deg, #030712 0%, #0b1329 55%, #111d3d 100%)";
+      label = "Night";
     }
     cloudHighFill = "#1e293b";
     isDark = true;
@@ -81,6 +92,7 @@ function getSkyPalette(elevation, weather) {
 
   return {
     gradient,
+    label,
     cloudHighFill,
     cloudMidFill,
     cloudLowFill,
@@ -214,10 +226,11 @@ function renderSkyClouds(group,tier,cover,opacity,id){
             (<a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>)`);
         document.body.prepend(root);
         document.body.append(credits);
-        let destroyed = false;
+        let destroyed = false, inputs = null;
 
         return {
             root,
+            getInputs: () => inputs,
             update(beach, weather, options = {}) {
                 if (destroyed) return;
                 // First appearance and a newly selected beach commit immediately.
@@ -244,6 +257,9 @@ function renderSkyClouds(group,tier,cover,opacity,id){
                 }
                 stars.toggleAttribute("hidden", !(elevation < -4 && normalized.total !== null && normalized.total < 85));
                 const condition = weatherState.condition(normalized.weatherCode);
+                inputs = Object.freeze({...normalized,hasWeather:!!weather,solarElevation:elevation,
+                    palette:palette.label,condition:condition.label,precipitation:condition.precipitation,
+                    intensity:condition.intensity ?? null});
                 rain.hidden = condition.precipitation !== "rain";
                 snow.hidden = condition.precipitation !== "snow";
                 rain.dataset.intensity = snow.dataset.intensity = condition.intensity || "light";

@@ -30,3 +30,19 @@ body[data-sky-preview="enabled"] .preview-sky-credits {
     font-size: 12px;
     overflow-wrap: anywhere;
 }
+.preview-sky-inputs {
+    max-width: 1000px;
+    margin: 0 auto 8px;
+    padding: 6px 8px;
+    border-radius: 5px;
+    background: #0b1530;
+    color: #f4f7fb;
+    font-size: 12px;
+    overflow-wrap: anywhere;
+}
+.preview-sky-inputs summary { cursor: pointer; }
+.preview-sky-inputs summary:focus-visible { outline: 2px solid #35c7e8; }
+.preview-sky-inputs dl { display: grid; grid-template-columns: minmax(0, 110px) minmax(0, 1fr); gap: 5px 10px; }
+.preview-sky-inputs dt { font-weight: 600; }
+.preview-sky-inputs dd { margin: 0; }
+.preview-sky-inputs p { color: #c4d0e3; margin-bottom: 0; }

@@ -24,6 +24,7 @@ def check_live_preview(client, wait_for, origin, bootstrap, args):
     client.evaluate("liveApp.originalSky=liveApp.document.querySelector('.preview-sky');liveApp.originalPatch=liveApp.originalSky.querySelector('.sky-cloud-patch')")
     assert client.evaluate("liveApp.originalSky.hasAttribute('data-clouds-ready') && !liveApp.originalSky.getAnimations({subtree:true}).some(a=>a instanceof liveApp.CSSTransition)")
     assert client.evaluate("liveApp.document.querySelector('.preview-sky-credits').textContent.includes('Weather data:') && !liveApp.document.querySelector('.preview-sky-credits').textContent.includes('Synthetic') && liveApp.document.querySelector('.preview-sky-credits a').href==='https://open-meteo.com/'")
+    assert client.evaluate("liveApp.document.querySelector('.preview-sky-inputs summary').textContent.includes('Low 20% · Mid 60% · High 95%') && liveApp.document.querySelector('[data-input=freshness]').textContent.includes('Live model data')")
     before=client.evaluate('[liveApp.serviceProbe.weatherRequests,liveApp.serviceProbe.marineRequests]')
     for page in ['beaches','settings','dashboard']:
         client.evaluate(f"liveApp.document.getElementById('{page}NavButton').click()")
@@ -70,9 +71,11 @@ def check_live_preview(client, wait_for, origin, bootstrap, args):
     # Failed refresh retains matching stale weather; hard expiry clears effects immediately.
     client.evaluate("liveApp.serviceProbe.now+=15*60000;liveApp.serviceProbe.weatherFailure=true;liveApp.eval(\"refreshWeatherDataset(findBeach(appState.selectedBeachId),{force:true})\")")
     assert client.evaluate("liveApp.skyLivePreview.snapshot().status.freshness==='stale' && liveApp.skyLivePreview.snapshot().weather && !liveApp.originalSky.querySelector('.preview-sky-snow').hidden && liveApp.document.querySelector('.preview-weather-status').textContent.includes('refresh failed')")
+    assert client.evaluate("liveApp.document.querySelector('[data-input=condition]').textContent.includes('WMO 75 · heavy snow') && liveApp.document.querySelector('[data-input=freshness]').textContent.includes('stale') && liveApp.document.querySelector('[data-input=sun]').textContent.includes('° elevation')")
     count=client.evaluate('liveApp.serviceProbe.weatherRequests')
     client.evaluate("liveApp.serviceProbe.now+=60*60000;liveApp.updateCelestialGraphicOnly()")
     assert client.evaluate("liveApp.skyLivePreview.snapshot().status.freshness==='expired' && liveApp.skyLivePreview.snapshot().weather===null && liveApp.originalSky.querySelector('.preview-sky-snow').hidden && liveApp.originalSky.querySelector('.preview-sky-rain').hidden && [...liveApp.originalSky.querySelectorAll('.sky-cloud-patch')].every(p=>p.style.opacity==='0') && !liveApp.originalSky.hasAttribute('data-clouds-ready')")
+    assert client.evaluate("liveApp.document.querySelector('[data-input=condition]').textContent.includes('effects cleared') && liveApp.document.querySelector('[data-input=clouds]').textContent.includes('Low unknown') && liveApp.document.querySelector('[data-input=freshness]').textContent.includes('expired')")
     assert client.evaluate('liveApp.serviceProbe.weatherRequests')==count
     # The promoted renderer also honors exact Lisbon offsets across browser zones.
     positions=None

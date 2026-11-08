@@ -18,7 +18,7 @@
         try {
             await loadSkyPreviewFrame({frame,
                 styles:["src/css/sky-background.css","labs/sky-background.css"],
-                scripts:["src/js/skyBackground.js","labs/sky-live-preview-adapter.js"]});
+                scripts:["src/js/skyBackground.js","labs/sky-inputs.js","labs/sky-live-preview-adapter.js"]});
             const deadline = performance.now()+10000;
             while (!frame.contentWindow.skyLivePreview?.isReady()) {
                 if (performance.now()>deadline) throw new Error("Preview startup timed out; check the browser console");
