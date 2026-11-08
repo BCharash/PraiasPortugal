@@ -89,8 +89,9 @@ remain outside this checkpoint; this change does not migrate those contracts.
 celestial behavior while retaining earlier checkpoints. No push, deployment,
 global background activation or ipma-radar modification was performed.
 
-Next is 6F: opt-in live sky preview (45–75 minutes), requiring approval. It must
-consume existing manager weather and this shared location/clock boundary, keep
-the default entry unchanged, preserve fixture appearance and avoid a second
-weather owner. 6G provider verification and global activation remain later steps.
+The separately authorized [6F live preview](sky-live-preview.md) now consumes
+existing manager weather and this shared clock, keeping the default entry unchanged
+and preserving fixture appearance without a second weather owner.
+Next is 6G provider verification (30–60 minutes), requiring approval.
+Global activation remains a separate later step.
 Use [the exact next-session prompt](sky-live-integration-plan.md#exact-prompt-for-the-next-implementation-session).

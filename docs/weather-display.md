@@ -63,10 +63,10 @@ establish physical iPhone/Safari acceptance; that review remains deferred.
 now supplies automatic boundary notifications and visibility/resume reconciliation.
 Marine transport has no new cancellation/deadline policy; its display publication
 is guarded, but a slow request can remain pending. Shared Lisbon celestial clock
-consistency is now implemented in [6E](environment-context.md). Live sky preview remains 6F and live-provider review 6G.
+consistency is now implemented in [6E](environment-context.md). The [6F live preview](sky-live-preview.md) is now implemented; live-provider review remains 6G.
 
 The local 6C implementation commit is a separate rollback unit; reverting it
 restores the 6B implementation while retaining earlier checkpoints. Documentation
 is saved separately. No push, deployment, global sky activation or ipma-radar
-modification was performed. The current next checkpoint is 6F, requiring approval; use
+modification was performed. The current next checkpoint is 6G, requiring approval; use
 [the exact resume prompt](sky-live-integration-plan.md#exact-prompt-for-the-next-implementation-session).

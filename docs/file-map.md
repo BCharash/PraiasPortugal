@@ -18,18 +18,22 @@ This file should be updated whenever the project structure changes or an existin
 
 # Project Structure
 
-The isolated sky-background experiment lives in `labs/`. Open
-`labs/sky-preview.html` using the instructions in `labs/README.md`. Its fixture
-data, adapter, loader, animated sky renderer (`labs/sky-background.js`) and
-weather-state module (`labs/sky-weather-state.js`), plus stylesheets, are used only
-by the lab; the normal application does not load them.
-`tests/sky-preview-check.py` verifies this preview
+The opt-in sky experiment has fixed-fixture and live-data entries:
+`labs/sky-preview.html` and `labs/sky-live-preview.html`; see `labs/README.md`.
+Both load shared artwork from `src/js/skyBackground.js` and
+`src/css/sky-background.css`, with preview-only panel opacity/contrast styles in
+`labs/sky-background.css`. The normal entry loads none of those sky assets.
+`labs/preview-frame.js` loads actual app markup for both entries. Fixture services,
+clock and scenario simulation stay in the fixture adapter/state module; the live
+adapter only isolates preferences and subscribes to published app environment.
+`docs/sky-live-preview.md` records 6F behavior, run instructions and verification.
+`tests/sky-preview-check.py` and `tests/sky_live_preview_check.py` verify both previews
 with a temporary browser profile.
 `labs/README.md` is the authoritative experiment handoff, including saved commits,
 verification evidence, limitations and the remaining checkpoint plan.
 `labs/ACCEPTANCE.md` records checkpoint 5 evidence, interim Mac acceptance and deferred device review.
 `docs/sky-live-integration-plan.md` contains the audit and remaining live-data
-checkpoints. 6A–6E are implemented; 6F–6G have not started.
+checkpoints. 6A–6F are implemented; 6G has not started.
 `src/js/environmentContext.js` supplies the selected-beach/Lisbon clock boundary
 and civil arithmetic for Conditions and celestial rendering.
 `docs/environment-context.md` records its 6E interface and cross-zone/DST tests.
@@ -103,6 +107,7 @@ PraiasPortugal/
 │   │   ├── tideFormatter.js
 │   │   ├── tideService.js
 │   │   ├── weatherFormatter.js
+│   │   ├── skyBackground.js
 │   │   ├── environmentContext.js
 │   │   ├── weatherScheduler.js
 │   │   ├── weatherRequests.js

@@ -80,8 +80,9 @@ preferences and normal-app checks also passed.
 Chrome's deterministic lifecycle checks do not establish physical iPhone/Safari
 background behavior or live provider availability. Those remain deferred. The
 inherited narrow navigation overflow is unchanged. Shared Lisbon celestial clock
-consistency is now implemented in [6E](environment-context.md). Next is opt-in live sky
-preview 6F (45–75 minutes) and provider verification 6G. Global activation needs later approval.
+consistency is now implemented in [6E](environment-context.md). The opt-in live sky
+preview [6F](sky-live-preview.md) is also implemented. Next is provider verification
+6G (30–60 minutes), requiring approval. Global activation needs later approval.
 
 Stop here. The implementation is a separate local rollback unit; revert its commit
 to restore 6C scheduling behavior. See [the next-step prompt](sky-live-integration-plan.md#exact-prompt-for-the-next-implementation-session).

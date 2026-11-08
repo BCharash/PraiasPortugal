@@ -1,25 +1,24 @@
 # Sky preview checkpoints
 
-This is an isolated lab for evaluating an eventual weather-driven background.
-The fixture sky remains accepted on Mac. Checkpoints 6A–6E now provide weather
-metadata, validation and beach-bound request ownership with safe independent dataset display. The normal background
-and cards are unchanged; managed weather refresh is implemented, and sky connection remains deferred.
+The accepted interim fixture sky now also has an opt-in live-data preview.
+Checkpoints 6A–6F provide the shared data, refresh and clock foundations plus
+preview integration. The normal app background and opaque cards are unchanged.
 
 ## Current handoff
 
 Updated 8 November 2026. This is the authoritative guide for the sky experiment.
-The sky renderer remains isolated in the lab; the first shared-data foundation
-changes are complete through 6E; see [shared location/clock](../docs/environment-context.md).
+6F is complete; see [the live preview guide](../docs/sky-live-preview.md) for files,
+request ownership, checks, limits and rollback. The renderer is shared under src/,
+but only the two preview entries load it. Global activation remains deferred.
 Checkpoint 5's local technical review is recorded in [ACCEPTANCE.md](ACCEPTANCE.md).
 The user accepted the interim Mac appearance on 8 November 2026 at 30% panel
 opacity, including the requested short motion review. Physical iPhone/Safari is deferred because
-the user has only a Mac browser available. Data foundations are authorized through
-6E; sky connection and global activation are not authorized yet.
+the user has only a Mac browser available. The user authorized the isolated live preview through
+6F; agent-run live-provider verification and global activation remain later approvals.
 
 The remaining sequence is in [the live integration plan](../docs/sky-live-integration-plan.md).
-6E is complete; see [request ownership](../docs/weather-request-ownership.md) and
-[the service contract](../docs/weather-service-contract.md). Continue with 6F only
-after approval. No live weather calls have been used for tests.
+6F is complete. Continue with 6G only after approval. All automated checks used
+mocked provider responses; no live weather calls have been used for verification.
 After the user confirmed the normal app worked, a pre-existing temperature-graphic
 bug was corrected: its low/high labels now follow Celsius/Fahrenheit preferences.
 This small display follow-up is separate from 6B; refresh behavior is unchanged.
@@ -29,8 +28,8 @@ This small display follow-up is separate from 6B; refresh behavior is unchanged.
   Retain the subsequent acceptance-review star-visibility correction and checks
   at the current branch HEAD when resuming.
 - Normal application baseline: `476d190922870a39bc76cc91c68e9c9ba0bc20a7`.
-- Normal app entry: `index.html`; experiment entry: `labs/sky-preview.html`.
-- No global activation, live weather integration, deployment or push was performed.
+- Normal app: `index.html`; fixtures: `labs/sky-preview.html`; live preview: `labs/sky-live-preview.html`.
+- Live preview integration is opt-in only. No global activation, live-provider verification, deployment or push was performed.
 - All implementation commits are local save points. No manual commit is needed
   before resuming from the documented checkpoint.
 
@@ -58,6 +57,7 @@ startup-GPS location policy.
 | 6C — safe display | `bac0b4f` | Independent weather/marine publication, unavailable readings and settings without refetch. |
 | 6D — refresh/lifecycle | `55f3577` | One weather scheduler, cadence/retries, freshness notifications and hidden/history resume handling. |
 | 6E — shared location/clock | `1d52a93` | Selected-beach/Lisbon clock boundary, immutable model times and cross-zone celestial/date checks. |
+| 6F — opt-in live sky preview | `cfa1be8` | Shared accepted artwork and actual app environment subscription; temporary-preference live entry, no global activation. |
 
 Checkpoint 0 preserved the baseline before implementation by recording its commit
 and creating the preview branch. Through Mac visual acceptance, normal app files
@@ -76,7 +76,7 @@ git diff 0976be3 HEAD -- index.html src
 ```
 
 The first diff confirms the isolated visual checkpoints changed no production
-files. The second shows the 6A/6B data-path changes and temperature-scale fix;
+files. The second shows the shared data/display/clock/publication changes and sky assets;
 the default body background and card stylesheet remain unchanged.
 
 ## File responsibilities and current data flow
@@ -84,7 +84,11 @@ the default body background and card stylesheet remain unchanged.
 | File | Responsibility |
 | --- | --- |
 | `labs/sky-preview.html` | Full-screen shell, weather/scenario selectors, age advance, reset, Show sky, Animate sky and opacity controls. |
-| `labs/sky-preview.js` | Fetches current app markup, sets base URLs, inserts lab assets before startup, removes the embedded Live Server reload client and coordinates toolbar changes. |
+| `labs/sky-preview.js` | Coordinates fixture toolbar and frame loading through the shared preview loader. |
+| `labs/preview-frame.js` | Loads actual app markup for both entries, inserts explicit preview assets, removes embedded Live Server reload client, and replaces old preview frames. |
+| `labs/sky-live-preview.html`, `labs/sky-live-preview.js` | Live-data preview shell with comparison, motion and opacity controls; no fixture selectors. |
+| `labs/sky-live-preview-adapter.js` | Temporary preferences and subscription to application-published environment; no service or clock replacement and no weather scheduling. |
+| `docs/sky-live-preview.md` | Completed 6F implementation, run instructions, test evidence and deferred 6G boundary. |
 | `labs/sky-preview.css` | Styles only the outer toolbar and frame. |
 | `labs/sky-fixtures.js` | Synthetic weather/marine results, metadata envelopes, 36 weather fixtures and 13 data scenarios. |
 | `labs/sky-weather-state.js` | Lab request simulation; delegates pure condition/freshness rules to the shared production helper. No provider calls. |
@@ -98,9 +102,10 @@ the default body background and card stylesheet remain unchanged.
 | `docs/weather-request-ownership.md` | Implemented 6B request behavior and compatibility, updated for completed 6C/6D consumers. |
 | `docs/weather-service-contract.md` | Implemented 6A service interface, metadata, compatibility checks and remaining limits. |
 | `labs/sky-preview-adapter.js` | Replaces services and storage inside the frame, freezes its clock, coordinates fixture state, updates sky/status/cards and owns simulated requests and cleanup. |
-| `labs/sky-background.js` | Instance-scoped SVG sky, palette selection, independent patch coverage, solar-service reuse, update/visibility/motion methods and cleanup. |
-| `labs/sky-background.css` | Scoped drift/transitions, reduced motion, panel transparency and contrast support. |
-| `tests/sky-preview-check.py` | Dependency-free isolated Chrome verification, local server, temporary profile and optional screenshots. |
+| `src/js/skyBackground.js` | Instance-scoped SVG sky, palette selection, independent patch coverage, solar-service reuse, update/visibility/motion methods and cleanup. |
+| `src/css/sky-background.css` | Shared decorative artwork, drift/transitions, precipitation and reduced motion; no panel opacity changes. |
+| `labs/sky-background.css` | Preview-only panel transparency, contrast support and status styles. |
+| `tests/sky-preview-check.py`, `tests/sky_live_preview_check.py` | Isolated Chrome verification of normal app and both previews, using mocked providers, temporary profiles and optional screenshots. |
 | `labs/ACCEPTANCE.md` | Checkpoint 5 evidence, interim Mac acceptance, inherited layout findings and deferred device review. |
 | `docs/sky-live-integration-plan.md` | Fresh source audit and proposed 6A–6G implementation checkpoints, estimates, checks and stop points. |
 | `docs/file-map.md` | Repository navigation entry pointing to this guide. |
@@ -126,6 +131,18 @@ Clear day also covers 0%. Missing cloud values stay unknown; finite percentages
 are clamped independently to 0–100. All beaches share the selected synthetic
 scenario; choosing a beach changes its geographic/solar context, not the fixture's
 invented weather measurements.
+
+## Open the live preview
+
+Right-click **`labs/sky-live-preview.html`** in VS Code and choose **Open with Live
+Server**. This entry uses real weather services when opened normally. It seeds
+saved app choices into temporary frame-local preferences; changes stay in the
+preview. With no saved beach, choose one in Beaches. Open `index.html` to return
+to the unchanged normal background. See [the live guide](../docs/sky-live-preview.md).
+Agent-run provider verification remains deferred to 6G.
+
+The instructions below apply to the original fixed-fixture preview, which is
+still available for repeatable appearance and failure-scenario comparisons.
 
 ## Open the preview
 
@@ -403,7 +420,8 @@ calling the checkpoint complete.
 | 6C — safe display | Complete | Independent weather/marine display, missing-value cleanup and settings without refetch; see docs/weather-display.md. |
 | 6D — refresh/lifecycle | Complete | One managed weather wake-up, retries, freshness boundaries and visibility/history resume; see docs/weather-refresh-lifecycle.md. |
 | 6E — shared location/clock | Complete | Selected-beach solar context, exact Lisbon clock, immutable model times, midnight/DST and cross-zone path checks; see docs/environment-context.md. |
-| 6F–6G — remaining integration | Next 6F: 45–75 min | See docs/sky-live-integration-plan.md. Continue one approved checkpoint at a time; default background remains unchanged. |
+| 6F — opt-in live sky preview | Complete | Shared accepted renderer, actual manager/clock subscription and temporary-preference live entry; see docs/sky-live-preview.md. |
+| 6G — live Mac verification | Next: 30–60 min | See docs/sky-live-integration-plan.md. Continue one approved checkpoint at a time; default background remains unchanged. |
 | Later — global activation | Estimate after integration review | Explicit visual/device acceptance and approval before changing the normal app's background. Preserve a reversible fallback. |
 
 ### Checkpoint 4 completed verification
@@ -458,26 +476,27 @@ to that later approved integration.
 
 ## Copy-paste resume prompt
 
-For an approved implementation session, use the exact **checkpoint 6F only**
+For an approved implementation session, use the exact **checkpoint 6G only**
 prompt in [the live integration plan](../docs/sky-live-integration-plan.md).
-The next checkpoint is 6F. Preserve the completed 6A contract, 6B request owner,
-6C safe display, 6D scheduler and 6E clock boundary, plus accepted fixture appearance; do not repeat those steps or activate the sky globally.
+The next checkpoint is 6G. Preserve the completed 6A contract, 6B request owner,
+6C safe display, 6D scheduler, 6E clock boundary and 6F isolated live integration, plus accepted fixture appearance; do not repeat those steps or activate the sky globally.
 
 ## Durable stop / resume
 
 - Branch: `preview/sky-background`.
 - Original app baseline: `476d190922870a39bc76cc91c68e9c9ba0bc20a7`.
-- Current stop: checkpoint 6E complete (`1d52a93`); see docs/environment-context.md; interim Mac appearance
-  remains accepted. No sky activation. Weather refresh/lifecycle is now managed.
+- Current stop: checkpoint 6F complete (`cfa1be8`); see docs/sky-live-preview.md; interim Mac appearance
+  remains accepted. Live preview is opt-in; the normal app sky is not activated.
 - Checkpoint 2's original opaque-panel version is saved as `9eec0ce`. The follow-up
   adds adjustable panel transparency for sky evaluation (`b77d714`), preserved here.
 - Live integration planning is complete in `docs/sky-live-integration-plan.md`.
-  Next action, after approval: checkpoint 6F only (45–75 minutes). Physical
+  Next action, after approval: checkpoint 6G only (30–60 minutes). Physical
   iPhone/Safari stays deferred. No later checkpoint or global activation is
-  authorized by completing 6E.
-- Live-data integration and global activation require later approval.
+  authorized by completing 6F.
+- Agent-run live-provider verification and global activation require later approval.
 
 To run the normal app, simply use `index.html`. To remove this experiment,
 remove `labs/` and `tests/sky-preview-check.py`, and its file-map entry.
-This removes the visual experiment, not the accepted 6A–6E shared data/display/clock foundations.
+This removes the preview entries, not the shared renderer/assets or accepted
+6A–6F shared data/display/clock/publication foundations.
 Those shared production modules do not depend on the lab.
