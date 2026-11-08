@@ -578,6 +578,40 @@ try:
         client.evaluate("lab.document.getElementById('settingsNavButton').click()")
     print(f'PASS: navigation, selected-beach coordinates, units, independent cloud tiers and all {len(fixture_keys)} fixtures', flush=True)
 
+    # Clear/mixed/isolated high clouds keep the accepted sparse-cloud treatment.
+    for fixture in ['clear','mixed','low60','mid60','high95']:
+        client.evaluate(f"lab.skyPreview.setFixture('{fixture}')")
+        original=client.evaluate("[...lab.document.querySelectorAll('.preview-sky-tier')].map(n=>n.getAttribute('opacity'))")
+        client.evaluate("lab.skyPreview.setRendering('baseline')")
+        assert client.evaluate("[...lab.document.querySelectorAll('.preview-sky-tier')].map(n=>n.getAttribute('opacity'))")==original
+        client.evaluate("lab.skyPreview.setRendering('revised')")
+        assert client.evaluate("[...lab.document.querySelectorAll('.sky-cloud-deck')].every(d=>Number(d.style.opacity)===0)")
+
+    # User-reported nearly overcast scene, compared with identical data and drift phase.
+    client.evaluate("document.getElementById('fixtureSelect').value='reportedOvercast';lab.skyPreview.setFixture('reportedOvercast')")
+    client.evaluate("document.getElementById('skyMotion').checked=false;lab.skyPreview.setMotionEnabled(false)")
+    client.evaluate("lab.document.getElementById('dashboardNavButton').click()")
+    reported_before=client.evaluate('JSON.stringify(lab.skyPreview.snapshot())')
+    reported_requests=client.evaluate('lab.skyPreview.weatherRequests')
+    assert client.evaluate("lab.document.querySelector('[data-input=clouds]').textContent==='Total 96% · Low 77% · Mid 90% · High 23%' && lab.document.querySelector('[data-input=sun]').textContent.includes('4.2°')")
+    for width,height in [(1280,900),(390,844)]:
+        client.call('Emulation.setDeviceMetricsOverride',{'width':width,'height':height,'deviceScaleFactor':1,'mobile':False})
+        client.evaluate("lab.document.getElementById('dashboardNavButton').click()")
+        for mode in ['baseline','revised']:
+            client.evaluate(f"document.getElementById('skyRendering').value='{mode}';document.getElementById('skyRendering').dispatchEvent(new Event('change'))")
+            assert client.evaluate(f"lab.document.querySelector('.preview-sky').dataset.rendering==='{mode}'")
+            if mode=='revised':
+                assert client.evaluate("Number(lab.document.querySelector('[data-tier=low] .sky-cloud-deck').style.opacity)>.5 && Number(lab.document.querySelector('[data-tier=mid] .sky-cloud-deck').style.opacity)>.9 && lab.document.querySelector('[data-input=sun]').textContent.includes('overcast precipitation')")
+            else:
+                assert client.evaluate("[...lab.document.querySelectorAll('.sky-cloud-deck')].every(d=>Number(d.style.opacity)===0) && lab.document.querySelector('[data-input=sun]').textContent.includes('Golden hour · overcast')")
+            if args.screenshot:
+                shot=pathlib.Path(args.screenshot);capture=client.call('Page.captureScreenshot',{'format':'png'})
+                shot.with_name(shot.stem+f'-reported-{mode}-{width}.png').write_bytes(base64.b64decode(capture['data']))
+    assert client.evaluate('JSON.stringify(lab.skyPreview.snapshot())')==reported_before
+    assert client.evaluate('lab.skyPreview.weatherRequests')==reported_requests
+    client.evaluate("document.getElementById('skyMotion').checked=true;lab.skyPreview.setMotionEnabled(true)")
+    print('PASS: reported 96/77/90/23 case at 4.2 degrees; baseline/revised comparison uses identical weather without requests',flush=True)
+
     client.evaluate("document.getElementById('fixtureSelect').value='rain'; document.getElementById('fixtureSelect').dispatchEvent(new Event('change'))")
     wait_for(client, ready)
     for scenario, expected in [('stale','stale'),('expired','expired'),('offline','unavailable'),('invalidTime','unavailable'),
@@ -620,7 +654,7 @@ try:
     assert client.evaluate('''(() => {
         const sky = lab.document.querySelector('.preview-sky');
         return sky.getAttribute('aria-hidden') === 'true' && lab.getComputedStyle(sky).pointerEvents === 'none' &&
-            [...sky.querySelectorAll('filter')].every(f => f.getAttribute('y') === '-100%' && f.getAttribute('height') === '300%') &&
+            [...sky.querySelectorAll('filter[id$="-blur"]')].every(f => f.getAttribute('y') === '-100%' && f.getAttribute('height') === '300%') &&
             lab.getComputedStyle(lab.document.getElementById('conditionsWidget')).backgroundColor === 'rgba(27, 39, 71, 0.3)' &&
             lab.document.querySelector('.preview-sky-credits a').href === 'https://open-meteo.com/';
     })()''')

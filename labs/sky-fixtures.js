@@ -8,6 +8,7 @@
         rain: { label: "Rain", time: "12:00", temperature: 13, code: 63, total: 95, low: 95, mid: 60, high: 20 },
         snow: { label: "Snow", time: "12:00", temperature: 0, code: 73, total: 95, low: 95, mid: 60, high: 20 },
         night: { label: "Clear night", time: "22:00", temperature: 10, code: 0, total: 0, low: 0, mid: 0, high: 0 },
+        reportedOvercast: { label: "Reported showers · 96/77/90/23", time: "17:03", temperature: 13, code: 80, total: 96, low: 77, mid: 90, high: 23 },
         overcast: { label: "Near-overcast", time: "12:00", temperature: 15, code: 3, total: 95, low: 95, mid: 95, high: 95 },
         dusk: { label: "Dusk", time: "17:45", temperature: 14, code: 2, total: 20, low: 20, mid: 0, high: 20 },
         missing: { label: "Cloud data missing", time: "22:00", temperature: 10, code: null, total: null, low: null, mid: null, high: null }

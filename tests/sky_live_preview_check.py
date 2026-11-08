@@ -36,6 +36,10 @@ def check_live_preview(client, wait_for, origin, bootstrap, args):
     assert client.evaluate("liveApp.document.querySelector('.preview-sky')===liveApp.originalSky && liveApp.eval('environmentSubscribers.size')===1")
     assert client.evaluate('[liveApp.serviceProbe.weatherRequests,liveApp.serviceProbe.marineRequests]')==before
     assert client.evaluate('JSON.stringify(Object.entries(localStorage).sort())')==persistent
+    for mode in ['baseline','revised']:
+        client.evaluate(f"document.getElementById('skyRendering').value='{mode}';document.getElementById('skyRendering').dispatchEvent(new Event('change'))")
+        assert client.evaluate(f"liveApp.originalSky.dataset.rendering==='{mode}' && liveApp.document.querySelector('.preview-sky')===liveApp.originalSky")
+    assert client.evaluate('[liveApp.serviceProbe.weatherRequests,liveApp.serviceProbe.marineRequests]')==before
     # Same nodes, gentle subsequent updates, valid clouds despite missing temperature.
     client.evaluate("liveApp.serviceProbe.testCode=75;liveApp.serviceProbe.testClouds=[85,90,5,10];liveApp.eval(\"refreshWeatherDataset(findBeach(appState.selectedBeachId),{force:true})\")")
     assert client.evaluate("!liveApp.originalSky.querySelector('.preview-sky-snow').hidden && liveApp.originalSky.querySelector('.preview-sky-snow').dataset.intensity==='heavy' && liveApp.originalSky.querySelector('.preview-sky-rain').hidden")
@@ -77,6 +81,7 @@ def check_live_preview(client, wait_for, origin, bootstrap, args):
     assert client.evaluate("liveApp.skyLivePreview.snapshot().status.freshness==='expired' && liveApp.skyLivePreview.snapshot().weather===null && liveApp.originalSky.querySelector('.preview-sky-snow').hidden && liveApp.originalSky.querySelector('.preview-sky-rain').hidden && [...liveApp.originalSky.querySelectorAll('.sky-cloud-patch')].every(p=>p.style.opacity==='0') && !liveApp.originalSky.hasAttribute('data-clouds-ready')")
     assert client.evaluate("liveApp.document.querySelector('[data-input=condition]').textContent.includes('effects cleared') && liveApp.document.querySelector('[data-input=clouds]').textContent.includes('Low unknown') && liveApp.document.querySelector('[data-input=freshness]').textContent.includes('expired')")
     assert client.evaluate('liveApp.serviceProbe.weatherRequests')==count
+    assert client.evaluate("[...liveApp.originalSky.querySelectorAll('.sky-cloud-deck')].every(d=>Number(d.style.opacity)===0)")
     # The promoted renderer also honors exact Lisbon offsets across browser zones.
     positions=None
     for zone in ['Europe/Lisbon','America/Los_Angeles','Asia/Tokyo']:

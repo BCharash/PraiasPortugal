@@ -148,6 +148,10 @@
         get fixtureKey() { return fixtureKey; },
         setSkyEnabled: enabled => sky.setEnabled(enabled),
         setMotionEnabled: enabled => sky.setMotionEnabled(enabled),
+        setRendering(value) {
+            sky.setRendering(value);
+            if (controller.state) inputsReadout.update(sky.getInputs(),controller.state.status,controller.state.ageMs);
+        },
         setPanelOpacity: value => {
             if (Number.isFinite(value)) document.body.style.setProperty("--preview-panel-opacity", String(Math.max(0, Math.min(1, value))));
         },

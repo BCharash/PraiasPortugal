@@ -48,6 +48,10 @@
                 enabled = !!value; sky.setEnabled(enabled && !!snapshot?.beach);
             },
             setMotionEnabled:value=>sky.setMotionEnabled(value),
+            setRendering(value) {
+                sky.setRendering(value);
+                inputsReadout.update(snapshot?.beach ? sky.getInputs() : null,snapshot?.status?.freshness,snapshot?.status?.ageMs);
+            },
             setPanelOpacity(value) {
                 if (Number.isFinite(value)) document.body.style.setProperty("--preview-panel-opacity",String(Math.max(0,Math.min(1,value))));
             },

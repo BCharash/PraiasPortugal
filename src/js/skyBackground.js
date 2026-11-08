@@ -5,7 +5,7 @@
     "use strict";
     let nextInstance = 0;
 
-function getSkyPalette(elevation, weather) {
+function getSkyPalette(elevation, weather, revised) {
   const totalClouds = weather?.total ?? 0;
   const overcastFactor = Math.max(0, Math.min(1, (totalClouds - 50) / 45)); // 0 (clear) to 1 (full overcast)
   const isRaining = !!weatherState.condition(weather?.weatherCode).precipitation;
@@ -37,7 +37,12 @@ function getSkyPalette(elevation, weather) {
     }
   } else if (elevation > 3) {
     // Golden Hour
-    if (overcastFactor > 0.5) {
+    if (revised && overcastFactor > 0.5 && isRaining) {
+      gradient = "linear-gradient(180deg, #495360 0%, #707b87 55%, #9da6ad 100%)";
+      label = "Golden hour · overcast precipitation";
+      cloudHighFill = "#b6bec6";
+      isDark = true;
+    } else if (overcastFactor > 0.5) {
       gradient = "linear-gradient(180deg, #334155 0%, #64748b 50%, #94a3b8 100%)";
       label = "Golden hour · overcast";
       cloudHighFill = "#cbd5e1";
@@ -163,11 +168,52 @@ function renderSkyClouds(group,tier,cover,opacity,id){
 }
 
 
+// Dense low/mid cloud becomes a continuous, softly textured sheet with
+// independent irregular openings. It is a composition heuristic, not a claim
+// that model coverage equals a measured percentage of this particular view.
+function createCloudDeck(svg,tier,id,width) {
+    if (tier === "high") return null; // High cloud keeps the accepted thin veils.
+    const ns = "http://www.w3.org/2000/svg";
+    const defs = svg.querySelector("defs");
+    defs.insertAdjacentHTML("beforeend", `
+        <filter id="${id}-${tier}-edge"><feGaussianBlur stdDeviation="12"/></filter>
+        <filter id="${id}-${tier}-texture" x="0" y="0" width="100%" height="100%">
+            <feTurbulence type="fractalNoise" baseFrequency=".004 .007" numOctaves="2" seed="${tier === "low" ? 37 : 71}"/>
+            <feColorMatrix type="saturate" values="0"/>
+        </filter>
+        <mask id="${id}-${tier}-deck-mask" maskUnits="userSpaceOnUse" x="-300" y="-300" width="${width+600}" height="1500" style="mask-type:luminance">
+            <rect x="-300" y="-300" width="${width+600}" height="1500" fill="white"/>
+            <g class="sky-deck-openings" fill="black" filter="url(#${id}-${tier}-edge)"></g>
+        </mask>`);
+    const openings = defs.querySelector(".sky-deck-openings");
+    const seed = tier === "low" ? 17 : 43;
+    for (let i=0;i<24;i++) {
+        const outer = document.createElementNS(ns,"g"), hole = document.createElementNS(ns,"path");
+        const points = Array.from({length:12},(_,j)=>{
+            const angle=j*Math.PI/6, radius=.72+((i*17+j*23+seed)%31)/70;
+            return [Math.cos(angle)*150*radius,Math.sin(angle)*100*radius];
+        });
+        const midpoint=(a,b)=>`${(a[0]+b[0])/2} ${(a[1]+b[1])/2}`;
+        hole.setAttribute("d",`M ${midpoint(points[11],points[0])} `+points.map((p,j)=>`Q ${p.join(" ")} ${midpoint(p,points[(j+1)%12])}`).join(" ")+" Z");
+        hole.classList.add("sky-deck-hole");
+        outer.setAttribute("transform",`translate(${-100+((i*.754877666+seed*.137)%1)*(width+200)} ${-80+((i*.569840296+seed*.193)%1)*1060})`);
+        outer.append(hole);openings.append(outer);
+    }
+    const deck = document.createElementNS(ns,"g");
+    deck.classList.add("sky-cloud-deck");deck.style.opacity="0";
+    deck.setAttribute("mask",`url(#${id}-${tier}-deck-mask)`);
+    deck.innerHTML=`<rect x="-300" y="-300" width="${width+600}" height="1500" fill="var(--cloud-${tier}-fill)"/>
+        <rect x="-300" y="-300" width="${width+600}" height="1500" filter="url(#${id}-${tier}-texture)" opacity=".22" style="mix-blend-mode:multiply"/>`;
+    svg.querySelector(".preview-sky-drift").prepend(deck);
+    return {deck,openings};
+}
+
     window.createSkyBackground = function ({creditLabel = "Illustrative sky · Weather data:"} = {}) {
         const id = `preview-sky-${++nextInstance}`;
         const root = document.createElement("div");
         root.className = "preview-sky";
         root.dataset.motion = "on";
+        root.dataset.rendering = "revised";
         root.setAttribute("aria-hidden", "true");
         root.innerHTML = `
             <svg class="preview-sky-stars" viewBox="0 0 1400 900" preserveAspectRatio="xMidYMid slice" hidden>
@@ -193,6 +239,8 @@ function renderSkyClouds(group,tier,cover,opacity,id){
             <div class="preview-sky-snow" hidden></div>`;
         const groups = Object.fromEntries(["high", "mid", "low"].map(tier =>
             [tier, root.querySelector(`[data-tier="${tier}"] .preview-sky-tier`)]));
+        const decks = Object.fromEntries(["mid","low"].map((tier,index)=>[tier,
+            createCloudDeck(root.querySelector(`[data-tier="${tier}"]`),tier,id,[1200,1300][index])]));
         const stars = root.querySelector(".preview-sky-stars");
         const rain = root.querySelector(".preview-sky-rain");
         const snow = root.querySelector(".preview-sky-snow");
@@ -226,13 +274,14 @@ function renderSkyClouds(group,tier,cover,opacity,id){
             (<a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>)`);
         document.body.prepend(root);
         document.body.append(credits);
-        let destroyed = false, inputs = null;
+        let destroyed = false, inputs = null, lastUpdate = null;
 
         return {
             root,
             getInputs: () => inputs,
             update(beach, weather, options = {}) {
                 if (destroyed) return;
+                lastUpdate = {beach,weather,options};
                 // First appearance and a newly selected beach commit immediately.
                 // A separate wrapper moves each tier without replacing patch nodes.
                 const locationKey = JSON.stringify([beach.id, beach.latitude, beach.longitude]);
@@ -249,16 +298,25 @@ function renderSkyClouds(group,tier,cover,opacity,id){
                     mid: cover(weather?.cloudCoverMid), high: cover(weather?.cloudCoverHigh), weatherCode: weather?.weatherCode
                 };
                 const elevation = position?.altitude ?? -12;
-                const palette = getSkyPalette(elevation, normalized);
+                const palette = getSkyPalette(elevation, normalized,root.dataset.rendering === "revised");
                 root.style.setProperty("--sky-gradient", palette.gradient);
                 for (const tier of ["high", "mid", "low"]) {
                     root.style.setProperty(`--cloud-${tier}-fill`, palette.cloudHighFill);
-                    renderSkyClouds(groups[tier], tier, normalized[tier], palette[`${tier}Opacity`], id);
+                    const cover = normalized[tier] ?? 0;
+                    const progress = Math.max(0,Math.min(1,(cover-60)/30));
+                    const blend = root.dataset.rendering === "revised" && decks[tier] ? progress*progress*(3-2*progress) : 0;
+                    renderSkyClouds(groups[tier], tier, normalized[tier], palette[`${tier}Opacity`]*(1-.95*blend), id);
+                    if (decks[tier]) {
+                        decks[tier].deck.style.opacity=String(blend*.96);
+                        for (const hole of decks[tier].openings.querySelectorAll(".sky-deck-hole")) {
+                            hole.style.transform=`scale(${1.25*Math.sqrt(1-cover/100)})`;
+                        }
+                    }
                 }
                 stars.toggleAttribute("hidden", !(elevation < -4 && normalized.total !== null && normalized.total < 85));
                 const condition = weatherState.condition(normalized.weatherCode);
                 inputs = Object.freeze({...normalized,hasWeather:!!weather,solarElevation:elevation,
-                    palette:palette.label,condition:condition.label,precipitation:condition.precipitation,
+                    palette:palette.label,rendering:root.dataset.rendering,condition:condition.label,precipitation:condition.precipitation,
                     intensity:condition.intensity ?? null});
                 rain.hidden = condition.precipitation !== "rain";
                 snow.hidden = condition.precipitation !== "snow";
@@ -271,6 +329,12 @@ function renderSkyClouds(group,tier,cover,opacity,id){
                     void root.offsetWidth;
                     root.setAttribute("data-clouds-ready", "");
                 }
+            },
+            setRendering(value) {
+                if (destroyed || !["revised","baseline"].includes(value) || value === root.dataset.rendering) return;
+                root.dataset.rendering=value;
+                root.removeAttribute("data-clouds-ready");
+                if (lastUpdate) this.update(lastUpdate.beach,lastUpdate.weather,lastUpdate.options);
             },
             setMotionEnabled(enabled) {
                 if (destroyed) return;

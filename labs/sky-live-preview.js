@@ -26,6 +26,7 @@
             }
             frame.contentWindow.addEventListener("sky-live-preview-state",showStatus);
             const preview = frame.contentWindow.skyLivePreview;
+            preview.setRendering(document.getElementById("skyRendering").value);
             preview.setSkyEnabled(enabled.checked);preview.setMotionEnabled(motion.checked);
             preview.setPanelOpacity(Number(opacity.value)/100);showStatus();
         } catch(error) { status.textContent = error.message; }
@@ -38,5 +39,6 @@
         document.getElementById("panelOpacityValue").value = `${opacity.value}%`;
         frame.contentWindow.skyLivePreview?.setPanelOpacity(Number(opacity.value)/100);
     });
+    document.getElementById("skyRendering").addEventListener("change",event=>frame.contentWindow.skyLivePreview?.setRendering(event.target.value));
     load();
 })();

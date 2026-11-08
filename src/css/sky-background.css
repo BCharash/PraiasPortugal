@@ -115,3 +115,10 @@ body[data-sky-preview] { isolation: isolate; }
 
 
 .preview-sky[data-motion="off"] :is(.preview-sky-rain,.preview-sky-snow,.preview-snow-field) { animation-play-state: paused; }
+
+/* Independent continuous low/mid decks replace sparse patches at high coverage. */
+.preview-sky .sky-cloud-deck { transition: opacity 5s ease; }
+.preview-sky .sky-deck-hole { transition: transform 5s ease; transform-origin: 0 0; }
+.preview-sky:not([data-clouds-ready]) :is(.sky-cloud-deck,.sky-deck-hole),
+.preview-sky[data-motion="off"] :is(.sky-cloud-deck,.sky-deck-hole) { transition: none; }
+.preview-sky[data-rendering="baseline"] .sky-cloud-deck { display: none; }

@@ -3,12 +3,12 @@ window.createSkyInputsReadout = function (anchor, source) {
     const root = document.createElement("details");
     root.className = "preview-sky-inputs";
     root.innerHTML = `<summary>Sky inputs</summary>
-        <dl><dt>Source / age</dt><dd data-input="freshness"></dd>
+        <dl><dt>Rendering</dt><dd data-input="rendering"></dd><dt>Source / age</dt><dd data-input="freshness"></dd>
         <dt>Cloud cover</dt><dd data-input="clouds"></dd>
         <dt>Weather / effect</dt><dd data-input="condition"></dd>
         <dt>Sun / sky colour</dt><dd data-input="sun"></dd></dl>
-        <p>Cloud tiers overlap; percentages are not added. Coverage controls cloud patch count/size,
-        rather than measured screen area. Total cover helps choose sky colour and star visibility.
+        <p>Cloud tiers overlap; percentages are not added. Coverage controls independent cloud amounts, with dense low/mid cloud merging
+        into sheets in the revised mode; it is not measured screen area. Total cover helps choose sky colour and star visibility.
         Movement is decorative, not driven by wind.</p>`;
     anchor.after(root);
     const put = (key,value) => { root.querySelector(`[data-input="${key}"]`).textContent = value; };
@@ -18,6 +18,7 @@ window.createSkyInputsReadout = function (anchor, source) {
             root.querySelector("summary").textContent = inputs
                 ? `Sky inputs · Low ${cover(inputs.low)} · Mid ${cover(inputs.mid)} · High ${cover(inputs.high)}`
                 : "Sky inputs · Choose a beach";
+            put("rendering",inputs?.rendering === "revised" ? "Revised composite · continuous dense low/mid cloud" : inputs ? "Previous patches" : "Unavailable");
             put("freshness",`${source} · ${freshness || "unavailable"}${Number.isFinite(ageMs) ? ` · ${Math.floor(ageMs/60000)} min old` : ""}`);
             put("clouds",inputs ? `Total ${cover(inputs.total)} · Low ${cover(inputs.low)} · Mid ${cover(inputs.mid)} · High ${cover(inputs.high)}` : "Unavailable");
             put("condition", !inputs?.hasWeather ? "Weather unavailable; cloud and precipitation effects cleared."

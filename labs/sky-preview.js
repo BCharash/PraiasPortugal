@@ -42,6 +42,7 @@
             }
             frame.contentWindow.addEventListener("sky-preview-state", showStatus);
             showStatus();
+            frame.contentWindow.skyPreview.setRendering(document.getElementById("skyRendering").value);
             frame.contentWindow.skyPreview.setSkyEnabled(skyEnabled.checked);
             frame.contentWindow.skyPreview.setMotionEnabled(skyMotion.checked);
             frame.contentWindow.skyPreview.setPanelOpacity(Number(panelOpacity.value) / 100);
@@ -84,5 +85,6 @@
         panelOpacityValue.value = `${panelOpacity.value}%`;
         frame.contentWindow.skyPreview?.setPanelOpacity(Number(panelOpacity.value) / 100);
     });
+    document.getElementById("skyRendering").addEventListener("change",event=>frame.contentWindow.skyPreview?.setRendering(event.target.value));
     loadPreview();
 })();
