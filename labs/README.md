@@ -1,24 +1,24 @@
 # Sky preview checkpoints
 
 This is an isolated lab for evaluating an eventual weather-driven background.
-The fixture sky remains accepted on Mac. Checkpoints 6A/6B now provide weather
-metadata, validation and beach-bound request ownership. The normal background
+The fixture sky remains accepted on Mac. Checkpoints 6A–6C now provide weather
+metadata, validation and beach-bound request ownership with safe independent dataset display. The normal background
 and cards are unchanged; automatic refresh and sky connection remain deferred.
 
 ## Current handoff
 
 Updated 8 November 2026. This is the authoritative guide for the sky experiment.
 The sky renderer remains isolated in the lab; the first shared-data foundation
-changes are complete in 6A (`fd6722a`) and 6B (`b7806a7`).
+changes are complete through 6C; see [safe display](../docs/weather-display.md).
 Checkpoint 5's local technical review is recorded in [ACCEPTANCE.md](ACCEPTANCE.md).
 The user accepted the interim Mac appearance on 8 November 2026 at 30% panel
 opacity, including the requested short motion review. Physical iPhone/Safari is deferred because
 the user has only a Mac browser available. Data foundations are authorized through
-6B; sky connection and global activation are not authorized yet.
+6C; sky connection and global activation are not authorized yet.
 
 The remaining sequence is in [the live integration plan](../docs/sky-live-integration-plan.md).
-6B is complete; see [request ownership](../docs/weather-request-ownership.md) and
-[the service contract](../docs/weather-service-contract.md). Continue with 6C only
+6C is complete; see [request ownership](../docs/weather-request-ownership.md) and
+[the service contract](../docs/weather-service-contract.md). Continue with 6D only
 after approval. No live weather calls have been used for tests.
 After the user confirmed the normal app worked, a pre-existing temperature-graphic
 bug was corrected: its low/high labels now follow Celsius/Fahrenheit preferences.
@@ -87,6 +87,7 @@ the default body background and card stylesheet remain unchanged.
 | `labs/sky-weather-state.js` | Lab request simulation; delegates pure condition/freshness rules to the shared production helper. No provider calls. |
 | `src/js/weatherTime.js`, `src/js/weatherState.js` | Pure timestamp conversion and shared condition/freshness rules; no requests, DOM or timers. |
 | `src/js/weatherRequests.js` | Data-manager-owned weather cache, cancellation, generation, timeout and per-location retry; no DOM or refresh loop. |
+| `docs/weather-display.md` | Completed 6C behavior, regression evidence, limits and rollback boundary. |
 | `docs/weather-request-ownership.md` | Implemented 6B behavior, compatibility, tests and remaining display/lifecycle work. |
 | `docs/weather-service-contract.md` | Implemented 6A service interface, metadata, compatibility checks and remaining limits. |
 | `labs/sky-preview-adapter.js` | Replaces services and storage inside the frame, freezes its clock, coordinates fixture state, updates sky/status/cards and owns simulated requests and cleanup. |
@@ -101,9 +102,8 @@ The app still starts through its real controller and data manager. The frame's
 substituted weather service builds a snapshot with requested beach ID/coordinates,
 condition-time and fetched-at milliseconds. The lab state controller validates
 that snapshot before publishing weather to the sky and cards. Unavailable states
-supply explicit placeholder values plus solar context to the existing Dashboard,
-which cannot safely receive null weather. The adapter clears obsolete range
-values and the temperature marker. Marine/tide cards remain separate synthetic
+pass null weather to the production unavailable-state renderer, which clears
+obsolete readings and markers while preserving selected-beach solar context. Marine/tide cards remain separate synthetic
 fixtures. Only local JSON and app assets are fetched; no live weather or GPS is used.
 
 The sky is mounted outside the three view containers, so navigation does not
@@ -356,14 +356,12 @@ a sustained physical-device performance test.
 - Precipitation is decorative code-based artwork, not measured rain/snow rates,
   accumulation or a volumetric simulation. Visual acceptance remains open.
 - Age advancement and request scenarios are controlled lab inputs. Production
-  scheduling, weather caching and offline readiness are not implemented.
+  scheduling and offline readiness are not implemented; 6B provides memory caching.
 - The live host already returns total/low/mid/high cloud values and numeric
   weather codes. Formatters handle units/translations; the sky must continue to
   consume numeric values instead of parsing their display strings.
 - The host data manager now has location-keyed memory, joined requests, cancellation,
-  timeout and per-location retries (6B). Full unavailable-state display and marine
-  failure handling remain 6C; an earlier visible view can remain when new weather
-  is unusable. Automatic freshness notifications and scheduling remain 6D.
+  timeout and per-location retries (6B). 6C independently displays weather/marine results and clears unavailable readings. Automatic freshness notifications and scheduling remain 6D.
 - Host weather times are civil strings. Unambiguous condition/fetch instants,
   Lisbon DST handling and use from browsers outside Portugal still need live
   integration verification. Do not change the host's existing time format
@@ -394,7 +392,8 @@ calling the checkpoint complete.
 | 5 — preview acceptance | Local technical review complete; interim Mac appearance accepted | See ACCEPTANCE.md for scope. Physical iPhone/Safari deferred. No global activation. |
 | 6A — service contract | Complete: `fd6722a` | Metadata, safe normalization and signal support verified with fixed responses; no sky connection or refresh changes. |
 | 6B — request ownership | Complete: `b7806a7` | Cached/joined location-bound weather, timeout, cancellation and retries verified. |
-| 6C–6G — remaining integration | Next 6C: 45–75 min | See docs/sky-live-integration-plan.md. Continue one approved checkpoint at a time; default background remains unchanged. |
+| 6C — safe display | Complete | Independent weather/marine display, missing-value cleanup and settings without refetch; see docs/weather-display.md. |
+| 6D–6G — remaining integration | Next 6D: 45–75 min | See docs/sky-live-integration-plan.md. Continue one approved checkpoint at a time; default background remains unchanged. |
 | Later — global activation | Estimate after integration review | Explicit visual/device acceptance and approval before changing the normal app's background. Preserve a reversible fallback. |
 
 ### Checkpoint 4 completed verification
@@ -449,26 +448,26 @@ to that later approved integration.
 
 ## Copy-paste resume prompt
 
-For an approved implementation session, use the exact **checkpoint 6C only**
+For an approved implementation session, use the exact **checkpoint 6D only**
 prompt in [the live integration plan](../docs/sky-live-integration-plan.md).
-The next checkpoint is 6C. Preserve the completed 6A contract, 6B request owner
-and accepted fixture appearance; do not repeat those steps or activate the sky globally.
+The next checkpoint is 6D. Preserve the completed 6A contract, 6B request owner
+and 6C safe display, plus accepted fixture appearance; do not repeat those steps or activate the sky globally.
 
 ## Durable stop / resume
 
 - Branch: `preview/sky-background`.
 - Original app baseline: `476d190922870a39bc76cc91c68e9c9ba0bc20a7`.
-- Current stop: checkpoint 6B complete (`b7806a7`); interim Mac appearance
+- Current stop: checkpoint 6C complete (`bac0b4f`); see docs/weather-display.md; interim Mac appearance
   remains accepted. No sky activation or refresh changes.
 - Checkpoint 2's original opaque-panel version is saved as `9eec0ce`. The follow-up
   adds adjustable panel transparency for sky evaluation (`b77d714`), preserved here.
 - Live integration planning is complete in `docs/sky-live-integration-plan.md`.
-  Next action, after approval: checkpoint 6C only (45–75 minutes). Physical
+  Next action, after approval: checkpoint 6D only (45–75 minutes). Physical
   iPhone/Safari stays deferred. No later checkpoint or global activation is
-  authorized by completing 6B.
+  authorized by completing 6C.
 - Live-data integration and global activation require later approval.
 
 To run the normal app, simply use `index.html`. To remove this experiment,
 remove `labs/` and `tests/sky-preview-check.py`, and its file-map entry.
-This removes the visual experiment, not the accepted 6A/6B data foundations.
+This removes the visual experiment, not the accepted 6A–6C data/display foundations.
 Those shared production modules do not depend on the lab.

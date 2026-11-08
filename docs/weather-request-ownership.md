@@ -84,22 +84,14 @@ tokens; it does not delete preferences or browser storage. The underlying factor
 also has `destroy()` to cancel pending callers and prevent new work. Automatic
 application lifecycle wiring remains a later checkpoint.
 
-## Small audited display change
+## Display consumer (updated by 6C)
 
-`displayBeach()` now awaits the detailed bound result instead of rereading a
-global weather slot. It verifies that result after weather and again after the
-marine await, before publishing state or DOM values. A delayed marine response
-for an old weather result cannot overwrite the newly selected beach.
-
-This is the minimum consumer binding needed for 6B. It does not implement 6C's
-full display generation, independent weather/marine publication, marine-error
-handling or unavailable-state UI. With no usable current weather, the function
-returns without publishing null/mismatched data; an earlier visible view can
-remain until the deliberate unavailable-state work in 6C.
-
-Fresh-cache reuse now also avoids repeated weather fetches during unit changes.
-The existing settings handler still calls the display path and may reload marine
-data; separating rerendering from acquisition remains in 6C.
+`displayBeach()` consumes detailed bound results. `owns()` / `isWeatherResultActive()`
+checks ownership even for a failed empty result; `isCurrent()` still additionally
+requires usable data. A separate display generation guards both weather and marine
+publication, including repeated displays of the same beach/cache token. Each dataset
+publishes independently. Settings rerender accepted state without acquisition.
+See [safe display](weather-display.md) for unavailable rendering and verification.
 
 ## Fixture lab adaptation
 
@@ -135,8 +127,8 @@ checks also passed. The 6A contract still passed in Lisbon, Los Angeles and Toky
 
 ## Stop and remaining work
 
-6B is saved and stopped. **Do not begin 6C without authorization.**
-The next checkpoint is safe display/unavailable data (estimated 45–75 minutes).
+6B and the subsequently authorized 6C are saved.
+The next checkpoint is 6D refresh/lifecycle (estimated 45–75 minutes), requiring approval.
 Automatic refresh/lifecycle notifications remain 6D, shared location/clock 6E,
 live sky preview 6F and real-provider verification 6G. Physical iPhone/Safari
 review, global activation, deployment and publishing remain deferred.

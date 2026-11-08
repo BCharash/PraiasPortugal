@@ -1,6 +1,6 @@
 # Sky live-data integration plan
 
-Updated 8 November 2026. **Checkpoints 6A and 6B implemented and verified; 6C–6G not started.**
+Updated 8 November 2026. **Checkpoints 6A–6C implemented and verified; 6D–6G not started.**
 Current branch: `preview/sky-background`. Planning baseline: `ff92eb3`.
 Accepted visual implementation: `ee8be74`, with the star-visibility correction
 and review checks in `22eed6f`. Mac interim appearance acceptance is recorded
@@ -10,7 +10,7 @@ The user approved checkpoints 6A and 6B separately after planning. 6A is saved a
 `fd6722a`, starting from `0976be3`; see [the service contract](weather-service-contract.md)
 for exact behavior, tests and limitations. 6B is now implemented as `b7806a7`,
 starting from `fca7450`; see [weather request ownership](weather-request-ownership.md).
-Further checkpoints require approval.
+The user subsequently authorized 6C, now complete (`bac0b4f`); see [safe display](weather-display.md). Further checkpoints require approval.
 Global activation remains a separate later decision.
 
 ## Intended result and boundaries
@@ -132,14 +132,14 @@ with a verified local commit and updated handoff. Start only the authorized one.
 | --- | --- | --- | --- |
 | 6A — service contract (complete: `fd6722a`) | Verified | `src/js/weatherService.js`, `src/js/weatherTime.js`, `src/js/weatherState.js` and deterministic tests. Requested identity, timestamps, optional signal, HTTP/schema checks and safe values are implemented. Query repaired; no renderer or refresh changes. | Legacy-field, formatter/celestial and actual-main-app checks passed in addition to the fixture suite. Saved and stopped. |
 | 6B — weather request ownership (complete: `b7806a7`) | Verified | `dataManager.js`, shared state helpers and request tests. Location-keyed memory, joined same-location requests, latest-location selection, generation guards, 10-second timeout and cancellation. Preserve an explicit result for existing callers. | A/B/A switches, ignored aborts, timeouts and retry isolation cannot publish wrong-beach data. Superseded callers settle; no stranded pending flags. Stop and save. |
-| 6C — safe display and unavailable data | 45–75 min | `display.js`, `conditions.js`, application call sites and display tests. Guard every asynchronous publication; read weather by identity; handle unavailable/expired weather without fixture substitution. Weather publication must survive marine delay/failure. Settings-only changes rerender loaded data. | Fresh, stale and unavailable Dashboard paths work; old marine/weather continuations cannot overwrite the selected beach; translations, units and selection still work. Stop and save. |
+| 6C — safe display and unavailable data (complete: `bac0b4f`) | Verified | `display.js`, `conditions.js`, application call sites and display tests. Guard every asynchronous publication; read weather by identity; handle unavailable/expired weather without fixture substitution. Weather publication must survive marine delay/failure. Settings-only changes rerender loaded data. | Fresh, stale and unavailable Dashboard paths work; old marine/weather continuations cannot overwrite the selected beach; translations, units and selection still work. Stop and save. |
 | 6D — refresh and lifecycle | 45–75 min | `dataManager.js`, lifecycle wiring in `app.js` and scheduler tests. One weather scheduler, retry/backoff, freshness notifications and resume reconciliation. | No duplicate loops, request storms or accumulated timers after repeated hide/show; expiry occurs without a successful new fetch. Stop and save. |
 | 6E — shared location and clock | 30–60 min | Proposed environment-context helper; small controller/celestial entry changes and timezone tests. Use selected-beach coordinates and a Lisbon clock consistently for sky and detailed Conditions. Keep model times immutable. | Lisbon/other-browser-zone, midnight and DST cases agree; existing sunrise/sunset path checks pass. No weather fetch on a solar clock tick. Stop and save. |
 | 6F — opt-in live sky preview | 45–75 min | Promote reusable artwork/CSS and pure weather semantics into `src/`; add `labs/sky-live-preview.html` and a small live-preview adapter; update fixture imports. Default app entry stays visually unchanged. | Existing fixture appearance is preserved; live preview consumes only the existing manager snapshot, persists across all views and retains credits, opacity comparison, reduced motion and cleanup. Stop and save. |
 | 6G — live Mac verification | 30–60 min | Live-preview checks and acceptance evidence, with a small explicitly authorized live-weather smoke test. No activation change. | One weather owner, correct selected location, failure/expiry behavior and no duplicate fetch on navigation/settings; record actual provider evidence and remaining device checks. Stop for user review. |
 
 Estimated total: **5–8¼ hours**, split across independently stoppable sessions.
-6B is complete and stopped. Continue with 6C only after approval; do not
+6C is complete and stopped. Continue with 6D only after approval; do not
 automatically run the remaining checkpoints together.
 
 ### 6A completed: compatible service metadata
@@ -177,23 +177,10 @@ automatically run the remaining checkpoints together.
 
 ### 6C details: safe display and unavailable data
 
-6B already checks the weather result token after weather/marine awaits. Retain
-those guards; complete the broader display generation and failure/placeholder
-work below rather than removing the binding or assuming all of 6C is done.
-
-- Add a display generation tied to selected beach and verify it after weather
-  and marine awaits and before any DOM/state publication.
-- Catch marine failure independently. Publish usable weather without waiting
-  indefinitely for marine; clear old beach-specific values at selection time.
-  Do not migrate all marine/tide scheduling into the weather workstream.
-- Replace the lab's placeholder workaround with a deliberate production
-  unavailable-state rendering path. Clear old readings, ranges and temperature
-  markers while preserving valid solar/location context and independent marine
-  results. Do not let missing temperature erase valid clouds or precipitation.
-- Separate rerendering units/language/text size from environmental acquisition.
-  A cached fresh snapshot must not be fetched again merely to change display units.
-- Use one condition mapping while preserving English/Portuguese formatting and
-  unit preferences. Do not copy lab-only English status strings into the product.
+Completed in the separately authorized 6C checkpoint. See [safe display](weather-display.md)
+for behavior, deterministic regression evidence and limitations. Weather and marine
+publish independently under display generations; unavailable readings clear without
+fixture substitution; settings rerender without requests. No scheduler was added.
 
 ### 6D details: one manager scheduler
 
@@ -246,16 +233,17 @@ readability treatment and a decision about the inherited narrow navigation layou
 ## Exact prompt for the next implementation session
 
 ```text
-Implement checkpoint 6C only from docs/sky-live-integration-plan.md in
+Implement checkpoint 6D only from docs/sky-live-integration-plan.md in
 /Users/williamcharash/Documents/GitHub/PraiasPortugal.
 First inspect Git status, repository instructions and current source. Read
-labs/README.md, docs/weather-service-contract.md and docs/weather-request-ownership.md.
-Preserve the 6A contract, 6B request owner and user changes; record the starting commit.
-Complete safe display generation, explicit unavailable/expired values and independent
-weather/marine failure handling. Keep 6B's bound-result guards and make settings-only
-changes rerender loaded data. Preserve units, translations, selected-beach behavior
-and accepted fixtures. Keep the default background/cards unchanged; do not connect
-the sky, add 6D automatic refresh, modify ipma-radar, fetch live weather for tests,
-deploy, publish, push or begin 6D. Use deterministic transports and regression checks.
-Save a working local checkpoint, update the handoff, report results and stop.
+labs/README.md, docs/weather-display.md and docs/weather-request-ownership.md.
+Preserve 6A–6C and user changes; record the starting commit. Add one data-manager
+weather scheduler with 15-minute success cadence, retry/backoff, freshness/expiry
+notifications, hidden-page pause and one due-request reconciliation on resume.
+Keep condition age separate from next-attempt time. Preserve independent marine
+loading, settings-only rerenders, cancellation and selected-beach generation guards.
+Use deterministic clocks/transports and lifecycle regression tests. Keep the normal
+background and accepted artwork; do not begin 6E, connect the sky, modify ipma-radar,
+fetch live providers for tests, deploy, publish or push. Update the handoff,
+save a verified local checkpoint and stop.
 ```

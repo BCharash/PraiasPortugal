@@ -80,7 +80,7 @@ app loads the pure helpers before the weather service; loading them does not
 fetch data or render a sky.
 
 The current production description/icon functions and formatters are retained;
-product-facing mapping/translation consolidation remains part of 6C. The actual
+6C subsequently consolidated condition mapping/translation in weatherState. The actual
 data manager, display/controller, Conditions renderer, celestial service,
 background and styles were not changed by 6A.
 
@@ -136,12 +136,11 @@ The full service/app/lab suite passed again. This does not start checkpoint 6B.
 6A is complete. The subsequently authorized 6B work is now saved as `b7806a7`;
 see [weather request ownership](weather-request-ownership.md) for location-keyed
 memory, joined requests, timeout, retries and basic display result guards.
-The current stopping point is before 6C. Metadata alone did not establish those
+6C safe display is now complete; see [display behavior](weather-display.md). Metadata alone did not establish those
 protections; they are implemented in the separate request owner.
 
-Unknown optional values now reach consumers as null. Complete unavailable-state
-presentation, including unknown lunar values and old reading/marker cleanup,
-remains in 6C. 6B now evaluates condition/fetch age on reads; UI freshness
+Unknown optional values now reach consumers as null. 6C implements unavailable-state
+presentation, including unknown lunar values and old reading/marker cleanup. 6B now evaluates condition/fetch age on reads; UI freshness
 notifications and automatic refresh remain 6D. Live weather smoke testing remains in 6G; cold
 offline readiness and new persistent caching are outside this work.
 

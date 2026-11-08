@@ -29,7 +29,9 @@ with a temporary browser profile.
 verification evidence, limitations and the remaining checkpoint plan.
 `labs/ACCEPTANCE.md` records checkpoint 5 evidence, interim Mac acceptance and deferred device review.
 `docs/sky-live-integration-plan.md` contains the audit and remaining live-data
-checkpoints. 6A/6B are implemented; 6C–6G have not started.
+checkpoints. 6A–6C are implemented; 6D–6G have not started.
+`docs/weather-display.md` records independent dataset publication, display generations,
+unavailable-state rendering and settings-only rerenders introduced by 6C.
 `docs/weather-service-contract.md` records the implemented service contract and
 verification. `src/js/weatherTime.js` and `src/js/weatherState.js` are shared pure
 helpers loaded by the normal app. The contract page/scripts under `tests/` use
