@@ -26,6 +26,7 @@ parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--screenshot', help='Save a mobile preview screenshot to this PNG path')
 parser.add_argument('--review-dir', help='Write a fixed-scene acceptance gallery and layout measurements here')
 parser.add_argument('--service-only', action='store_true', help='Run only the deterministic weather-service contract checks')
+parser.add_argument('--requests-only', action='store_true', help='Run deterministic service and weather-request ownership checks only')
 args = parser.parse_args()
 
 class Handler(http.server.SimpleHTTPRequestHandler):
@@ -149,14 +150,23 @@ try:
     client.call('Emulation.setTimezoneOverride',{'timezoneId':'Europe/Lisbon'})
     if args.service_only:
         raise SystemExit(0)
+    weather_fixture=client.evaluate('weatherContractFixture')
+    client.call('Page.navigate',{'url':origin+'/tests/weather-requests-contract.html'})
+    wait_for(client,"location.pathname==='/tests/weather-requests-contract.html' && !!window.requestContractResult")
+    result=client.evaluate('requestContractResult')
+    assert result['ok'],result
+    assert client.evaluate('previewErrors.length===0')
+    print('WEATHER_REQUESTS',result['results'],flush=True)
+    if args.requests_only:
+        raise SystemExit(0)
 
     # Run actual app/controller/data-manager/weather service with provider fixtures.
     # The marine request is mocked too; no network weather is used in this smoke test.
-    weather_fixture=client.evaluate('weatherContractFixture')
     marine_fixture={'current':{'sea_surface_temperature':17,'wave_height':1.2,'wave_direction':300,'wave_period':10},
                     'hourly':{'time':weather_fixture['hourly']['time'],'sea_level_height_msl':[.1,.2]},'daily':{}}
     bootstrap='''
-        window.serviceProbe={weatherRequests:0,marineRequests:0};
+        window.serviceProbe={weatherRequests:0,marineRequests:0,deferMarine:false,pendingMarine:[]};
+        Date.now=()=>Date.parse('2026-11-08T12:08:00Z');
         localStorage.setItem('praiasDePortugalSelectedBeach','praia-de-santa-rita-norte');
         localStorage.removeItem('praiasDePortugalSettings');
         localStorage.removeItem('praiasDePortugalFavorites');
@@ -169,6 +179,8 @@ try:
             }
             if(url.origin==='https://marine-api.open-meteo.com') {
                 serviceProbe.marineRequests++;
+                if(serviceProbe.deferMarine) return new Promise(resolve=>serviceProbe.pendingMarine.push(
+                    ()=>resolve({ok:true,json:async()=>(MARINE_FIXTURE)})));
                 return {ok:true,json:async()=>(MARINE_FIXTURE)};
             }
             if(url.origin!==location.origin) throw new Error('External request forbidden in service smoke test');
@@ -200,6 +212,16 @@ try:
     wait_for(client,"getDataStatus('weather').refreshing===false")
     client.evaluate("showDashboard()")
     assert client.evaluate("document.getElementById('dashboardAirTemp').textContent==='18°C' && document.getElementById('dashboardTempMin').textContent==='14°' && document.getElementById('dashboardTempMax').textContent==='21°'")
+    assert client.evaluate("serviceProbe.weatherRequests===1"), 'Fresh weather must be reused during unit changes'
+    client.evaluate("serviceProbe.deferMarine=true; saveSelectedBeach('praia-de-santa-rita-sul'); window.oldDisplay=displayBeach('praia-de-santa-rita-sul'); void 0")
+    wait_for(client,"serviceProbe.pendingMarine.length===1")
+    client.evaluate("saveSelectedBeach('praia-de-porto-novo'); window.newDisplay=displayBeach('praia-de-porto-novo'); void 0")
+    wait_for(client,"serviceProbe.pendingMarine.length===2")
+    client.evaluate("serviceProbe.pendingMarine[1](); newDisplay")
+    assert client.evaluate("currentDashboardData.beach.id==='praia-de-porto-novo'")
+    client.evaluate("serviceProbe.pendingMarine[0](); oldDisplay")
+    assert client.evaluate("currentDashboardData.beach.id==='praia-de-porto-novo' && currentDashboardData.weather.requestedBeachId==='praia-de-porto-novo' && getDatasetData('weather').requestedBeachId==='praia-de-porto-novo' && previewErrors.length===0")
+    print('PASS: fresh cache reuse and late marine result cannot overwrite newer beach',flush=True)
     print('MAIN_APP_SERVICE',smoke,'Fahrenheit rerender passed',flush=True)
     client.call('Page.removeScriptToEvaluateOnNewDocument',{'identifier':probe})
     client.evaluate('localStorage.clear()')

@@ -136,11 +136,18 @@
                 controller.commit(beach, fixtures.snapshot(key, beach, evaluationTime()));
             }
         }
-        return displayWeather(controller.state);
+        // This envelope describes the fixture-card payload, including explicit
+        // unavailable placeholders. Simulated sky ages remain in its controller.
+        return {...displayWeather(controller.state), requestedBeachId:beach.id,
+            requestedLatitude:beach.latitude, requestedLongitude:beach.longitude,
+            fetchedAtMs:Date.now(), conditionTimeMs:Date.now()};
     };
     getCurrentMarineConditions = async () => fixtures.marine();
     DATASETS.weather.service = getCurrentWeather;
     DATASETS.marine.service = getCurrentMarineConditions;
+    const normalDisplayBeach = displayBeach;
+    // A fixture/scenario change is deliberate new data, not a cached live read.
+    displayBeach = beachId => normalDisplayBeach(beachId, {forceWeather:true});
     storage.setItem("praiasDePortugalSelectedBeach", "praia-de-santa-rita-norte");
 
     async function redisplay() {
@@ -170,6 +177,7 @@
         isReady: () => typeof currentDashboardData !== "undefined" && !!currentDashboardData,
         async setFixture(key) {
             if (!Object.hasOwn(fixtures.cases, key)) throw new Error("Unknown preview fixture");
+            clearWeatherDataset(); // Fixture clocks may deliberately move backwards.
             fixtureKey = key; ageOffset = 0;
             await redisplay();
         },

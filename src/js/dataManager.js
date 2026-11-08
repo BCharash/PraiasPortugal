@@ -88,6 +88,7 @@ const dataManagerState = {
     datasets: {}
 
 };
+let weatherRequestManager = null;
 
 
 //--------------------------------------------------
@@ -141,6 +142,16 @@ function initializeDataManager() {
     dataManagerState.datasets =
         createDatasetStatus();
 
+    weatherRequestManager = createWeatherRequestManager({
+        service: (beach, options) => DATASETS.weather.service(beach, options),
+        retryDelay:getRetryDelay
+    });
+    weatherRequestManager.setPaused(dataManagerState.paused);
+    // Keep private legacy reads consistent with the single weather owner.
+    Object.defineProperty(dataManagerState.datasets, "weather", {
+        enumerable:true, get:() => weatherRequestManager.getStatus()
+    });
+
     dataManagerState.initialized = true;
 
 }
@@ -186,6 +197,8 @@ function canRefreshDataset(name) {
 //--------------------------------------------------
 
 function beginDatasetRefresh(name) {
+
+    if (name === "weather") return false; // Weather transitions belong to its request manager.
 
     if (!canRefreshDataset(name))
         return false;
@@ -244,6 +257,8 @@ function completeDatasetRefresh(
     data = null,
     error = null
 ) {
+
+    if (name === "weather") return;
 
     const dataset =
         dataManagerState.datasets[name];
@@ -309,6 +324,8 @@ function completeDatasetRefresh(
 
 function requestPendingRefresh(name) {
 
+    if (name === "weather") return; // Duplicate weather callers join the existing promise.
+
     const dataset =
         dataManagerState.datasets[name];
 
@@ -367,7 +384,8 @@ async function refreshData(beach) {
 
 async function refreshDataset(
     name,
-    beach
+    beach,
+    options = {}
 ) {
 
     if (!dataManagerState.initialized)
@@ -375,6 +393,11 @@ async function refreshDataset(
 
     if (!DATASETS[name])
         return false;
+
+    if (name === "weather") {
+        const result = await refreshWeatherDataset(beach, options);
+        return result.outcome === "success" || result.outcome === "cached";
+    }
 
     const dataset =
         dataManagerState.datasets[name];
@@ -453,10 +476,12 @@ async function refreshDataset(
 // Retrieve Stored Data
 //--------------------------------------------------
 
-function getDatasetData(name) {
+function getDatasetData(name, beach) {
 
     if (!dataManagerState.initialized)
         initializeDataManager();
+
+    if (name === "weather") return weatherRequestManager.getData(beach);
 
     const dataset =
         dataManagerState.datasets[name];
@@ -473,10 +498,12 @@ function getDatasetData(name) {
 // Status
 //--------------------------------------------------
 
-function getDataStatus(name) {
+function getDataStatus(name, beach) {
 
     if (!dataManagerState.initialized)
         initializeDataManager();
+
+    if (name === "weather") return weatherRequestManager.getStatus(beach);
 
     return dataManagerState.datasets[name] ?? null;
 
@@ -503,6 +530,7 @@ function pauseDataUpdates() {
 
     dataManagerState.paused =
         true;
+    weatherRequestManager?.setPaused(true);
 
 }
 
@@ -511,5 +539,20 @@ function resumeDataUpdates() {
 
     dataManagerState.paused =
         false;
+    weatherRequestManager?.setPaused(false);
 
+}
+
+// Detailed location-bound result for display callers; no global-slot reread.
+function refreshWeatherDataset(beach, options) {
+    if (!dataManagerState.initialized) initializeDataManager();
+    return weatherRequestManager.request(beach, options);
+}
+
+function isWeatherResultCurrent(result) {
+    return weatherRequestManager?.isCurrent(result) || false;
+}
+
+function clearWeatherDataset() {
+    weatherRequestManager?.clear();
 }

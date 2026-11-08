@@ -56,7 +56,7 @@ Parameters:
 
 */
 
-async function displayBeach(beachId) {
+async function displayBeach(beachId, {forceWeather = false} = {}) {
 
     const beach =
         findBeach(beachId);
@@ -68,15 +68,9 @@ async function displayBeach(beachId) {
     // Current Weather
     //--------------------------------------------------
 
-    await refreshDataset(
-        "weather",
-        beach
-    );
-
-    const weather =
-        getDatasetData(
-            "weather"
-        );
+    const weatherResult = await refreshWeatherDataset(beach, {force:forceWeather});
+    if (!isWeatherResultCurrent(weatherResult)) return;
+    const weather = weatherResult.data;
 
 
         
@@ -86,6 +80,8 @@ async function displayBeach(beachId) {
 
     const marine =
         await getCurrentMarineConditions(beach);
+
+    if (!isWeatherResultCurrent(weatherResult)) return;
 
 
     //--------------------------------------------------
