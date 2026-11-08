@@ -218,6 +218,58 @@ try:
     })()''')
     assert all(motion.values()), motion
     print('MOTION', motion, flush=True)
+    semantics = client.evaluate('''(async () => {
+        const api = lab.skyWeatherState, f = lab.skyPreviewFixtures;
+        const beach = lab.skyPreview.snapshot().weatherState.beach;
+        let clock = Date.parse('2026-11-07T12:00:00Z');
+        const snap = () => f.snapshot('rain', beach, clock);
+        const result = {};
+        const base = snap();
+        result.boundaries = api.evaluate(base, beach, clock + 15*60000 - 1).status === 'fresh' &&
+            api.evaluate(base, beach, clock + 15*60000).status === 'stale' &&
+            api.evaluate(base, beach, clock + 60*60000 - 1).status === 'stale' &&
+            api.evaluate(base, beach, clock + 60*60000).status === 'expired';
+        result.validation = api.evaluate({...base, conditionTimeMs:null},beach,clock).status === 'unavailable' &&
+            api.evaluate({...base,conditionTimeMs:clock+3600000},beach,clock).weather === null &&
+            api.evaluate({...base,latitude:0},beach,clock).weather === null &&
+            api.evaluate({...base,conditionTimeMs:clock-65*60000},beach,clock).status === 'expired' &&
+            api.evaluate({...base,fetchedAtMs:clock-65*60000},beach,clock).status === 'expired';
+        result.mapping = [[56,'rain','light'],[57,'rain','heavy'],[66,'rain','light'],[67,'rain','heavy'],
+            [77,'snow','light'],[85,'snow','light'],[86,'snow','heavy'],[97,'rain','heavy'],[99,'rain','heavy']]
+            .every(([code,effect,intensity]) => api.condition(code).precipitation === effect && api.condition(code).intensity === intensity) &&
+            api.condition(999).precipitation === null && api.condition(null).precipitation === null;
+        const timers = new Map(); let nextId = 0, writes = 0;
+        const control = api.createController({now:()=>clock,onState:()=>writes++,
+            setTimer:(fn,delay)=>{const id=++nextId;timers.set(id,{fn,delay});return id;},
+            clearTimer:id=>timers.delete(id)});
+        control.commit(beach,base);
+        let deliverOld, oldSignal;
+        const old = control.request(beach,({signal})=>{oldSignal=signal;return new Promise(resolve=>deliverOld=resolve);});
+        const newerBeach = {...beach,id:'new-beach',latitude:40};
+        const newer = {...base,beachId:newerBeach.id,latitude:40};
+        control.commit(newerBeach,newer);
+        const beforeLate = writes;
+        deliverOld(base); await Promise.resolve(); await Promise.resolve();
+        result.races = await old === 'superseded' && oldSignal.aborted && writes === beforeLate && control.state.beach.id === 'new-beach';
+        const invalid = await control.request(newerBeach,()=>Promise.resolve(base));
+        result.wrongLocationIgnored = invalid === 'invalid' && control.state.weather === newer.weather;
+        const older = await control.request(newerBeach,()=>Promise.resolve({...newer,conditionTimeMs:newer.conditionTimeMs-1000}));
+        result.olderModelIgnored = older === 'invalid' && control.state.weather === newer.weather;
+        let timeoutSignal;
+        const timeout = control.request(newerBeach,({signal})=>{timeoutSignal=signal;return new Promise(()=>{});});
+        const entry = [...timers.values()][0];
+        result.timeoutPolicy = entry.delay === 10000;
+        clock += 10000; entry.fn();
+        result.timeout = await timeout === 'timeout' && timeoutSignal.aborted && timers.size === 0 && control.state.requestResult === 'timeout';
+        let deliverAfterDestroy;
+        const destroyed = control.request(newerBeach,()=>new Promise(resolve=>deliverAfterDestroy=resolve));
+        control.destroy(); const afterDestroy = writes;
+        deliverAfterDestroy(newer); await Promise.resolve(); await Promise.resolve();
+        result.cleanup = await destroyed === 'superseded' && timers.size === 0 && writes === afterDestroy;
+        return result;
+    })()''')
+    assert all(semantics.values()), semantics
+    print('WEATHER_STATE', semantics, flush=True)
 
     # Exercise real app controls, not a second implementation of navigation or selection.
     client.evaluate("lab.document.getElementById('beachesNavButton').click()")
@@ -256,16 +308,48 @@ try:
                 const group = sky.querySelector(`[data-tier="${tier}"] .preview-sky-tier`);
                 const cover = weather[`cloudCover${tier[0].toUpperCase() + tier.slice(1)}`];
                 const visible = [...group.children].reduce((sum, node) => sum + Number(node.firstElementChild.style.opacity), 0);
-                result[tier] = group.children.length === 24 && Math.abs(visible - (cover ?? 0) * 24 / 100) < .001;
+                const expected = Number.isFinite(cover) ? Math.max(0, Math.min(100, cover)) * 24 / 100 : 0;
+                result[tier] = group.children.length === 24 && Math.abs(visible - expected) < .001;
             }
             result.stars = sky.querySelector('.preview-sky-stars').hidden === !(Number(sky.dataset.solarElevation) < -4 && weather.cloudCover !== null && weather.cloudCover < 85);
+            const condition = lab.skyWeatherState.condition(weather.weatherCode);
+            const rain = sky.querySelector('.preview-sky-rain'), snow = sky.querySelector('.preview-sky-snow');
+            result.precipitation = rain.hidden === (condition.precipitation !== 'rain') && snow.hidden === (condition.precipitation !== 'snow') && (rain.hidden || snow.hidden);
             return result;
         })()''')
         assert all(result.values()), (fixture, result)
         client.evaluate("lab.document.getElementById('dashboardNavButton').click()")
-        assert client.evaluate("lab.document.getElementById('dashboardAirTemp').textContent.includes('°F')")
+        assert client.evaluate("lab.skyPreview.snapshot().weather.airTemperature === null ? lab.document.getElementById('dashboardAirTemp').textContent === '--' : lab.document.getElementById('dashboardAirTemp').textContent.includes('°F')")
         client.evaluate("lab.document.getElementById('settingsNavButton').click()")
     print(f'PASS: navigation, selected-beach coordinates, units, independent cloud tiers and all {len(fixture_keys)} fixtures', flush=True)
+
+    client.evaluate("document.getElementById('fixtureSelect').value='rain'; document.getElementById('fixtureSelect').dispatchEvent(new Event('change'))")
+    wait_for(client, ready)
+    for scenario, expected in [('stale','stale'),('expired','expired'),('offline','unavailable'),('invalidTime','unavailable'),
+                               ('futureTime','unavailable'),('oldModel','expired'),('wrongLocation','unavailable'),
+                               ('staleSuccess','stale'),('staleFailure','stale'),('delayed','unavailable'),('lateBeach','fresh'),('fresh','fresh')]:
+        client.evaluate(f"document.getElementById('scenarioSelect').value={json.dumps(scenario)}; document.getElementById('scenarioSelect').dispatchEvent(new Event('change'))")
+        wait_for(client, ready)
+        assert client.evaluate(f"lab.skyPreview.snapshot().weatherState.status === {json.dumps(expected)}"), scenario
+        if expected in ['expired','unavailable']:
+            assert client.evaluate("lab.document.querySelector('.preview-sky-rain').hidden && lab.document.querySelector('.preview-sky-snow').hidden && [...lab.document.querySelectorAll('.sky-cloud-patch')].every(p=>lab.getComputedStyle(p).opacity==='0')"), scenario
+            client.evaluate("lab.document.getElementById('dashboardNavButton').click()")
+            assert client.evaluate("lab.document.getElementById('dashboardAirTemp').textContent==='--'")
+            assert client.evaluate("lab.document.getElementById('dashboardTempMarker').hidden")
+            client.evaluate("lab.document.getElementById('settingsNavButton').click()")
+        if scenario in ['staleSuccess','delayed']:
+            wait_for(client, "lab.skyPreview.snapshot().weatherState.status === 'fresh'")
+            if scenario == 'delayed':
+                assert client.evaluate("!lab.document.querySelector('.preview-sky').getAnimations({subtree:true}).some(a=>a instanceof lab.CSSTransition)")
+        if scenario == 'staleFailure':
+            wait_for(client, "lab.skyPreview.snapshot().weatherState.requestResult === 'error'")
+            assert client.evaluate("!lab.document.querySelector('.preview-sky-rain').hidden")
+    for _ in range(4):
+        client.evaluate("document.getElementById('advanceAge').click()")
+    assert client.evaluate("lab.skyPreview.snapshot().weatherState.status === 'expired' && lab.document.querySelector('.preview-sky-rain').hidden")
+    client.evaluate("document.getElementById('scenarioSelect').value='fresh'; document.getElementById('scenarioSelect').dispatchEvent(new Event('change'))")
+    wait_for(client, ready)
+    print('PASS: freshness scenarios, delayed success/failure, placeholders, age advance and immediate removal of expired effects', flush=True)
 
     # Comparison must keep the same app state and service request count.
     assert client.evaluate('''(() => {
@@ -294,7 +378,7 @@ try:
         const requests = lab.skyPreview.weatherRequests;
         const toggle = document.getElementById('skyMotion');
         toggle.click();
-        const paused = [...sky.querySelectorAll('.preview-sky-drift')].every(node =>
+        const paused = [...sky.querySelectorAll('.preview-sky-drift,.preview-sky-rain:not([hidden]),.preview-sky-snow:not([hidden])')].every(node =>
             node.getAnimations().every(a => a.playState === 'paused'));
         const noTransitions = lab.getComputedStyle(sky.querySelector('.sky-cloud-patch')).transitionDuration === '0s';
         toggle.click();
@@ -348,9 +432,30 @@ try:
     assert client.evaluate("lab.skyPreview.blockedRequests.length === 0 && previewErrors.length === 0 && lab.previewErrors.length === 0")
     assert client.evaluate("new lab.Date().getHours() === 12 && lab.Date.now() === new lab.Date().getTime()")
     assert client.evaluate("!lab.document.querySelector('link[rel=manifest]')")
+    # A pending simulated response and timeout must both be released on reset.
+    for scenario in ['delayed', 'timeout']:
+        client.evaluate(f"document.getElementById('scenarioSelect').value={json.dumps(scenario)}; document.getElementById('scenarioSelect').dispatchEvent(new Event('change'))")
+        wait_for(client, ready)
+        client.evaluate("window.oldPreview = lab.skyPreview; document.getElementById('resetPreview').click()")
+        wait_for(client, ready)
+        client.evaluate("window.lab = document.getElementById('previewFrame').contentWindow; void 0")
+        assert client.evaluate("oldPreview.snapshot().destroyed && oldPreview.snapshot().pendingTimers === 0")
+    client.evaluate("document.getElementById('scenarioSelect').value='fresh'; document.getElementById('scenarioSelect').dispatchEvent(new Event('change'))")
+    wait_for(client, ready)
+    assert client.evaluate("previewErrors.length===0 && lab.previewErrors.length===0")
+    print('PASS: repeated reset cancels pending responses and timeout timers', flush=True)
     if args.screenshot:
         image = client.call('Page.captureScreenshot', {'format': 'png'})
         pathlib.Path(args.screenshot).write_bytes(base64.b64decode(image['data']))
+        for key in ['snow', 'offline']:
+            if key == 'snow':
+                client.evaluate("document.getElementById('fixtureSelect').value='snow'; document.getElementById('fixtureSelect').dispatchEvent(new Event('change'))")
+            else:
+                client.evaluate("document.getElementById('scenarioSelect').value='offline'; document.getElementById('scenarioSelect').dispatchEvent(new Event('change'))")
+            wait_for(client, ready)
+            image = client.call('Page.captureScreenshot', {'format': 'png'})
+            shot = pathlib.Path(args.screenshot)
+            shot.with_name(f'{shot.stem}-{key}.png').write_bytes(base64.b64decode(image['data']))
     print('PASS: reset, fixed clock, no external service calls, no errors, normal app preferences preserved', flush=True)
 
     # Return to production with no selected beach: verify the ordinary entry and navigation.

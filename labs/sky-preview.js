@@ -3,6 +3,8 @@
 
     const frame = document.getElementById("previewFrame");
     const select = document.getElementById("fixtureSelect");
+    const scenarioSelect = document.getElementById("scenarioSelect");
+    const advanceAge = document.getElementById("advanceAge");
     const reset = document.getElementById("resetPreview");
     const status = document.getElementById("previewStatus");
     const skyEnabled = document.getElementById("skyEnabled");
@@ -16,15 +18,16 @@
         select.add(new Option(fixture.label, key));
     }
     select.value = "mixed";
+    for (const [key, label] of Object.entries(window.skyPreviewFixtures.scenarios)) scenarioSelect.add(new Option(label, key));
 
     function showStatus() {
         const snapshot = frame.contentWindow.skyPreview.snapshot();
-        status.textContent = `${window.skyPreviewFixtures.cases[snapshot.fixtureKey].label} · ${snapshot.clock} Lisbon`;
+        status.textContent = `${window.skyPreviewFixtures.cases[snapshot.fixtureKey].label} · ${snapshot.clock} Lisbon · ${snapshot.weatherState?.status || "loading"}`;
     }
 
     async function loadPreview() {
         loading = true;
-        select.disabled = reset.disabled = true;
+        select.disabled = scenarioSelect.disabled = advanceAge.disabled = reset.disabled = true;
         status.textContent = "Loading actual app layout…";
         try {
             const response = await fetch(new URL("index.html", appBase), { cache: "no-store" });
@@ -45,16 +48,18 @@
             skyStyles.href = "labs/sky-background.css";
             doc.head.append(skyStyles);
             doc.documentElement.dataset.previewFixture = select.value;
+            doc.documentElement.dataset.previewScenario = scenarioSelect.value;
             doc.querySelector('link[rel="manifest"]')?.remove();
             const appScript = doc.querySelector('script[src="src/js/app.js"]');
             if (!appScript) throw new Error("App startup script was not found");
-            for (const source of ["labs/sky-fixtures.js", "labs/sky-background.js", "labs/sky-preview-adapter.js"]) {
+            for (const source of ["labs/sky-weather-state.js", "labs/sky-fixtures.js", "labs/sky-background.js", "labs/sky-preview-adapter.js"]) {
                 const script = doc.createElement("script");
                 script.src = source;
                 appScript.before(script);
             }
             await new Promise(resolve => {
                 frame.addEventListener("load", resolve, { once: true });
+                frame.contentWindow.skyPreview?.destroy();
                 frame.srcdoc = "<!doctype html>\n" + doc.documentElement.outerHTML;
             });
 
@@ -63,11 +68,12 @@
                 if (performance.now() > deadline) throw new Error("Preview startup timed out; check the browser console");
                 await new Promise(resolve => setTimeout(resolve, 50));
             }
+            frame.contentWindow.addEventListener("sky-preview-state", showStatus);
             showStatus();
             frame.contentWindow.skyPreview.setSkyEnabled(skyEnabled.checked);
             frame.contentWindow.skyPreview.setMotionEnabled(skyMotion.checked);
             frame.contentWindow.skyPreview.setPanelOpacity(Number(panelOpacity.value) / 100);
-            select.disabled = reset.disabled = false;
+            select.disabled = scenarioSelect.disabled = advanceAge.disabled = reset.disabled = false;
         } catch (error) {
             status.textContent = error.message;
             reset.disabled = false;
@@ -88,6 +94,13 @@
             select.disabled = reset.disabled = false;
         }
     });
+    scenarioSelect.addEventListener("change", async () => {
+        scenarioSelect.disabled = select.disabled = reset.disabled = true;
+        try { await frame.contentWindow.skyPreview.setScenario(scenarioSelect.value); showStatus(); }
+        catch (error) { status.textContent = error.message; }
+        finally { scenarioSelect.disabled = select.disabled = reset.disabled = false; }
+    });
+    advanceAge.addEventListener("click", () => frame.contentWindow.skyPreview?.advanceAge());
     reset.addEventListener("click", loadPreview);
     skyEnabled.addEventListener("change", () => {
         frame.contentWindow.skyPreview?.setSkyEnabled(skyEnabled.checked);

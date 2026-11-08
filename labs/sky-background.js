@@ -8,7 +8,7 @@
 function getSkyPalette(elevation, weather) {
   const totalClouds = weather?.total ?? 0;
   const overcastFactor = Math.max(0, Math.min(1, (totalClouds - 50) / 45)); // 0 (clear) to 1 (full overcast)
-  const isRaining = [51,53,55,56,57,61,63,65,66,67,71,73,75,77,80,81,82,85,86,95,96,97,99].includes(weather?.weatherCode);
+  const isRaining = !!skyWeatherState.condition(weather?.weatherCode).precipitation;
 
   let gradient = "";
   let cloudHighFill = "#ffffff";
@@ -176,10 +176,14 @@ function renderSkyClouds(group,tier,cover,opacity,id){
                     <g class="preview-sky-drift">
                         <g class="preview-sky-tier" filter="url(#${id}-${tier}-blur)"></g>
                     </g>
-                </svg>`).join("")}`;
+                </svg>`).join("")}
+            <div class="preview-sky-rain" hidden></div>
+            <div class="preview-sky-snow" hidden></div>`;
         const groups = Object.fromEntries(["high", "mid", "low"].map(tier =>
             [tier, root.querySelector(`[data-tier="${tier}"] .preview-sky-tier`)]));
         const stars = root.querySelector(".preview-sky-stars");
+        const rain = root.querySelector(".preview-sky-rain");
+        const snow = root.querySelector(".preview-sky-snow");
         const credits = document.createElement("footer");
         credits.className = "preview-sky-credits";
         credits.innerHTML = `Synthetic fixtures · Illustrative sky · Weather provider for future live data:
@@ -191,21 +195,21 @@ function renderSkyClouds(group,tier,cover,opacity,id){
 
         return {
             root,
-            update(beach, weather) {
+            update(beach, weather, options = {}) {
                 if (destroyed) return;
                 // First appearance and a newly selected beach commit immediately.
                 // A separate wrapper moves each tier without replacing patch nodes.
-                const immediate = !root.hasAttribute("data-clouds-ready") || root.dataset.beachId !== beach.id;
+                const immediate = !weather || !root.hasAttribute("data-clouds-ready") || root.dataset.beachId !== beach.id;
                 if (immediate) {
                     root.removeAttribute("data-clouds-ready");
                     void root.offsetWidth;
                 }
-                const time = parseCelestialTime(weather.currentTime);
+                const time = parseCelestialTime(options.time || weather?.currentTime);
                 const position = calculateSolarPosition(time, beach.latitude, beach.longitude, getPortugalUtcOffsetSeconds(time));
                 const cover = value => Number.isFinite(value) ? Math.max(0, Math.min(100, value)) : null;
                 const normalized = {
-                    total: cover(weather.cloudCover), low: cover(weather.cloudCoverLow),
-                    mid: cover(weather.cloudCoverMid), high: cover(weather.cloudCoverHigh), weatherCode: weather.weatherCode
+                    total: cover(weather?.cloudCover), low: cover(weather?.cloudCoverLow),
+                    mid: cover(weather?.cloudCoverMid), high: cover(weather?.cloudCoverHigh), weatherCode: weather?.weatherCode
                 };
                 const elevation = position.altitude;
                 const palette = getSkyPalette(elevation, normalized);
@@ -215,9 +219,14 @@ function renderSkyClouds(group,tier,cover,opacity,id){
                     renderSkyClouds(groups[tier], tier, normalized[tier], palette[`${tier}Opacity`], id);
                 }
                 stars.hidden = !(elevation < -4 && normalized.total !== null && normalized.total < 85);
+                const condition = skyWeatherState.condition(normalized.weatherCode);
+                rain.hidden = condition.precipitation !== "rain";
+                snow.hidden = condition.precipitation !== "snow";
+                rain.dataset.intensity = snow.dataset.intensity = condition.intensity || "light";
+                rain.dataset.drizzle = String(!!condition.drizzle);
                 root.dataset.beachId = beach.id;
                 root.dataset.solarElevation = String(elevation);
-                if (immediate) {
+                if (immediate && weather) {
                     void root.offsetWidth;
                     root.setAttribute("data-clouds-ready", "");
                 }

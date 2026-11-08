@@ -43,22 +43,121 @@
         return realFetch(input, options);
     };
 
-    let weatherRequests = 0;
+    let weatherRequests = 0, scenario = document.documentElement.dataset.previewScenario || "fresh", ageOffset = 0, destroyed = false;
+    const timers = new Set();
+    const schedule = (fn, delay) => {
+        const timer = setTimeout(() => { timers.delete(timer); fn(); }, delay);
+        timers.add(timer);
+        return timer;
+    };
+    const unschedule = timer => { clearTimeout(timer); timers.delete(timer); };
+    const evaluationTime = () => RealDate.parse(fixtures.civilTime(fixtureKey) + ":00Z") + ageOffset;
     const sky = createPreviewSkyBackground();
     sky.setEnabled(true);
+    const status = document.createElement("div");
+    status.className = "preview-weather-status";
+    status.setAttribute("role", "status");
+    document.getElementById("applicationHeader").after(status);
+
+    function displayWeather(state) {
+        if (state.weather) return {...state.weather};
+        // The host's Conditions widget dereferences weather immediately. Supply
+        // location/solar context with explicit unknown values instead of null.
+        const context = fixtures.weather(fixtureKey, state.beach);
+        const fields = ["airTemperature","apparentTemperature","relativeHumidity","dewPoint","visibility",
+            "highTemperature","lowTemperature","windSpeed","windDirection","windGusts","cloudCover",
+            "cloudCoverLow","cloudCoverMid","cloudCoverHigh","precipitationProbability","precipitationProbabilityMax",
+            "precipitation","rain","showers","snowfall","uvIndex","uvIndexMax","weatherCode","moonPhase"];
+        for (const field of fields) context[field] = null;
+        context.hourly = null;
+        context.description = "Weather unavailable";
+        context.icon = "unknown";
+        context.previewUnavailable = true;
+        return context;
+    }
+    const normalUpdateConditions = updateConditions;
+    updateConditions = data => {
+        normalUpdateConditions(data);
+        const marker = document.getElementById("dashboardTempMarker");
+        if (marker) marker.hidden = !Number.isFinite(data.weather.airTemperature);
+        for (const [id, field] of [["dashboardTempMin", "lowTemperature"], ["dashboardTempMax", "highTemperature"]]) {
+            const element = document.getElementById(id);
+            if (element && !Number.isFinite(data.weather[field])) element.textContent = "--";
+        }
+        if (data.weather.previewUnavailable) {
+            for (const id of ["dashboardTempMin","dashboardTempMax","dashboardMoonPhase","dashboardMoonIllumination"]) {
+                const element = document.getElementById(id);
+                if (element) element.textContent = "--";
+            }
+            if (coastalConditionElement) coastalConditionElement.textContent = "";
+        }
+    };
+    const controller = skyWeatherState.createController({
+        now: evaluationTime, setTimer: schedule, clearTimer: unschedule,
+        onState: state => {
+            if (destroyed || (appState.selectedBeachId && appState.selectedBeachId !== state.beach.id)) return;
+            sky.update(state.beach, state.weather, {time: fixtures.civilTime(fixtureKey)});
+            sky.root.dataset.weatherStatus = state.status;
+            const condition = skyWeatherState.condition(state.weather?.weatherCode);
+            const age = state.ageMs === null ? "" : ` · ${Math.floor(state.ageMs / 60000)} min old`;
+            const result = {timeout:" · refresh timed out",error:" · refresh failed",invalid:" · invalid response ignored"}[state.requestResult] || "";
+            status.textContent = `${state.beach.name} · ${state.weather ? state.status === "stale" ? "Stale weather" : "Fresh weather" : "Weather unavailable"}${age} · ${state.weather ? condition.label : state.reason}${state.pending ? " · loading fixture response…" : result}`;
+            if (currentDashboardData?.beach.id === state.beach.id) {
+                currentDashboardData.weather = displayWeather(state);
+                if (appState.currentPage === "dashboard") updateDashboard(currentDashboardData);
+            }
+            window.dispatchEvent(new Event("sky-preview-state"));
+        }
+    });
+    function transport(key, beach, {fail = false, ignoreAbort = false} = {}) {
+        return ({signal}) => new Promise((resolve, reject) => {
+            const finish = () => {
+                signal.removeEventListener("abort", aborted);
+                if (fail) reject(new Error("Simulated offline refresh"));
+                else resolve(fixtures.snapshot(key, beach, evaluationTime()));
+            };
+            const timer = schedule(finish, 1200);
+            const aborted = () => { unschedule(timer); reject(new Error("Superseded fixture request")); };
+            if (!ignoreAbort) signal.addEventListener("abort", aborted, {once: true});
+        });
+    }
     getCurrentWeather = async beach => {
         weatherRequests += 1;
-        const weather = fixtures.weather(fixtureKey, beach);
-        sky.update(beach, weather);
-        return weather;
+        const key = fixtureKey;
+        controller.commit(beach, fixtures.snapshot(key, beach, evaluationTime(), scenario));
+        if (["staleSuccess", "staleFailure", "delayed"].includes(scenario)) {
+            void controller.request(beach, transport(key, beach, {fail: scenario === "staleFailure"}));
+        } else if (scenario === "timeout") {
+            void controller.request(beach, () => new Promise(() => {}));
+        } else if (scenario === "lateBeach") {
+            const other = beaches.find(item => item.id !== beach.id);
+            if (other) {
+                void controller.request(other, transport(key, other, {ignoreAbort: true}));
+                controller.commit(beach, fixtures.snapshot(key, beach, evaluationTime()));
+            }
+        }
+        return displayWeather(controller.state);
     };
     getCurrentMarineConditions = async () => fixtures.marine();
     DATASETS.weather.service = getCurrentWeather;
     DATASETS.marine.service = getCurrentMarineConditions;
-
-    // Seed the existing app's startup path without changing its storage keys or source.
     storage.setItem("praiasDePortugalSelectedBeach", "praia-de-santa-rita-norte");
 
+    async function redisplay() {
+        if (destroyed || !appState.selectedBeachId) return;
+        await displayBeach(appState.selectedBeachId);
+        if (!destroyed && appState.currentPage === "dashboard") updateDashboard(currentDashboardData);
+    }
+    function destroy() {
+        if (destroyed) return;
+        destroyed = true;
+        controller.destroy();
+        for (const timer of timers) clearTimeout(timer);
+        timers.clear();
+        sky.destroy();
+        status.remove();
+    }
+    window.addEventListener("pagehide", destroy, {once:true});
     window.skyPreview = {
         blockedRequests,
         get weatherRequests() { return weatherRequests; },
@@ -66,26 +165,26 @@
         setSkyEnabled: enabled => sky.setEnabled(enabled),
         setMotionEnabled: enabled => sky.setMotionEnabled(enabled),
         setPanelOpacity: value => {
-            if (Number.isFinite(value)) {
-                document.body.style.setProperty("--preview-panel-opacity", String(Math.max(0, Math.min(1, value))));
-            }
+            if (Number.isFinite(value)) document.body.style.setProperty("--preview-panel-opacity", String(Math.max(0, Math.min(1, value))));
         },
         isReady: () => typeof currentDashboardData !== "undefined" && !!currentDashboardData,
         async setFixture(key) {
             if (!Object.hasOwn(fixtures.cases, key)) throw new Error("Unknown preview fixture");
-            fixtureKey = key;
-            const page = appState.currentPage;
-            if (appState.selectedBeachId) {
-                await displayBeach(appState.selectedBeachId);
-                // Hidden widgets are redrawn on their normal Dashboard navigation path.
-                if (page === "dashboard") updateDashboard(currentDashboardData);
-            }
+            fixtureKey = key; ageOffset = 0;
+            await redisplay();
         },
+        async setScenario(key) {
+            if (!Object.hasOwn(fixtures.scenarios, key)) throw new Error("Unknown data scenario");
+            scenario = key; ageOffset = 0;
+            await redisplay();
+        },
+        advanceAge() { if (!destroyed) { ageOffset += 15 * 60000; controller.recheck(); } },
+        destroy,
         snapshot: () => ({
-            fixtureKey, page: appState.currentPage, beachId: appState.selectedBeachId,
-            weather: currentDashboardData?.weather,
-            settings: { ...appState.settings },
-            clock: fixtures.civilTime(fixtureKey)
+            fixtureKey, scenario, page: appState.currentPage, beachId: appState.selectedBeachId,
+            weather: currentDashboardData?.weather, weatherState: controller.state,
+            pendingTimers: timers.size, destroyed,
+            settings: {...appState.settings}, clock: fixtures.civilTime(fixtureKey)
         })
     };
 })();
