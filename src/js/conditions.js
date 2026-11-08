@@ -776,7 +776,7 @@ function updateConditions(dashboardData) {
             weather.lowTemperature != null
         ) {
             temperatureMinElement.textContent =
-                `${Math.round(weather.lowTemperature)}°`;
+                `${Math.round(convertTemperature(weather.lowTemperature))}°`;
         }
 
         if (
@@ -784,7 +784,7 @@ function updateConditions(dashboardData) {
             weather.highTemperature != null
         ) {
             temperatureMaxElement.textContent =
-                `${Math.round(weather.highTemperature)}°`;
+                `${Math.round(convertTemperature(weather.highTemperature))}°`;
         }
 
 

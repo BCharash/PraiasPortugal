@@ -122,6 +122,17 @@ claimed by these deterministic checks.
 
 ## Next stop and limitations
 
+### Follow-up: temperature graphic units
+
+After the user confirmed the normal app worked, they reported a pre-existing
+scale-label bug: the main temperature converted to Fahrenheit, but the graphic's
+low/high endpoints still displayed Celsius values. The follow-up in
+`src/js/conditions.js` routes both endpoint labels through `convertTemperature()`.
+The marker calculation is unchanged because its relative position is the same
+in either unit. The mocked main-app check now verifies 14°–21° in Celsius,
+57°–70° in Fahrenheit, an unchanged marker position and switching back to Celsius.
+The full service/app/lab suite passed again. This does not start checkpoint 6B.
+
 6A is complete. **Stop before 6B until authorized.** Request identity in the data
 manager, same-location promise joining, timeout, retry isolation, refresh cadence
 and late-display guards are still pending. Adding metadata does not establish

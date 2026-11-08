@@ -19,6 +19,9 @@ authorized yet.
 The remaining sequence is in [the live integration plan](../docs/sky-live-integration-plan.md).
 6A is complete; see [the service contract](../docs/weather-service-contract.md).
 Continue with 6B only after approval. No live weather calls have been used for tests.
+After the user confirmed the normal app worked, a pre-existing temperature-graphic
+bug was corrected: its low/high labels now follow Celsius/Fahrenheit preferences.
+This small display follow-up is separate from 6B; refresh behavior is unchanged.
 
 - Branch: `preview/sky-background`.
 - Checkpoint 4 foundation commit: `8aa12bd`; irregular snow follow-up: `ee8be74`.

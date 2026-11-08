@@ -188,10 +188,18 @@ try:
         noErrors:previewErrors.length===0
     }))()''')
     assert all(smoke.values()),smoke
+    assert client.evaluate("document.getElementById('dashboardTempMin').textContent==='14°' && document.getElementById('dashboardTempMax').textContent==='21°'")
+    position=client.evaluate("document.getElementById('dashboardTemperatureRange').style.getPropertyValue('--temperature-position')")
     client.evaluate("temperatureUnitSelect.value='fahrenheit'; temperatureUnitSelect.dispatchEvent(new Event('change'))")
     wait_for(client,"currentDashboardData.weather && getDataStatus('weather').refreshing===false")
     client.evaluate("showDashboard()")
     assert client.evaluate("document.getElementById('dashboardAirTemp').textContent==='64°F' && previewErrors.length===0")
+    assert client.evaluate("document.getElementById('dashboardTempMin').textContent==='57°' && document.getElementById('dashboardTempMax').textContent==='70°'")
+    assert client.evaluate("document.getElementById('dashboardTemperatureRange').style.getPropertyValue('--temperature-position')") == position
+    client.evaluate("temperatureUnitSelect.value='celsius'; temperatureUnitSelect.dispatchEvent(new Event('change'))")
+    wait_for(client,"getDataStatus('weather').refreshing===false")
+    client.evaluate("showDashboard()")
+    assert client.evaluate("document.getElementById('dashboardAirTemp').textContent==='18°C' && document.getElementById('dashboardTempMin').textContent==='14°' && document.getElementById('dashboardTempMax').textContent==='21°'")
     print('MAIN_APP_SERVICE',smoke,'Fahrenheit rerender passed',flush=True)
     client.call('Page.removeScriptToEvaluateOnNewDocument',{'identifier':probe})
     client.evaluate('localStorage.clear()')
