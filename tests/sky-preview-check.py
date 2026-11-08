@@ -7,6 +7,7 @@ Uses a temporary browser profile and loopback server; never uses your browser da
 import base64
 import argparse
 import http.server
+import html
 import json
 import os
 import pathlib
@@ -23,6 +24,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 CHROME = os.environ.get("CHROME_BIN", "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome")
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--screenshot', help='Save a mobile preview screenshot to this PNG path')
+parser.add_argument('--review-dir', help='Write a fixed-scene acceptance gallery and layout measurements here')
 args = parser.parse_args()
 
 class Handler(http.server.SimpleHTTPRequestHandler):
@@ -311,7 +313,9 @@ try:
                 const expected = Number.isFinite(cover) ? Math.max(0, Math.min(100, cover)) * 24 / 100 : 0;
                 result[tier] = group.children.length === 24 && Math.abs(visible - expected) < .001;
             }
-            result.stars = sky.querySelector('.preview-sky-stars').hidden === !(Number(sky.dataset.solarElevation) < -4 && weather.cloudCover !== null && weather.cloudCover < 85);
+            const stars = sky.querySelector('.preview-sky-stars');
+            const starsHidden = !(Number(sky.dataset.solarElevation) < -4 && weather.cloudCover !== null && weather.cloudCover < 85);
+            result.stars = stars.hasAttribute('hidden') === starsHidden && (lab.getComputedStyle(stars).display === 'none') === starsHidden;
             const condition = lab.skyWeatherState.condition(weather.weatherCode);
             const rain = sky.querySelector('.preview-sky-rain'), snow = sky.querySelector('.preview-sky-snow');
             result.precipitation = rain.hidden === (condition.precipitation !== 'rain') && snow.hidden === (condition.precipitation !== 'snow') && (rain.hidden || snow.hidden);
@@ -471,6 +475,62 @@ try:
             shot.with_name(f'{shot.stem}-{key}.png').write_bytes(base64.b64decode(image['data']))
     print('PASS: reset, fixed clock, no external service calls, no errors, normal app preferences preserved', flush=True)
 
+    if args.review_dir:
+        directory = pathlib.Path(args.review_dir)
+        directory.mkdir(parents=True, exist_ok=True)
+        client.evaluate("lab.skyPreview.setScenario('fresh')")
+        client.evaluate("document.getElementById('scenarioSelect').value='fresh'; if(document.getElementById('skyMotion').checked) document.getElementById('skyMotion').click()")
+        client.evaluate("lab.document.getElementById('temperatureUnitSelect').value='celsius'; lab.document.getElementById('temperatureUnitSelect').dispatchEvent(new lab.Event('change'))")
+        wait_for(client, "!lab.eval('getDataStatus(\"weather\").refreshing')")
+        layout, pictures = [], []
+        for width, height in [(1280,900),(768,1024),(390,844),(320,740)]:
+            client.call('Emulation.setDeviceMetricsOverride', {
+                'width':width,'height':height,'deviceScaleFactor':1,'mobile':False})
+            for size in ['0','1','2','3']:
+                client.evaluate(f"lab.document.getElementById('textSizeSlider').value='{size}'; lab.document.getElementById('textSizeSlider').dispatchEvent(new lab.Event('change'))")
+                wait_for(client, "!lab.eval('getDataStatus(\"weather\").refreshing')")
+                for page in ['dashboard','beaches','settings']:
+                    client.evaluate(f"lab.document.getElementById('{page}NavButton').click()")
+                    measurement = client.evaluate('''(() => {
+                        const doc = lab.document, sky = doc.querySelector('.preview-sky');
+                        lab.scrollTo(0, doc.documentElement.scrollHeight);
+                        const fixed = sky.getBoundingClientRect().top === 0;
+                        lab.scrollTo(0,0);
+                        const active = doc.querySelector('main:not([hidden])');
+                        const control = active.querySelector('select,button,input') || doc.getElementById('dashboardNavButton');
+                        control.focus();
+                        return {viewport:lab.innerWidth, contentWidth:doc.documentElement.scrollWidth,
+                            shellWidth:document.documentElement.scrollWidth, shellViewport:innerWidth,
+                            fixedOnScroll:fixed, keyboardFocus:doc.activeElement === control,
+                            backdropInstances:doc.querySelectorAll('.preview-sky').length,
+                            errors:previewErrors.concat(lab.previewErrors)};
+                    })()''')
+                    measurement.update(width=width,height=height,textSize=size,page=page)
+                    assert measurement['fixedOnScroll'] and measurement['keyboardFocus'] and measurement['backdropInstances']==1 and not measurement['errors'], measurement
+                    assert measurement['shellWidth'] <= measurement['shellViewport'], measurement
+                    layout.append(measurement)
+            if width not in [1280,390]:
+                continue
+            client.evaluate("lab.document.getElementById('textSizeSlider').value='1'; lab.document.getElementById('textSizeSlider').dispatchEvent(new lab.Event('change'))")
+            wait_for(client, "!lab.eval('getDataStatus(\"weather\").refreshing')")
+            for fixture in ['clear','mixed','overcast','rain','code75','dusk','night']:
+                client.evaluate(f"document.getElementById('fixtureSelect').value={json.dumps(fixture)}; lab.skyPreview.setFixture({json.dumps(fixture)})")
+                for page in (['dashboard','beaches','settings'] if fixture=='mixed' else ['dashboard']):
+                    client.evaluate(f"lab.document.getElementById('{page}NavButton').click()")
+                    for opacity in (['0','30','100'] if fixture=='clear' else ['30']):
+                        client.evaluate(f"document.getElementById('panelOpacity').value='{opacity}'; document.getElementById('panelOpacity').dispatchEvent(new Event('input'))")
+                        client.evaluate("lab.scrollTo(0,0); lab.document.querySelector('.preview-sky').getAnimations({subtree:true}).forEach(a=>{a.pause();a.currentTime=0;})")
+                        filename = f'{width}-{page}-{fixture}-opacity{opacity}.png'
+                        capture = client.call('Page.captureScreenshot',{'format':'png'})
+                        (directory/filename).write_bytes(base64.b64decode(capture['data']))
+                        pictures.append(filename)
+        report = {'browser':client.call('Browser.getVersion'), 'layout':layout, 'screenshots':pictures,
+                  'note':'Chrome desktop viewport emulation only. Visual and physical-device acceptance are separate.'}
+        (directory/'measurements.json').write_text(json.dumps(report,indent=2))
+        cards = ''.join(f'<figure><a href="{html.escape(name)}"><img loading="lazy" src="{html.escape(name)}" alt="{html.escape(name)}"></a><figcaption>{html.escape(name)}</figcaption></figure>' for name in pictures)
+        (directory/'index.html').write_text('<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Sky acceptance review</title><style>body{font:16px/1.5 system-ui;background:#101a30;color:#f4f7fb;padding:20px}main{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}figure{margin:0}img{width:100%;height:450px;object-fit:contain;background:#080e1d}a{color:#8adcf0}figcaption{overflow-wrap:anywhere}</style><h1>Sky acceptance review</h1><p>Fixed fixtures and animation phases. These are Chrome desktop viewport captures, not physical mobile-device results. Select an image for full size. Check readability at 0/30/100% opacity, cloud edges, repetition and overall composition.</p><p><a href="measurements.json">Layout measurements</a></p><main>'+cards+'</main>')
+        print(f'REVIEW: {len(layout)} layout combinations; {len(pictures)} stills; gallery: {directory / "index.html"}',flush=True)
+
     # Return to production with no selected beach: verify the ordinary entry and navigation.
     client.evaluate("localStorage.clear()")
     client.call('Page.navigate', {'url': origin + '/index.html'})
@@ -479,6 +539,25 @@ try:
         client.evaluate(f"document.getElementById('{page}NavButton').click()")
         assert client.evaluate(f"!document.getElementById('{page}Page').hidden")
     assert client.evaluate("typeof skyPreview === 'undefined' && previewErrors.length === 0")
+    if args.review_dir:
+        baseline = []
+        for width,height in [(1280,900),(768,1024),(390,844),(320,740)]:
+            client.call('Emulation.setDeviceMetricsOverride', {
+                'width':width,'height':height,'deviceScaleFactor':1,'mobile':False})
+            for size in ['0','1','2','3']:
+                client.evaluate(f"textSizeSlider.value='{size}'; textSizeSlider.dispatchEvent(new Event('change'))")
+                for page in ['dashboard','beaches','settings']:
+                    client.evaluate(f"document.getElementById('{page}NavButton').click()")
+                    baseline.append({'width':width,'textSize':size,'page':page,
+                                     'contentWidth':client.evaluate('document.documentElement.scrollWidth')})
+        report['normalAppLayout'] = baseline
+        indexed = {(v['width'],v['textSize'],v['page']):v['contentWidth'] for v in baseline}
+        for item in report['layout']:
+            item['normalAppContentWidth'] = indexed[(item['width'],item['textSize'],item['page'])]
+            item['addedHorizontalOverflow'] = item['contentWidth'] > item['normalAppContentWidth']
+        assert not any(item['addedHorizontalOverflow'] for item in report['layout']), report['layout']
+        (directory/'measurements.json').write_text(json.dumps(report,indent=2))
+        print('PASS: all 48 review layouts match normal-app widths; no new horizontal overflow',flush=True)
     print('PASS: normal app startup/navigation unaffected', flush=True)
 finally:
     if chrome:

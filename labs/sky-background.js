@@ -241,7 +241,7 @@ function renderSkyClouds(group,tier,cover,opacity,id){
                     root.style.setProperty(`--cloud-${tier}-fill`, palette.cloudHighFill);
                     renderSkyClouds(groups[tier], tier, normalized[tier], palette[`${tier}Opacity`], id);
                 }
-                stars.hidden = !(elevation < -4 && normalized.total !== null && normalized.total < 85);
+                stars.toggleAttribute("hidden", !(elevation < -4 && normalized.total !== null && normalized.total < 85));
                 const condition = skyWeatherState.condition(normalized.weatherCode);
                 rain.hidden = condition.precipitation !== "rain";
                 snow.hidden = condition.precipitation !== "snow";
