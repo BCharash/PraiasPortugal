@@ -109,7 +109,7 @@ function simulatorDateFromWeather(weather) {
     // This means opening/reloading the development web app resets the clock
     // to "now" instead of retaining a previous simulation time.
     if (!parsed)
-        return new Date();
+        return environmentContext.parseCivil(environmentContext.clock().civilTime);
 
     const urlValue =
         typeof window !== "undefined"
@@ -170,7 +170,7 @@ function setCelestialSimulatorTime(date, updateUrl = true) {
     if (!(date instanceof Date) || Number.isNaN(date.getTime()))
         return;
 
-    const next = new Date(date.getTime());
+    const next = environmentContext.civilDate(date.getTime());
     next.setSeconds(0, 0);
 
     window.celestialSimulatorTime = next;
@@ -205,7 +205,7 @@ function stepCelestialSimulator(minutes = null) {
         ? minutes
         : getCelestialSimulatorStep();
 
-    const next = new Date(window.celestialSimulatorTime.getTime());
+    const next = environmentContext.civilDate(window.celestialSimulatorTime.getTime());
     next.setMinutes(next.getMinutes() + amount);
     setCelestialSimulatorTime(next);
 }
@@ -375,8 +375,8 @@ function initializeCelestialSimulator(weather = null) {
 
                 const current =
                     window.celestialSimulatorTime instanceof Date
-                        ? new Date(window.celestialSimulatorTime.getTime())
-                        : new Date();
+                        ? environmentContext.civilDate(window.celestialSimulatorTime.getTime())
+                        : environmentContext.parseCivil(environmentContext.clock().civilTime);
 
                 current.setHours(parsed.hour, parsed.minute, 0, 0);
                 setCelestialSimulatorTime(current);
@@ -397,8 +397,8 @@ function initializeCelestialSimulator(weather = null) {
 
                 const current =
                     window.celestialSimulatorTime instanceof Date
-                        ? new Date(window.celestialSimulatorTime.getTime())
-                        : new Date();
+                        ? environmentContext.civilDate(window.celestialSimulatorTime.getTime())
+                        : environmentContext.parseCivil(environmentContext.clock().civilTime);
 
                 const parts = value.split("-").map(Number);
 
@@ -534,47 +534,8 @@ function updateCelestialGraphicOnly() {
     if (!graphicWidth || !graphicHeight)
         return;
 
-    // getCelestialState normally uses weather.currentTime, which is the
-    // timestamp from the last weather/API load. For the minute-by-minute
-    // display we must supply the current local civil clock time instead.
-    // This changes no weather data and makes no API request.
-    const simulationValue =
-        typeof window !== "undefined"
-            ? new URLSearchParams(window.location.search).get("celestialSim")
-            : null;
+    renderConditionsCelestial(currentDashboardData);
 
-    let celestialWeather = latestCelestialWeather;
-
-    // Preserve celestial simulation exactly as entered by the developer.
-    // In normal operation, replace only currentTime with the actual local
-    // wall-clock time so the celestial position advances every minute.
-    if (!simulationValue) {
-        const now = new Date();
-        const pad = value => String(value).padStart(2, "0");
-
-        celestialWeather = {
-            ...latestCelestialWeather,
-            currentTime:
-                `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}` +
-                `T${pad(now.getHours())}:${pad(now.getMinutes())}`
-        };
-    }
-
-    const celestial =
-        getCelestialState(celestialWeather);
-
-    if (!celestial)
-        return;
-
-    updateCelestialSimulatorControls(celestial);
-
-    celestialGraphicElement.innerHTML =
-        renderCelestialGraphic(
-            celestial,
-            latestCelestialWeather,
-            graphicWidth,
-            graphicHeight
-        );
 }
 
 
@@ -627,17 +588,26 @@ if (typeof document !== "undefined") {
 // Updates
 //--------------------------------------------------
 
-// Preserve astronomical context without inventing weather measurements.
-// The broader shared Lisbon clock is checkpoint 6E; this fallback follows the
-// existing celestial minute updater's local civil-time convention.
-function getConditionsCelestialWeather(data) {
-    if (data.weather) return data.weather;
-    const beach = data.beach;
-    if (!Number.isFinite(beach?.latitude) || !Number.isFinite(beach?.longitude)) return null;
-    const now = new Date(), pad = value => String(value).padStart(2, "0");
-    return {latitude:beach.latitude, longitude:beach.longitude,
-        currentTime:`${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`,
-        sunrise:null,sunset:null,moonPhase:null,moonrise:null,moonset:null};
+// Build the same selected-location/clock context used by the future sky consumer.
+function renderConditionsCelestial(data) {
+    const context = environmentContext.create(data?.beach, data?.weather);
+    latestCelestialWeather = context?.celestialWeather ?? null;
+    if (!context) return null;
+    const weather = context.celestialWeather;
+    initializeCelestialSimulator({...weather,currentTime:context.clock.civilTime});
+    const celestial = getCelestialState(weather, context.clock);
+    startCelestialAutoUpdate();
+    updateCelestialSimulatorControls(celestial);
+    const clockLabel = date => date instanceof Date && !Number.isNaN(date.getTime())
+        ? `${String(date.getHours()).padStart(2,"0")}:${String(date.getMinutes()).padStart(2,"0")}` : "--";
+    for (const [id,time] of [["dashboardSunrise",celestial?.sun.position?.sunriseTime],
+        ["dashboardSunset",celestial?.sun.position?.sunsetTime]]) {
+        const node = document.getElementById(id);
+        if (node) node.textContent = clockLabel(time);
+    }
+    const graphic = document.getElementById("celestialGraphic");
+    if (graphic) graphic.innerHTML = celestial ? renderCelestialGraphic(celestial,weather,graphic.clientWidth,graphic.clientHeight) : "";
+    return celestial;
 }
 
 function updateConditions(data) {
@@ -684,21 +654,7 @@ function updateConditions(data) {
         }
     }
 
-    const celestialWeather = getConditionsCelestialWeather(data);
-    latestCelestialWeather = celestialWeather;
-    const celestial = celestialWeather ? getCelestialState(celestialWeather) : null;
-    const rise = celestial?.sun.position?.sunriseTime, set = celestial?.sun.position?.sunsetTime;
-    const clock = date => date instanceof Date && !Number.isNaN(date.getTime())
-        ? `${String(date.getHours()).padStart(2,"0")}:${String(date.getMinutes()).padStart(2,"0")}` : "--";
-    put("dashboardSunrise", weather?.sunrise ? formatSunTime(weather.sunrise) : clock(rise));
-    put("dashboardSunset", weather?.sunset ? formatSunTime(weather.sunset) : clock(set));
-    if (celestial) {
-        initializeCelestialSimulator(celestialWeather);
-        startCelestialAutoUpdate();
-        updateCelestialSimulatorControls(celestial);
-    }
-    const graphic = document.getElementById("celestialGraphic");
-    if (graphic) graphic.innerHTML = celestial ? renderCelestialGraphic(celestial,celestialWeather,graphic.clientWidth,graphic.clientHeight) : "";
+    renderConditionsCelestial(data);
     const moon = document.getElementById("dashboardMoonPhase");
     if (moon) {
         if (finite(weather?.moonPhase)) {

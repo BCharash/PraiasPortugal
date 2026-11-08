@@ -74,7 +74,7 @@ function getPortugalUtcOffsetSeconds(localDate) {
 }
 
 
-function getCelestialState(weather) {
+function getCelestialState(weather, clock = null) {
 
     if (!weather)
         return null;
@@ -87,13 +87,10 @@ function getCelestialState(weather) {
     // midnight.
     //--------------------------------------------------
 
-    const now =
-        parseCelestialTime(
-            getCelestialSimulationTime(
-                weather.currentTime,
-                weather.sunrise
-            )
-        );
+    const displayTime = getCelestialSimulationTime(clock?.civilTime ?? weather.currentTime, weather.sunrise);
+    const now = parseCelestialTime(displayTime);
+    const currentOffset = clock && displayTime === clock.civilTime
+        ? clock.utcOffsetSeconds : getPortugalUtcOffsetSeconds(now);
 
     let sunrise = null;
     let sunset = null;
@@ -102,34 +99,31 @@ function getCelestialState(weather) {
 
     if (now) {
 
-        const today = new Date(
+        const today = environmentContext.civilDate(
             now.getFullYear(),
             now.getMonth(),
             now.getDate(),
             12, 0, 0, 0
         );
 
-        const yesterday = new Date(today.getTime());
+        const yesterday = environmentContext.civilDate(today.getTime());
         yesterday.setDate(yesterday.getDate() - 1);
 
-        const tomorrow = new Date(today.getTime());
+        const tomorrow = environmentContext.civilDate(today.getTime());
         tomorrow.setDate(tomorrow.getDate() + 1);
 
         // For the forecast's loaded date, preserve the exact Open-Meteo
         // civil sunrise/sunset shown elsewhere in the app. For any other
         // simulated date, calculate the corresponding horizon times locally.
-        const forecastDate = parseCelestialTime(weather.currentTime);
-        const sameCalendarDate = date =>
-            forecastDate &&
-            date.getFullYear() === forecastDate.getFullYear() &&
-            date.getMonth() === forecastDate.getMonth() &&
-            date.getDate() === forecastDate.getDate();
+        const sameCalendarDate = date => date &&
+            date.getFullYear() === today.getFullYear() &&
+            date.getMonth() === today.getMonth() && date.getDate() === today.getDate();
 
         const forecastSunrise = parseCelestialTime(weather.sunrise);
         const forecastSunset = parseCelestialTime(weather.sunset);
 
         const todayHorizon =
-            sameCalendarDate(today) && forecastSunrise && forecastSunset
+            sameCalendarDate(forecastSunrise) && sameCalendarDate(forecastSunset)
                 ? {
                     sunrise: forecastSunrise,
                     sunset: forecastSunset
@@ -187,7 +181,7 @@ function getCelestialState(weather) {
                 nextSunrise,
                 weather.latitude,
                 weather.longitude,
-                getPortugalUtcOffsetSeconds(now)
+                currentOffset
             );
     }
 
@@ -317,39 +311,7 @@ function getCelestialSimulationTime(defaultTime, sunriseTime) {
 // rather than allowing the browser's timezone to alter it.
 function parseCelestialTime(value) {
 
-    if (!value)
-        return null;
-
-
-    const parts =
-        value.split("T");
-
-
-    if (parts.length !== 2)
-        return null;
-
-
-    const dateParts =
-        parts[0].split("-");
-
-    const timeParts =
-        parts[1].split(":");
-
-
-    if (
-        dateParts.length !== 3 ||
-        timeParts.length < 2
-    )
-        return null;
-
-
-    return new Date(
-        Number(dateParts[0]),
-        Number(dateParts[1]) - 1,
-        Number(dateParts[2]),
-        Number(timeParts[0]),
-        Number(timeParts[1])
-    );
+    return environmentContext.parseCivil(value);
 
 }
 
@@ -606,7 +568,7 @@ function getSunDisplayPosition(
         longitude,
         getPortugalUtcOffsetSeconds(nextSunrise)
     )?.azimuth ?? null;
-    position.localTime = new Date(now.getTime());
+    position.localTime = environmentContext.civilDate(now.getTime());
     position.previousSunsetTime = previousSunset;
     position.sunriseTime = todaySunrise;
     position.sunsetTime = todaySunset;
@@ -627,7 +589,7 @@ function getSunDisplayPosition(
         )?.altitude ?? 0;
     position.latitude = latitude;
     position.longitude = longitude;
-    position.utcOffsetSeconds = getPortugalUtcOffsetSeconds(now);
+    position.utcOffsetSeconds = utcOffsetSeconds;
     position.isBelowHorizon = false;
     position.isNightParked = false;
 
@@ -635,16 +597,16 @@ function getSunDisplayPosition(
         return position;
 
     const sunriseTransitionStart =
-        new Date(todaySunrise.getTime() - 4 * 60000);
+        environmentContext.civilDate(todaySunrise.getTime() - 4 * 60000);
 
     const sunriseTransitionEnd =
-        new Date(todaySunrise.getTime() + 5 * 60000);
+        environmentContext.civilDate(todaySunrise.getTime() + 5 * 60000);
 
     const sunsetTransitionStart =
-        new Date(todaySunset.getTime() - 5 * 60000);
+        environmentContext.civilDate(todaySunset.getTime() - 5 * 60000);
 
     const sunsetTransitionEnd =
-        new Date(todaySunset.getTime() + 4 * 60000);
+        environmentContext.civilDate(todaySunset.getTime() + 4 * 60000);
 
     //--------------------------------------------------
     // Sunrise / sunset state information.
@@ -682,13 +644,13 @@ function getSunDisplayPosition(
 
     const nightParkStart =
         isBeforeSunrise
-            ? new Date(previousSunset.getTime() + 2 * 60000)
-            : new Date(todaySunset.getTime() + 2 * 60000);
+            ? environmentContext.civilDate(previousSunset.getTime() + 2 * 60000)
+            : environmentContext.civilDate(todaySunset.getTime() + 2 * 60000);
 
     const nightParkEnd =
         isBeforeSunrise
-            ? new Date(todaySunrise.getTime() - 2 * 60000)
-            : new Date(nextSunrise.getTime() - 2 * 60000);
+            ? environmentContext.civilDate(todaySunrise.getTime() - 2 * 60000)
+            : environmentContext.civilDate(nextSunrise.getTime() - 2 * 60000);
 
     if (isNight &&
         now >= nightParkStart &&
@@ -755,7 +717,7 @@ function getSolarHorizonTimes(localDate, latitude, longitude, utcOffsetSeconds =
     const day = localDate.getDate();
 
     const dateAtHour = hour =>
-        new Date(year, month, day, hour, 0, 0, 0);
+        environmentContext.civilDate(year, month, day, hour, 0, 0, 0);
 
     const getSolarTerms = date => {
         const y = date.getFullYear();
@@ -814,11 +776,11 @@ function getSolarHorizonTimes(localDate, latitude, longitude, utcOffsetSeconds =
         const sunriseMinutes = solarNoonMinutes - hourAngle * 4;
         const sunsetMinutes = solarNoonMinutes + hourAngle * 4;
 
-        estimate = new Date(year, month, day, 0, 0, 0, 0);
+        estimate = environmentContext.civilDate(year, month, day, 0, 0, 0, 0);
 
         return {
-            sunrise: new Date(estimate.getTime() + sunriseMinutes * 60000),
-            sunset: new Date(estimate.getTime() + sunsetMinutes * 60000)
+            sunrise: environmentContext.civilDate(estimate.getTime() + sunriseMinutes * 60000),
+            sunset: environmentContext.civilDate(estimate.getTime() + sunsetMinutes * 60000)
         };
     }
 

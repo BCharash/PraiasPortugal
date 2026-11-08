@@ -138,6 +138,7 @@ try:
     '''})
     origin = f'http://127.0.0.1:{server.server_port}'
 
+    environment_fingerprints = None
     for zone in ['Europe/Lisbon','America/Los_Angeles','Asia/Tokyo']:
         client.call('Emulation.setTimezoneOverride',{'timezoneId':zone})
         query = '?zone=' + zone
@@ -147,10 +148,19 @@ try:
         assert result['ok'], result
         assert client.evaluate('previewErrors.length===0')
         print('SERVICE_CONTRACT',zone,result['results'],flush=True)
+        weather_fixture=client.evaluate('weatherContractFixture')
+        client.call('Page.navigate',{'url':origin+'/tests/environment-context-contract.html'+query})
+        wait_for(client,"location.pathname==='/tests/environment-context-contract.html' && !!window.environmentContractResult")
+        environment=client.evaluate('environmentContractResult')
+        assert environment['ok'],environment
+        assert client.evaluate('previewErrors.length===0')
+        if environment_fingerprints is not None:
+            assert environment['fingerprints']==environment_fingerprints, 'Solar paths differ by browser timezone: '+zone
+        environment_fingerprints=environment['fingerprints']
+        print('ENVIRONMENT_CONTEXT',zone,environment['results'],flush=True)
     client.call('Emulation.setTimezoneOverride',{'timezoneId':'Europe/Lisbon'})
     if args.service_only:
         raise SystemExit(0)
-    weather_fixture=client.evaluate('weatherContractFixture')
     client.call('Page.navigate',{'url':origin+'/tests/weather-requests-contract.html'})
     wait_for(client,"location.pathname==='/tests/weather-requests-contract.html' && !!window.requestContractResult")
     result=client.evaluate('requestContractResult')
@@ -213,6 +223,35 @@ try:
         noErrors:previewErrors.length===0
     }))()''')
     assert all(smoke.values()),smoke
+    clock_requests=client.evaluate('[serviceProbe.weatherRequests,serviceProbe.marineRequests]')
+    model_before=client.evaluate('JSON.stringify(currentDashboardData.weather)')
+    solar_fingerprints=None
+    for zone in ['Europe/Lisbon','America/Los_Angeles','Asia/Tokyo']:
+        client.call('Emulation.setTimezoneOverride',{'timezoneId':zone})
+        solar=client.evaluate('''(() => {
+            const previous=serviceProbe.now, result=[];
+            for(const instant of ['2026-03-08T02:30:00Z','2026-07-08T23:30:00Z','2026-10-25T00:30:00Z','2026-10-25T01:30:00Z']){
+                serviceProbe.now=Date.parse(instant);updateCelestialGraphicOnly();
+                const state=renderConditionsCelestial(currentDashboardData);
+                result.push({instant,sunrise:document.getElementById('dashboardSunrise').textContent,
+                    sunset:document.getElementById('dashboardSunset').textContent,
+                    altitude:state.sun.position.altitude,svg:document.getElementById('celestialGraphic').innerHTML});
+            }
+            serviceProbe.now=previous;updateCelestialGraphicOnly();return result;
+        })()''')
+        if solar_fingerprints is not None:
+            assert solar==solar_fingerprints, 'Actual Conditions graphic differs by browser timezone: '+zone
+        solar_fingerprints=solar
+    client.call('Emulation.setTimezoneOverride',{'timezoneId':'Europe/Lisbon'})
+    assert client.evaluate('[serviceProbe.weatherRequests,serviceProbe.marineRequests]')==clock_requests
+    assert client.evaluate('JSON.stringify(currentDashboardData.weather)')==model_before
+    # Development civil-time simulation still steps through midnight without acquisition.
+    client.evaluate("history.replaceState(null,'','?dev');renderConditionsCelestial(currentDashboardData);setCelestialSimulatorTime(parseCelestialTime('2026-07-08T23:59'),false);stepCelestialSimulator(1)")
+    assert client.evaluate("formatSimulatorDateTime(celestialSimulatorTime)==='2026-07-09 0000'")
+    assert client.evaluate('[serviceProbe.weatherRequests,serviceProbe.marineRequests]')==clock_requests
+    client.evaluate("history.replaceState(null,'','?service-probe');stopCelestialSimulatorRun();delete window.celestialSimulatorTime;document.getElementById('celestialSimulator').remove();updateCelestialGraphicOnly()")
+    assert client.evaluate('previewErrors.length===0')
+    print('PASS: actual Conditions clocks and SVG paths identical across three zones; civil simulator midnight and solar tick make no requests',flush=True)
     assert client.evaluate("document.getElementById('dashboardTempMin').textContent==='14°' && document.getElementById('dashboardTempMax').textContent==='21°'")
     position=client.evaluate("document.getElementById('dashboardTemperatureRange').style.getPropertyValue('--temperature-position')")
     client.evaluate("temperatureUnitSelect.value='fahrenheit'; temperatureUnitSelect.dispatchEvent(new Event('change'))")

@@ -24,11 +24,12 @@
     const RealDate = window.Date;
     const fixtureEpoch = () => {
         const [hour, minute] = fixtures.cases[fixtureKey].time.split(":").map(Number);
-        return new RealDate(2026, 10, 7, hour, minute).getTime();
+        return RealDate.UTC(2026, 10, 7, hour, minute);
     };
     window.Date = class extends RealDate {
         constructor(...args) { super(...(args.length ? args : [fixtureEpoch()])); }
         static now() { return fixtureEpoch(); }
+        static [Symbol.hasInstance](value) { return value instanceof RealDate; }
     };
 
     const realFetch = window.fetch.bind(window);

@@ -95,15 +95,15 @@ function getSunVisualState(sun) {
             parkBelowHorizon: false
         };
 
-    const now = new Date(sun.localTime.getTime());
+    const now = environmentContext.civilDate(sun.localTime.getTime());
     now.setSeconds(0, 0);
 
     const sunrise = sun.sunriseTime instanceof Date
-        ? new Date(sun.sunriseTime.getTime())
+        ? environmentContext.civilDate(sun.sunriseTime.getTime())
         : null;
 
     const sunset = sun.sunsetTime instanceof Date
-        ? new Date(sun.sunsetTime.getTime())
+        ? environmentContext.civilDate(sun.sunsetTime.getTime())
         : null;
 
     if (!sunrise || !sunset)
@@ -261,7 +261,7 @@ function getBelowHorizonAltitudeRange(weather, sunrise) {
         return 20;
 
     const nextDay =
-        new Date(
+        environmentContext.civilDate(
             sunrise.getFullYear(),
             sunrise.getMonth(),
             sunrise.getDate() + 1,
@@ -286,7 +286,7 @@ function getBelowHorizonAltitudeRange(weather, sunrise) {
 
         const progress = i / samples;
         const time =
-            new Date(
+            environmentContext.civilDate(
                 horizonTimes.sunset.getTime() +
                 progress *
                 (nextHorizon.sunrise.getTime() - horizonTimes.sunset.getTime())
@@ -434,7 +434,7 @@ function renderCelestialGraphic(
                 return;
 
             position.localTime =
-                new Date(position._pathTime);
+                environmentContext.civilDate(position._pathTime);
             position.sunriseTime =
                 position._pathTime > sunset.getTime()
                     ? nextSunrise
@@ -501,7 +501,7 @@ function renderCelestialGraphic(
 
                 const progress = i / pathSegments;
                 const localTime =
-                    new Date(
+                    environmentContext.civilDate(
                         sunrise.getTime() +
                         progress * (sunset.getTime() - sunrise.getTime())
                     );
@@ -553,7 +553,7 @@ function renderCelestialGraphic(
 
                 const progress = i / pathSegments;
                 const localTime =
-                    new Date(
+                    environmentContext.civilDate(
                         sunset.getTime() +
                         progress * (nextSunrise.getTime() - sunset.getTime())
                     );
