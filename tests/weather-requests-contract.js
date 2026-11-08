@@ -34,6 +34,7 @@
         assert(h.manager.getData()===null && h.manager.getData(A)===accepted.data,"No global-slot cross-beach fallback");
         const backA=await h.manager.request(A);
         assert(backA.outcome==='cached' && !h.manager.isCurrent(accepted),"A/B/A invalidates old result even with cached A");
+        assert(h.manager.owns(backA) && !h.manager.owns(accepted),"Ownership also guards unavailable display outcomes");
         assert((await waitingB).outcome==='superseded' && h.calls[1].signal.aborted,"Superseded waiter settles immediately");
         const stable=JSON.stringify(h.manager.getStatus());
         h.calls[1].resolve(h.weather(B));await tick();
@@ -48,7 +49,9 @@
         assert(r.manager.getData().requestedBeachId==='B' && r.manager.getData(A)===null,"Late cold response ignored");
         const moved={...A,latitude:42};const pc=r.manager.request(moved);
         r.calls[2].resolve(r.weather(A));
-        assert((await pc).outcome==='error' && r.manager.getData()===null,"Same ID with changed coordinates is a new identity");
+        const empty=await pc;
+        assert(empty.outcome==='error' && r.manager.getData()===null,"Same ID with changed coordinates is a new identity");
+        assert(r.manager.owns(empty) && !r.manager.isCurrent(empty),"Current failed result is owned without publishable weather");
         const source={...C}, pd=r.manager.request(source);source.latitude=0;
         assert(r.calls[3].beach.latitude===C.latitude && Object.isFrozen(r.calls[3].beach),"Captured location is immutable");
         r.calls[3].resolve(r.weather(C));assert((await pd).outcome==='success',"Captured identity accepted");

@@ -56,108 +56,71 @@ Parameters:
 
 */
 
-async function displayBeach(beachId, {forceWeather = false} = {}) {
+let beachDisplayGeneration = 0;
 
-    const beach =
-        findBeach(beachId);
-
-    if (!beach)
-        return;
-
-    //--------------------------------------------------
-    // Current Weather
-    //--------------------------------------------------
-
-    const weatherResult = await refreshWeatherDataset(beach, {force:forceWeather});
-    if (!isWeatherResultCurrent(weatherResult)) return;
-    const weather = weatherResult.data;
-
-
-        
-    //--------------------------------------------------
-    // Current Marine Conditions
-    //--------------------------------------------------
-
-    const marine =
-        await getCurrentMarineConditions(beach);
-
-    if (!isWeatherResultCurrent(weatherResult)) return;
-
-
-    //--------------------------------------------------
-    // Tide Information
-    //--------------------------------------------------
-
-    const tide =
-        getTideInformation(marine);
-
-
-    //--------------------------------------------------
-    // Dashboard Data
-    //--------------------------------------------------
-
-    const dashboardData = {
-
-        beach,
-        weather,
-        marine,
-        tide
-
-    };
-
-
-    //--------------------------------------------------
-    // Beach Information
-    //--------------------------------------------------
-
-    setText(
-        regionSpan,
-        beach.region
-    );
-
-    setText(
-        municipalitySpan,
-        beach.municipality
-    );
-
-    setText(
-        districtSpan,
-        beach.district
-    );
-
-    setText(
-        latitudeSpan,
-        beach.latitude
-    );
-
-    setText(
-        longitudeSpan,
-        beach.longitude
-    );
-
-
-    //--------------------------------------------------
-    // View on Map
-    //--------------------------------------------------
-
-    const viewOnMapLink =
-        document.getElementById(
-            "viewOnMapLink"
-        );
-
-    if (viewOnMapLink) {
-
-        viewOnMapLink.href =
-            `https://www.google.com/maps/search/?api=1&query=${beach.latitude},${beach.longitude}`;
-
+// Re-render accepted state only. Never fetch on units/language/text-size changes.
+function renderCurrentDashboard() {
+    const data = currentDashboardData;
+    if (!data || appState.selectedBeachId !== data.beach.id) return;
+    if (data.weather) {
+        const weather = data.weather;
+        const state = weatherState.evaluate({beachId:weather.requestedBeachId,
+            latitude:weather.requestedLatitude, longitude:weather.requestedLongitude,
+            conditionTimeMs:weather.conditionTimeMs, fetchedAtMs:weather.fetchedAtMs, weather}, data.beach, Date.now());
+        data.weather = state.weather;
+        data.weatherStatus = {...data.weatherStatus, freshness:state.status};
     }
+    if (appState.currentPage === "dashboard") updateDashboard(data);
+}
 
-    
-        //--------------------------------------------------
-    // Dashboard Data
-    //--------------------------------------------------
+async function displayBeach(beachId, {forceWeather = false} = {}) {
+    const found = findBeach(beachId);
+    if (!found || appState.selectedBeachId !== found.id) return;
+    const beach = {...found};
+    const generation = ++beachDisplayGeneration;
+    const current = () => generation === beachDisplayGeneration && appState.selectedBeachId === beach.id &&
+        findBeach(beach.id)?.latitude === beach.latitude && findBeach(beach.id)?.longitude === beach.longitude;
+    const data = {beach, weather:getDatasetData("weather",beach), marine:null, tide:null,
+        weatherStatus:getDataStatus("weather",beach), weatherPending:true,
+        marineStatus:"loading", marinePending:true};
+    currentDashboardData = data;
+    setText(regionSpan, beach.region);
+    setText(municipalitySpan, beach.municipality);
+    setText(districtSpan, beach.district);
+    setText(latitudeSpan, beach.latitude);
+    setText(longitudeSpan, beach.longitude);
+    const link = document.getElementById("viewOnMapLink");
+    if (link) link.href = `https://www.google.com/maps/search/?api=1&query=${beach.latitude},${beach.longitude}`;
+    updateFavoriteButton();
+    renderCurrentDashboard();
 
-    currentDashboardData =
-        dashboardData;
-
+    const weatherWork = refreshWeatherDataset(beach, {force:forceWeather}).then(result => {
+        if (!current() || !isWeatherResultActive(result)) return;
+        data.weather = isWeatherResultCurrent(result) ? result.data : null;
+        data.weatherStatus = getDataStatus("weather",beach);
+        data.weatherPending = false;
+        renderCurrentDashboard();
+    }, error => {
+        if (!current()) return;
+        data.weather = null;
+        data.weatherStatus = {freshness:"unavailable", refreshStatus:"error", error};
+        data.weatherPending = false;
+        renderCurrentDashboard();
+    });
+    const marineWork = (async () => {
+        try {
+            const marine = await getCurrentMarineConditions(beach);
+            if (!current()) return;
+            data.tide = getTideInformation(marine);
+            data.marine = marine;
+            data.marineStatus = marine ? "ready" : "unavailable";
+        } catch (error) {
+            if (!current()) return;
+            data.marine = null; data.tide = null; data.marineStatus = "error";
+        }
+        if (!current()) return;
+        data.marinePending = false;
+        renderCurrentDashboard();
+    })();
+    await Promise.all([weatherWork, marineWork]);
 }

@@ -553,6 +553,10 @@ function isWeatherResultCurrent(result) {
     return weatherRequestManager?.isCurrent(result) || false;
 }
 
+function isWeatherResultActive(result) {
+    return weatherRequestManager?.owns(result) || false;
+}
+
 function clearWeatherDataset() {
     weatherRequestManager?.clear();
 }

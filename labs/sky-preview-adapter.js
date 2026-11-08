@@ -59,39 +59,12 @@
     status.setAttribute("role", "status");
     document.getElementById("applicationHeader").after(status);
 
-    function displayWeather(state) {
-        if (state.weather) return {...state.weather};
-        // The host's Conditions widget dereferences weather immediately. Supply
-        // location/solar context with explicit unknown values instead of null.
-        const context = fixtures.weather(fixtureKey, state.beach);
-        const fields = ["airTemperature","apparentTemperature","relativeHumidity","dewPoint","visibility",
-            "highTemperature","lowTemperature","windSpeed","windDirection","windGusts","cloudCover",
-            "cloudCoverLow","cloudCoverMid","cloudCoverHigh","precipitationProbability","precipitationProbabilityMax",
-            "precipitation","rain","showers","snowfall","uvIndex","uvIndexMax","weatherCode","moonPhase"];
-        for (const field of fields) context[field] = null;
-        context.hourly = null;
-        context.description = "Weather unavailable";
-        context.icon = "unknown";
-        context.previewUnavailable = true;
-        return context;
+    function fixturePayload(state) {
+        if (!state.weather) return null;
+        return {...state.weather,requestedBeachId:state.beach.id,requestedLatitude:state.beach.latitude,
+            requestedLongitude:state.beach.longitude,fetchedAtMs:Date.now(),
+            conditionTimeMs:Date.now()-(state.ageMs || 0)};
     }
-    const normalUpdateConditions = updateConditions;
-    updateConditions = data => {
-        normalUpdateConditions(data);
-        const marker = document.getElementById("dashboardTempMarker");
-        if (marker) marker.hidden = !Number.isFinite(data.weather.airTemperature);
-        for (const [id, field] of [["dashboardTempMin", "lowTemperature"], ["dashboardTempMax", "highTemperature"]]) {
-            const element = document.getElementById(id);
-            if (element && !Number.isFinite(data.weather[field])) element.textContent = "--";
-        }
-        if (data.weather.previewUnavailable) {
-            for (const id of ["dashboardTempMin","dashboardTempMax","dashboardMoonPhase","dashboardMoonIllumination"]) {
-                const element = document.getElementById(id);
-                if (element) element.textContent = "--";
-            }
-            if (coastalConditionElement) coastalConditionElement.textContent = "";
-        }
-    };
     const controller = skyWeatherState.createController({
         now: evaluationTime, setTimer: schedule, clearTimer: unschedule,
         onState: state => {
@@ -103,7 +76,8 @@
             const result = {timeout:" · refresh timed out",error:" · refresh failed",invalid:" · invalid response ignored"}[state.requestResult] || "";
             status.textContent = `${state.beach.name} · ${state.weather ? state.status === "stale" ? "Stale weather" : "Fresh weather" : "Weather unavailable"}${age} · ${state.weather ? condition.label : state.reason}${state.pending ? " · loading fixture response…" : result}`;
             if (currentDashboardData?.beach.id === state.beach.id) {
-                currentDashboardData.weather = displayWeather(state);
+                currentDashboardData.weather = fixturePayload(state);
+                currentDashboardData.weatherStatus = {freshness:state.status, refreshStatus:state.pending ? "loading" : state.requestResult ? "error" : "idle"};
                 if (appState.currentPage === "dashboard") updateDashboard(currentDashboardData);
             }
             window.dispatchEvent(new Event("sky-preview-state"));
@@ -136,11 +110,9 @@
                 controller.commit(beach, fixtures.snapshot(key, beach, evaluationTime()));
             }
         }
-        // This envelope describes the fixture-card payload, including explicit
-        // unavailable placeholders. Simulated sky ages remain in its controller.
-        return {...displayWeather(controller.state), requestedBeachId:beach.id,
-            requestedLatitude:beach.latitude, requestedLongitude:beach.longitude,
-            fetchedAtMs:Date.now(), conditionTimeMs:Date.now()};
+        const payload = fixturePayload(controller.state);
+        if (!payload) throw new Error("Simulated unavailable fixture weather");
+        return payload;
     };
     getCurrentMarineConditions = async () => fixtures.marine();
     DATASETS.weather.service = getCurrentWeather;
@@ -174,7 +146,8 @@
         setPanelOpacity: value => {
             if (Number.isFinite(value)) document.body.style.setProperty("--preview-panel-opacity", String(Math.max(0, Math.min(1, value))));
         },
-        isReady: () => typeof currentDashboardData !== "undefined" && !!currentDashboardData,
+        isReady: () => typeof currentDashboardData !== "undefined" && !!currentDashboardData &&
+            !currentDashboardData.weatherPending && !currentDashboardData.marinePending,
         async setFixture(key) {
             if (!Object.hasOwn(fixtures.cases, key)) throw new Error("Unknown preview fixture");
             clearWeatherDataset(); // Fixture clocks may deliberately move backwards.
@@ -183,6 +156,7 @@
         },
         async setScenario(key) {
             if (!Object.hasOwn(fixtures.scenarios, key)) throw new Error("Unknown data scenario");
+            clearWeatherDataset(); // A scenario intentionally replaces its weather history.
             scenario = key; ageOffset = 0;
             await redisplay();
         },

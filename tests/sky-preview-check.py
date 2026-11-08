@@ -165,31 +165,43 @@ try:
     marine_fixture={'current':{'sea_surface_temperature':17,'wave_height':1.2,'wave_direction':300,'wave_period':10},
                     'hourly':{'time':weather_fixture['hourly']['time'],'sea_level_height_msl':[.1,.2]},'daily':{}}
     bootstrap='''
-        window.serviceProbe={weatherRequests:0,marineRequests:0,deferMarine:false,pendingMarine:[]};
-        Date.now=()=>Date.parse('2026-11-08T12:08:00Z');
+        window.serviceProbe={weatherRequests:0,marineRequests:0,
+            deferMarine:location.search.includes('hold-marine'),pendingMarine:[],deferWeather:false,pendingWeather:[],
+            weatherFailure:false,marineFailure:false,missingFields:false,now:Date.parse('2026-11-08T12:08:00Z')};
+        Date.now=()=>serviceProbe.now;
         localStorage.setItem('praiasDePortugalSelectedBeach','praia-de-santa-rita-norte');
         localStorage.removeItem('praiasDePortugalSettings');
         localStorage.removeItem('praiasDePortugalFavorites');
+        if(location.search.includes('alternate-startup')) localStorage.setItem('praiasDePortugalSettings',JSON.stringify({startupBeach:'praia-de-santa-rita-sul'}));
         const originalFetch=window.fetch.bind(window);
         window.fetch=async(input,options)=>{
             const url=new URL(input instanceof Request ? input.url : input,location.href);
             if(url.origin==='https://api.open-meteo.com') {
                 serviceProbe.weatherRequests++;
-                return {ok:true,json:async()=>(WEATHER_FIXTURE)};
+                const payload=WEATHER_FIXTURE;
+                if(serviceProbe.missingFields) {
+                    payload.current.temperature_2m=null;payload.current.uv_index=null;
+                    payload.daily.uv_index_max=[null];payload.daily.moon_phase=[null];
+                }
+                const response={ok:!serviceProbe.weatherFailure,status:serviceProbe.weatherFailure?503:200,json:async()=>payload};
+                if(serviceProbe.deferWeather) return new Promise(resolve=>serviceProbe.pendingWeather.push(()=>resolve(response)));
+                return response;
             }
             if(url.origin==='https://marine-api.open-meteo.com') {
                 serviceProbe.marineRequests++;
+                const response={ok:!serviceProbe.marineFailure,status:serviceProbe.marineFailure?503:200,json:async()=>(MARINE_FIXTURE)};
                 if(serviceProbe.deferMarine) return new Promise(resolve=>serviceProbe.pendingMarine.push(
-                    ()=>resolve({ok:true,json:async()=>(MARINE_FIXTURE)})));
-                return {ok:true,json:async()=>(MARINE_FIXTURE)};
+                    ()=>resolve(response)));
+                return response;
             }
             if(url.origin!==location.origin) throw new Error('External request forbidden in service smoke test');
             return originalFetch(input,options);
         };
     '''.replace('WEATHER_FIXTURE',json.dumps(weather_fixture)).replace('MARINE_FIXTURE',json.dumps(marine_fixture))
     probe=client.call('Page.addScriptToEvaluateOnNewDocument',{'source':bootstrap})['identifier']
+    client.call('Emulation.setDeviceMetricsOverride',{'width':1280,'height':900,'deviceScaleFactor':1,'mobile':False})
     client.call('Page.navigate',{'url':origin+'/index.html?service-probe'})
-    wait_for(client,"typeof currentDashboardData!=='undefined' && !!currentDashboardData")
+    wait_for(client,"typeof currentDashboardData!=='undefined' && !!currentDashboardData && !currentDashboardData.weatherPending && !currentDashboardData.marinePending")
     smoke=client.evaluate('''(() => ({
         oneWeatherRequest:serviceProbe.weatherRequests===1,
         sharedData:currentDashboardData.weather===getDatasetData('weather'),
@@ -213,6 +225,7 @@ try:
     client.evaluate("showDashboard()")
     assert client.evaluate("document.getElementById('dashboardAirTemp').textContent==='18°C' && document.getElementById('dashboardTempMin').textContent==='14°' && document.getElementById('dashboardTempMax').textContent==='21°'")
     assert client.evaluate("serviceProbe.weatherRequests===1"), 'Fresh weather must be reused during unit changes'
+    assert client.evaluate("serviceProbe.marineRequests===1"), 'Unit changes must not fetch marine data'
     client.evaluate("serviceProbe.deferMarine=true; saveSelectedBeach('praia-de-santa-rita-sul'); window.oldDisplay=displayBeach('praia-de-santa-rita-sul'); void 0")
     wait_for(client,"serviceProbe.pendingMarine.length===1")
     client.evaluate("saveSelectedBeach('praia-de-porto-novo'); window.newDisplay=displayBeach('praia-de-porto-novo'); void 0")
@@ -222,7 +235,64 @@ try:
     client.evaluate("serviceProbe.pendingMarine[0](); oldDisplay")
     assert client.evaluate("currentDashboardData.beach.id==='praia-de-porto-novo' && currentDashboardData.weather.requestedBeachId==='praia-de-porto-novo' && getDatasetData('weather').requestedBeachId==='praia-de-porto-novo' && previewErrors.length===0")
     print('PASS: fresh cache reuse and late marine result cannot overwrite newer beach',flush=True)
+    # Current weather must be visible while marine is still pending.
+    assert client.evaluate("!currentDashboardData.weatherPending && currentDashboardData.weather.airTemperature===18")
+    client.evaluate("serviceProbe.deferMarine=false; serviceProbe.weatherFailure=true; clearWeatherDataset(); saveSelectedBeach('praia-de-santa-rita-norte'); window.caseWork=displayBeach('praia-de-santa-rita-norte'); void 0")
+    client.evaluate("caseWork")
+    assert client.evaluate("currentDashboardData.weather===null && currentDashboardData.marine.sea.temperature===17 && document.getElementById('dashboardAirTemp').textContent==='--' && document.getElementById('dashboardSeaTemp').textContent==='17.0°C'")
+    assert client.evaluate("document.getElementById('dashboardWeatherCondition').textContent===translate('weatherUnavailable') && document.getElementById('celestialGraphic').querySelector('svg') && !document.getElementById('dashboardMoonPhase').querySelector('img') && document.getElementById('dashboardTempMarker').hidden && document.getElementById('dashboardUVCurrentMarker').hidden")
+    if args.screenshot:
+        shot=pathlib.Path(args.screenshot);capture=client.call('Page.captureScreenshot',{'format':'png'})
+        shot.with_name(shot.stem+'-main-weather-unavailable.png').write_bytes(base64.b64decode(capture['data']))
+    client.evaluate("serviceProbe.weatherFailure=false; serviceProbe.marineFailure=true; clearWeatherDataset(); saveSelectedBeach('praia-de-santa-rita-sul'); window.caseWork=displayBeach('praia-de-santa-rita-sul'); void 0")
+    client.evaluate("caseWork")
+    assert client.evaluate("currentDashboardData.weather.airTemperature===18 && currentDashboardData.marine===null && currentDashboardData.tide===null && document.getElementById('dashboardSeaTemp').textContent==='--' && document.getElementById('dashboardSurf').textContent==='--' && document.getElementById('dashboardMarineStatus').textContent===translate('marineUnavailable')")
+    if args.screenshot:
+        shot=pathlib.Path(args.screenshot);capture=client.call('Page.captureScreenshot',{'format':'png'})
+        shot.with_name(shot.stem+'-main-marine-unavailable.png').write_bytes(base64.b64decode(capture['data']))
+    client.evaluate("serviceProbe.marineFailure=false; serviceProbe.deferWeather=true; clearWeatherDataset(); saveSelectedBeach('praia-de-porto-novo'); window.caseWork=displayBeach('praia-de-porto-novo'); void 0")
+    wait_for(client,"serviceProbe.pendingWeather.length===1 && !currentDashboardData.marinePending")
+    assert client.evaluate("currentDashboardData.weatherPending && currentDashboardData.marine.sea.temperature===17 && document.getElementById('dashboardAirTemp').textContent==='--' && document.getElementById('dashboardWeatherCondition').textContent===translate('weatherLoading')")
+    client.evaluate("serviceProbe.pendingWeather[0](); caseWork")
+    assert client.evaluate("currentDashboardData.weather.airTemperature===18 && !currentDashboardData.weatherPending")
+    # Same location, same cached weather token: display generation must still win.
+    client.evaluate("serviceProbe.deferWeather=false;serviceProbe.deferMarine=true;serviceProbe.pendingMarine=[];window.firstView=displayBeach(appState.selectedBeachId);void 0")
+    wait_for(client,"serviceProbe.pendingMarine.length===1")
+    client.evaluate("window.secondView=displayBeach(appState.selectedBeachId);window.latestView=currentDashboardData;void 0")
+    wait_for(client,"serviceProbe.pendingMarine.length===2")
+    client.evaluate("serviceProbe.pendingMarine[1]();secondView")
+    client.evaluate("serviceProbe.pendingMarine[0]();firstView")
+    assert client.evaluate("currentDashboardData===latestView && !currentDashboardData.marinePending")
+    client.evaluate("serviceProbe.deferMarine=false;serviceProbe.missingFields=true;clearWeatherDataset();window.caseWork=displayBeach(appState.selectedBeachId);void 0")
+    client.evaluate("caseWork")
+    assert client.evaluate("currentDashboardData.weather.airTemperature===null && currentDashboardData.weather.windSpeed===15 && document.getElementById('dashboardAirTemp').textContent==='--' && document.getElementById('dashboardTempMarker').hidden && document.getElementById('dashboardUVCurrentMarker').hidden && document.getElementById('dashboardUVMaxMarker').hidden && document.getElementById('dashboardUVMax').textContent==='--' && document.getElementById('dashboardMoonPhase').textContent==='--'")
+    client.evaluate("serviceProbe.missingFields=false;clearWeatherDataset();window.caseWork=displayBeach(appState.selectedBeachId);void 0")
+    client.evaluate("caseWork")
+    before=client.evaluate("[serviceProbe.weatherRequests,serviceProbe.marineRequests]")
+    client.evaluate("temperatureUnitSelect.value='fahrenheit';windSpeedUnitSelect.value='knots';waveHeightUnitSelect.value='feet';languageSelect.value='pt';textSizeSlider.value='3';handleSettingsChange();showDashboard()")
+    assert client.evaluate("document.getElementById('dashboardWeatherCondition').textContent===translate('weatherPartlyCloudy') && document.getElementById('dashboardAirTemp').textContent==='64°F' && document.getElementById('dashboardWind').textContent.includes('kn')")
+    assert client.evaluate("[serviceProbe.weatherRequests,serviceProbe.marineRequests]")==before
+    client.call('Emulation.setDeviceMetricsOverride',{'width':390,'height':844,'deviceScaleFactor':1,'mobile':False})
+    assert client.evaluate("document.getElementById('dashboardWeatherCondition').scrollWidth<=document.getElementById('dashboardWeatherCondition').clientWidth"), 'Translated unavailable condition text overflows its column'
+    client.evaluate("serviceProbe.now+=60*60000;showDashboard()")
+    assert client.evaluate("currentDashboardData.weather===null && currentDashboardData.marine && document.getElementById('dashboardAirTemp').textContent==='--' && document.getElementById('dashboardWeatherCondition').textContent===translate('weatherExpired')")
+    assert client.evaluate("[serviceProbe.weatherRequests,serviceProbe.marineRequests]")==before
+    assert client.evaluate("document.getElementById('dashboardWeatherCondition').scrollWidth<=document.getElementById('dashboardWeatherCondition').clientWidth"), 'Translated expired condition text overflows its column'
+    assert client.evaluate("document.getElementById('dashboardWeatherCondition').getBoundingClientRect().bottom <= document.getElementById('lowerWeatherCelestialPanel').getBoundingClientRect().top"), 'Expired message overlaps celestial panel'
+    if args.screenshot:
+        shot=pathlib.Path(args.screenshot);capture=client.call('Page.captureScreenshot',{'format':'png'})
+        shot.with_name(shot.stem+'-main-expired-pt.png').write_bytes(base64.b64decode(capture['data']))
+    print('PASS: independent weather/marine failure and delay, same-beach display generations, missing values, translated no-fetch settings and expiry rerender',flush=True)
     print('MAIN_APP_SERVICE',smoke,'Fahrenheit rerender passed',flush=True)
+    client.call('Page.navigate',{'url':origin+'/index.html?hold-marine&alternate-startup'})
+    wait_for(client,"typeof currentDashboardData!=='undefined' && !!currentDashboardData?.weather && currentDashboardData.marinePending")
+    assert client.evaluate("appState.selectedBeachId==='praia-de-santa-rita-sul' && currentDashboardData.beach.id===appState.selectedBeachId && document.getElementById('dashboardAirTemp').textContent==='18°C'")
+    client.evaluate("document.getElementById('settingsNavButton').click()")
+    assert client.evaluate("appState.currentPage==='settings' && !settingsPage.hidden")
+    client.evaluate("document.getElementById('dashboardNavButton').click();serviceProbe.pendingMarine[0]()")
+    wait_for(client,"!currentDashboardData.marinePending")
+    assert client.evaluate("previewErrors.length===0")
+    print('PASS: saved startup beach identity and usable navigation before marine finishes',flush=True)
     client.call('Page.removeScriptToEvaluateOnNewDocument',{'identifier':probe})
     client.evaluate('localStorage.clear()')
 

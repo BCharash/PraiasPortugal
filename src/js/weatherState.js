@@ -3,21 +3,21 @@
     "use strict";
 function getSkyCondition(code){
   const definitions = [
-    [[0], "Clear", "clear", null], [[1], "Mainly Clear", "mainly-clear", null],
-    [[2], "Partly Cloudy", "partly-cloudy", null], [[3], "Overcast", "cloud", null],
-    [[45,48], "Fog", "fog", null], [[51,53,55], "Drizzle", "rain", "rain"],
-    [[56,57], "Freezing Drizzle", "rain", "rain"], [[61,63,65], "Rain", "rain", "rain"],
-    [[66,67], "Freezing Rain", "rain", "rain"], [[71,73,75], "Snow", "snow", "snow"],
-    [[77], "Snow Grains", "snow", "snow"], [[80,81,82], "Rain Showers", "rain", "rain"],
-    [[85,86], "Snow Showers", "snow", "snow"], [[95,97], "Thunderstorm", "storm", "rain"],
-    [[96,99], "Thunderstorm with Hail", "storm", "rain"]
+    [[0], "Clear", "clear", null, "weatherClearSky"], [[1], "Mainly Clear", "mainly-clear", null, "weatherMainlyClear"],
+    [[2], "Partly Cloudy", "partly-cloudy", null, "weatherPartlyCloudy"], [[3], "Overcast", "cloud", null, "weatherOvercast"],
+    [[45,48], "Fog", "fog", null, "weatherFog"], [[51,53,55], "Drizzle", "rain", "rain", "weatherDrizzle"],
+    [[56,57], "Freezing Drizzle", "rain", "rain", "weatherFreezingDrizzle"], [[61,63,65], "Rain", "rain", "rain", "weatherRain"],
+    [[66,67], "Freezing Rain", "rain", "rain", "weatherFreezingRain"], [[71,73,75], "Snow", "snow", "snow", "weatherSnow"],
+    [[77], "Snow Grains", "snow", "snow", "weatherSnowGrains"], [[80,81,82], "Rain Showers", "rain", "rain", "weatherRainShowers"],
+    [[85,86], "Snow Showers", "snow", "snow", "weatherSnowShowers"], [[95,97], "Thunderstorm", "storm", "rain", "weatherThunderstorm"],
+    [[96,99], "Thunderstorm with Hail", "storm", "rain", "weatherThunderstormHail"]
   ];
   const entry=definitions.find(([codes])=>codes.includes(code));
   const intensity=[51,56,61,66,71,77,80,85].includes(code) ? "light" :
     [55,57,65,67,75,82,86,96,97,99].includes(code) ? "heavy" : "moderate";
-  return entry ? {label:entry[1],icon:entry[2],precipitation:entry[3],intensity,
+  return entry ? {label:entry[1],icon:entry[2],precipitation:entry[3],translationKey:entry[4],intensity,
     drizzle:[51,53,55,56,57].includes(code)} :
-    {label:"Conditions unavailable",icon:"unknown",precipitation:null};
+    {label:"Conditions unavailable",icon:"unknown",precipitation:null,translationKey:null};
 }
 
 const MINUTE = 60000;

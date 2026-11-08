@@ -180,6 +180,19 @@ const translations = {
         // Navigation
 
         dashboard: "Dashboard",
+        weatherLoading: "Loading weather…",
+        weatherUnavailable: "Weather unavailable",
+        weatherExpired: "Weather expired",
+        weatherStale: "stale",
+        weatherRefreshFailed: "Weather refresh failed; showing the last valid conditions when available.",
+        marineLoading: "Loading sea conditions…",
+        marineUnavailable: "Sea conditions unavailable",
+        weatherFreezingDrizzle: "Freezing drizzle",
+        weatherFreezingRain: "Freezing rain",
+        weatherSnowGrains: "Snow grains",
+        weatherSnowShowers: "Snow showers",
+        weatherUnknown: "Conditions unavailable",
+
         beaches: "Beaches",
         settings: "Settings",
 
@@ -300,6 +313,19 @@ const translations = {
         // Navegação
 
         dashboard: "Painel",
+        weatherLoading: "A carregar…",
+        weatherUnavailable: "Sem dados meteorológicos",
+        weatherExpired: "Dados expirados",
+        weatherStale: "desatualizado",
+        weatherRefreshFailed: "Falha na atualização; a mostrar as últimas condições válidas quando disponíveis.",
+        marineLoading: "A carregar condições do mar…",
+        marineUnavailable: "Condições do mar indisponíveis",
+        weatherFreezingDrizzle: "Chuvisco gelado",
+        weatherFreezingRain: "Chuva gelada",
+        weatherSnowGrains: "Grãos de neve",
+        weatherSnowShowers: "Aguaceiros de neve",
+        weatherUnknown: "Condições indisponíveis",
+
         beaches: "Praias",
         settings: "Definições",
 
@@ -1289,6 +1315,7 @@ async function restoreSavedBeach() {
             // Display Saved Beach
             //--------------------------------------------------
 
+            saveSelectedBeach(beach.id);
             await displayBeach(
                 beach.id
             );
@@ -1552,16 +1579,10 @@ async function handleSettingsChange() {
 
 
     //--------------------------------------------------
-    // Refresh Current Beach
+    // Re-render Current Beach (no acquisition)
     //--------------------------------------------------
 
-    if (appState.selectedBeachId) {
-
-        await displayBeach(
-            appState.selectedBeachId
-        );
-
-    }
+    renderCurrentDashboard();
 
 
     //--------------------------------------------------
@@ -1616,13 +1637,7 @@ function showDashboard() {
     // Refresh Dashboard After It Becomes Visible
     //--------------------------------------------------
 
-    if (currentDashboardData) {
-
-        updateDashboard(
-            currentDashboardData
-        );
-
-    }
+    renderCurrentDashboard();
 
 }
 
@@ -1736,7 +1751,7 @@ async function initializeApplication() {
     // Restore Saved Beach
     //--------------------------------------------------
 
-    await restoreSavedBeach();
+    const savedBeachRestoration = restoreSavedBeach();
 
 
     //--------------------------------------------------
@@ -1985,6 +2000,8 @@ else {
     showDashboard();
 
 }   
+    // Controls and initial page are ready even while a dataset is still loading.
+    await savedBeachRestoration;
 }
 
 

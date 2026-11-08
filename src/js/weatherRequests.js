@@ -112,6 +112,8 @@ function createWeatherRequestManager({service, now = () => Date.now(), setTimer 
         request,
         getData(beach) { return status(beach).data; },
         getStatus:status,
+        owns(result) { return !destroyed && !!result && result.key !== null && result.key === activeKey &&
+            result.generation === generation && !["invalid", "destroyed", "superseded"].includes(result.outcome); },
         isCurrent(result) { return !destroyed && !!result?.data && result.key === activeKey &&
             result.generation === generation && result.data === dataFor(activeKey); },
         setPaused(value) { paused = !!value; },

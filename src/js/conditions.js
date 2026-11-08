@@ -627,371 +627,93 @@ if (typeof document !== "undefined") {
 // Updates
 //--------------------------------------------------
 
-function updateConditions(dashboardData) {
+// Preserve astronomical context without inventing weather measurements.
+// The broader shared Lisbon clock is checkpoint 6E; this fallback follows the
+// existing celestial minute updater's local civil-time convention.
+function getConditionsCelestialWeather(data) {
+    if (data.weather) return data.weather;
+    const beach = data.beach;
+    if (!Number.isFinite(beach?.latitude) || !Number.isFinite(beach?.longitude)) return null;
+    const now = new Date(), pad = value => String(value).padStart(2, "0");
+    return {latitude:beach.latitude, longitude:beach.longitude,
+        currentTime:`${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`,
+        sunrise:null,sunset:null,moonPhase:null,moonrise:null,moonset:null};
+}
 
-    console.log(
-        "WEATHER DATA:",
-        dashboardData.weather.moonPhase,
-        dashboardData.weather.moonrise,
-        dashboardData.weather.moonset
-    );
-
-    const weather =
-        dashboardData.weather;
-
+function updateConditions(data) {
+    const weather = data.weather;
     window.testWeather = weather;
+    const put = (id, value) => { const node=document.getElementById(id); if(node) node.textContent=value; };
+    const marker = (id, show) => { const node=document.getElementById(id); if(node) node.hidden=!show; };
+    const finite = Number.isFinite;
+    const freshness = data.weatherStatus?.freshness;
+    weatherConditionElement.textContent = weather
+        ? `${formatConditions(weather)}${freshness === "stale" ? ` · ${translate("weatherStale")}` : ""}`
+        : translate(data.weatherPending ? "weatherLoading" : freshness === "expired" ? "weatherExpired" : "weatherUnavailable");
+    weatherConditionElement.classList.toggle("weather-status", !weather);
+    weatherConditionElement.title = data.weatherStatus?.refreshStatus === "error" ? translate("weatherRefreshFailed") : "";
+    if (!weather && weatherIconElement) weatherIconElement.innerHTML="";
+    const coastal = weather ? getCurrentCoastalCondition(weather) || getCoastalFogRisk(weather) : null;
+    if (coastalConditionElement) coastalConditionElement.textContent=coastal?.label || "";
 
-    latestCelestialWeather = weather;
+    airTempElement.textContent = formatAirTemperature(weather);
+    airHumidityElement.textContent = formatHumidity(weather);
+    airFeelsLikeElement.textContent = formatFeelsLike(weather);
+    windElement.textContent = formatWind(weather);
+    put("dashboardTempMin", finite(weather?.lowTemperature) ? `${Math.round(convertTemperature(weather.lowTemperature))}°` : "--");
+    put("dashboardTempMax", finite(weather?.highTemperature) ? `${Math.round(convertTemperature(weather.highTemperature))}°` : "--");
+    const range = document.getElementById("dashboardTemperatureRange");
+    const validRange = finite(weather?.airTemperature) && finite(weather?.lowTemperature) && finite(weather?.highTemperature) &&
+        weather.highTemperature !== weather.lowTemperature;
+    marker("dashboardTempMarker",validRange);
+    if (range) {
+        if (validRange) range.style.setProperty("--temperature-position", `${Math.max(0,Math.min(1,
+            (weather.airTemperature-weather.lowTemperature)/(weather.highTemperature-weather.lowTemperature)))*100}%`);
+        else range.style.removeProperty("--temperature-position");
+    }
 
-    if (weather) {
-        initializeCelestialSimulator(weather);
+    uvElement.textContent = formatUVValue(weather);
+    uvRiskElement.textContent = formatUVRisk(weather);
+    uvMaximumElement.textContent = finite(weather?.uvIndexMax) ? `${translate("uvMaximum")} ${Math.round(weather.uvIndexMax)}` : "--";
+    marker("dashboardUVCurrentMarker",finite(weather?.uvIndex));
+    marker("dashboardUVMaxMarker",finite(weather?.uvIndexMax));
+    if (uvRangeElement) {
+        for (const [field,property] of [["uvIndex","--uv-current-position"],["uvIndexMax","--uv-maximum-position"]]) {
+            if (finite(weather?.[field])) uvRangeElement.style.setProperty(property,`${Math.max(0,Math.min(1,weather[field]/UV_SCALE_MAX))*100}%`);
+            else uvRangeElement.style.removeProperty(property);
+        }
+    }
+
+    const celestialWeather = getConditionsCelestialWeather(data);
+    latestCelestialWeather = celestialWeather;
+    const celestial = celestialWeather ? getCelestialState(celestialWeather) : null;
+    const rise = celestial?.sun.position?.sunriseTime, set = celestial?.sun.position?.sunsetTime;
+    const clock = date => date instanceof Date && !Number.isNaN(date.getTime())
+        ? `${String(date.getHours()).padStart(2,"0")}:${String(date.getMinutes()).padStart(2,"0")}` : "--";
+    put("dashboardSunrise", weather?.sunrise ? formatSunTime(weather.sunrise) : clock(rise));
+    put("dashboardSunset", weather?.sunset ? formatSunTime(weather.sunset) : clock(set));
+    if (celestial) {
+        initializeCelestialSimulator(celestialWeather);
         startCelestialAutoUpdate();
-    }
-
-    const marine =
-        dashboardData.marine;
-
-    const tide =
-        dashboardData.tide;
-
-
-    //--------------------------------------------------
-    // Weather
-    //--------------------------------------------------
-
-    if (weather) {
-
-        weatherConditionElement.textContent =
-            weather.description;
-
-    console.log(
-    "WEATHER HOURLY:",
-    weather.hourly
-);
-
-    //--------------------------------------------------
-    // Coastal Conditions
-    //--------------------------------------------------
-
-    const currentCoastalCondition =
-        getCurrentCoastalCondition(weather);
-
-    const coastalFogRisk =
-        getCoastalFogRisk(weather);
-
-    
-    if (coastalConditionElement) {
-
-        if (currentCoastalCondition) {
-
-            coastalConditionElement.textContent =
-                currentCoastalCondition.label;
-
-        }
-        
-
-        else if (coastalFogRisk) {
-
-            coastalConditionElement.textContent =
-                coastalFogRisk.label;
-
-        }
-        else {
-
-            coastalConditionElement.textContent =
-                "";
-
-        }
-
-    }
-
-    console.log(
-        "COASTAL CONDITION:",
-        currentCoastalCondition
-    );
-
-    console.log(
-        "COASTAL FOG RISK:",
-        coastalFogRisk
-    );
-
-    
-
-        const celestial =
-            getCelestialState(weather);
-
         updateCelestialSimulatorControls(celestial);
-
-                const celestialGraphicElement =
-            document.getElementById("celestialGraphic");
-
-        if (celestialGraphicElement) {
-
-            const graphicWidth =
-                celestialGraphicElement.clientWidth;
-
-            const graphicHeight =
-                celestialGraphicElement.clientHeight;
-
-            
-            console.log(
-                "CELESTIAL GRAPHIC SIZE:",
-                graphicWidth,
-                graphicHeight
-);
-
-            celestialGraphicElement.innerHTML =
-                renderCelestialGraphic(
-                    celestial,
-                    weather,
-                    graphicWidth,
-                    graphicHeight
-                );
-
-        }
-        
-
-        airTempElement.textContent =
-            formatAirTemperature(weather);
-
-        airTempElement.textContent =
-            formatAirTemperature(weather);
-
-        //--------------------------------------------------
-        // Temperature Range Endpoints
-        //--------------------------------------------------
-
-        const temperatureMinElement =
-            document.getElementById(
-                "dashboardTempMin"
-            );
-
-        const temperatureMaxElement =
-            document.getElementById(
-                "dashboardTempMax"
-            );
-
-        if (
-            temperatureMinElement &&
-            weather.lowTemperature != null
-        ) {
-            temperatureMinElement.textContent =
-                `${Math.round(convertTemperature(weather.lowTemperature))}°`;
-        }
-
-        if (
-            temperatureMaxElement &&
-            weather.highTemperature != null
-        ) {
-            temperatureMaxElement.textContent =
-                `${Math.round(convertTemperature(weather.highTemperature))}°`;
-        }
-
-
-        //--------------------------------------------------
-        // Temperature Range Position
-        //--------------------------------------------------
-
-        const temperatureRangeElement =
-            document.getElementById(
-                "dashboardTemperatureRange"
-            );
-
-        if (
-            temperatureRangeElement &&
-            weather.airTemperature != null &&
-            weather.lowTemperature != null &&
-            weather.highTemperature != null &&
-            weather.highTemperature !==
-                weather.lowTemperature
-        ) {
-
-            const position =
-                (
-                    weather.airTemperature -
-                    weather.lowTemperature
-                ) /
-                (
-                    weather.highTemperature -
-                    weather.lowTemperature
-                );
-
-        const clampedPosition =
-            Math.max(
-                0,
-                Math.min(
-                    1,
-                    position
-                )
-            );
-
-
-                //--------------------------------------------------
-                // Temperature marker position
-                //
-                // The temperature track runs from 0% to 100%.
-                //--------------------------------------------------
-
-                const trackPosition =
-                    clampedPosition * 100;
-
-
-                temperatureRangeElement.style.setProperty(
-                    "--temperature-position",
-                    `${trackPosition}%`
-                );
-        }
-
-
-
-
-        airHumidityElement.textContent =
-            formatHumidity(weather);
-
-        airFeelsLikeElement.textContent =
-            formatFeelsLike(weather);
-
-        windElement.textContent =
-            formatWind(weather);
-
-        uvElement.textContent =
-            formatUVValue(weather);
-
-        uvRiskElement.textContent =
-            formatUVRisk(weather);
-
-        if (weather.uvIndexMax != null) {
-
-            uvMaximumElement.textContent =
-                `${translate("uvMaximum")} ${Math.round(weather.uvIndexMax)}`;
-
-        }
-
-        if (uvRangeElement) {
-
-            const currentPosition =
-                weather.uvIndex == null
-                    ? 0
-                    : Math.max(
-                        0,
-                        Math.min(
-                            1,
-                            weather.uvIndex / UV_SCALE_MAX
-                        )
-                    );
-
-            const maximumPosition =
-                weather.uvIndexMax == null
-                    ? 0
-                    : Math.max(
-                        0,
-                        Math.min(
-                            1,
-                            weather.uvIndexMax / UV_SCALE_MAX
-                        )
-                    );
-
-            uvRangeElement.style.setProperty(
-                "--uv-current-position",
-                `${currentPosition * 100}%`
-            );
-
-            uvRangeElement.style.setProperty(
-                "--uv-maximum-position",
-                `${maximumPosition * 100}%`
-            );
-
-        }
-
-        //--------------------------------------------------
-        // Sunrise / Sunset
-        //--------------------------------------------------
-
-        const sunriseElement =
-            document.getElementById("dashboardSunrise");
-
-        const sunsetElement =
-            document.getElementById("dashboardSunset");
-
-        if (sunriseElement) {
-
-            sunriseElement.textContent =
-                formatSunTime(weather.sunrise);
-
-        }
-
-        if (sunsetElement) {
-
-            sunsetElement.textContent =
-                formatSunTime(weather.sunset);
-
-        }
-
-
-        //--------------------------------------------------
-        // Moon
-        //--------------------------------------------------
-
-        const moonPhaseElement =
-            document.getElementById("dashboardMoonPhase");
-
-        const moonIlluminationElement =
-            document.getElementById(
-                "dashboardMoonIllumination"
-            );
-
-        if (moonPhaseElement) {
-
-            moonPhaseElement.innerHTML = `
-                <img
-                    class="dashboard-moon-image"
-                    src="${getMoonPhaseImageUrl(weather.moonPhase)}"
-                    alt="${formatMoonPhase(weather.moonPhase)}"
-                >
-            `;
-
-        }
-
-
-        if (moonIlluminationElement) {
-
-            moonIlluminationElement.textContent =
-                formatMoonIllumination(
-                    weather.moonPhase
-                );
-
-        }
-
     }
-
-
-    //--------------------------------------------------
-    // Marine
-    //--------------------------------------------------
-
-    if (marine) {
-
-        seaTempElement.textContent =
-            formatSeaTemperature(marine);
-
-        surfElement.textContent =
-            formatSurf(marine);
-
+    const graphic = document.getElementById("celestialGraphic");
+    if (graphic) graphic.innerHTML = celestial ? renderCelestialGraphic(celestial,celestialWeather,graphic.clientWidth,graphic.clientHeight) : "";
+    const moon = document.getElementById("dashboardMoonPhase");
+    if (moon) {
+        if (finite(weather?.moonPhase)) {
+            moon.innerHTML = `<img class="dashboard-moon-image" src="${getMoonPhaseImageUrl(weather.moonPhase)}" alt="${formatMoonPhase(weather.moonPhase)}">`;
+        } else moon.textContent = "--";
     }
-
-
-    //--------------------------------------------------
-    // Tide
-    //--------------------------------------------------
-
-    if (tide) {
-
-        tideElement.textContent =
-            `${formatCurrentTideHeight(tide)} ` +
-            `${formatTideTrend(tide)}`;
-
+    put("dashboardMoonIllumination", finite(weather?.moonPhase) ? formatMoonIllumination(weather.moonPhase) : "--");
+    seaTempElement.textContent = formatSeaTemperature(data.marine);
+    surfElement.textContent = formatSurf(data.marine);
+    tideElement.textContent = data.tide ? `${formatCurrentTideHeight(data.tide)} ${formatTideTrend(data.tide)}` : "--";
+    const marineStatus = document.getElementById("dashboardMarineStatus");
+    if (marineStatus) {
+        marineStatus.hidden = !!data.marine && data.marineStatus === "ready";
+        marineStatus.textContent = marineStatus.hidden ? "" : translate(data.marinePending ? "marineLoading" : "marineUnavailable");
     }
-
 }
 
 

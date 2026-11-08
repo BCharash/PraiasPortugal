@@ -167,64 +167,10 @@ function formatUVRisk(weather) {
 // Weather Description Translation
 //==================================================
 
-function getTranslatedWeatherDescription(
-    weatherCode,
-    fallbackDescription
-) {
-
-    if (weatherCode == null)
-        return fallbackDescription || "--";
-
-    switch (weatherCode) {
-
-        case 0:
-            return translate("weatherClearSky");
-
-        case 1:
-            return translate("weatherMainlyClear");
-
-        case 2:
-            return translate("weatherPartlyCloudy");
-
-        case 3:
-            return translate("weatherOvercast");
-
-        case 45:
-        case 48:
-            return translate("weatherFog");
-
-        case 51:
-        case 53:
-        case 55:
-            return translate("weatherDrizzle");
-
-        case 61:
-        case 63:
-        case 65:
-            return translate("weatherRain");
-
-        case 71:
-        case 73:
-        case 75:
-            return translate("weatherSnow");
-
-        case 80:
-        case 81:
-        case 82:
-            return translate("weatherRainShowers");
-
-        case 95:
-            return translate("weatherThunderstorm");
-
-        case 96:
-        case 99:
-            return translate("weatherThunderstormHail");
-
-        default:
-            return fallbackDescription || "--";
-
-    }
-
+function getTranslatedWeatherDescription(weatherCode, fallbackDescription) {
+    const condition = weatherState.condition(weatherCode);
+    if (condition.translationKey) return translate(condition.translationKey);
+    return fallbackDescription && fallbackDescription !== "Unknown" ? fallbackDescription : translate("weatherUnknown");
 }
 
 
