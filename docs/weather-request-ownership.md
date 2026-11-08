@@ -35,8 +35,8 @@ are unchanged. No live provider calls were used for implementation verification.
   AbortError do not increment provider failure counts. Failure at A does not
   block B.
 - Getters recompute freshness from condition/fetch age. Stale matching data stays
-  usable below 60 minutes; expired data is hidden. There is no automatic timer
-  to update the UI or fetch new weather yet; that is checkpoint 6D.
+  usable below 60 minutes; expired data is hidden. The subsequently completed 6D
+  scheduler notifies the UI and refreshes weather; see [refresh/lifecycle](weather-refresh-lifecycle.md).
 
 The manager has one authoritative active request/deadline. A superseded physical
 transport may still run if it ignores cancellation; it has no authority to change
@@ -67,6 +67,9 @@ wrapper: true for accepted or cached data, false for other outcomes. Concurrent
 boolean callers share the underlying request. Non-weather datasets retain their
 existing path.
 
+6D sets `nextUpdate` to accepted completion plus 15 minutes (or a 60-second
+abort recovery delay). `retryAt` takes precedence when a provider failure occurs.
+
 Status retains `lastUpdated`, `nextUpdate`, `retryAt`, `status`, `refreshing`,
 `pendingRefresh`, `failureCount`, `error` and `data`, and adds identity,
 `conditionTimeMs`, `freshness`, `ageMs` and `refreshStatus`. Request status and
@@ -77,12 +80,12 @@ is a snapshot on each read, not a mutable live object to hold indefinitely.
 Pause blocks new acquisition while allowing an existing request to settle.
 Selecting another identity while paused still supersedes an old request and
 does not expose its data as the new location. Automatic visibility/resume
-reconciliation is deferred to 6D.
+reconciliation is now supplied by 6D.
 
 `clearWeatherDataset()` clears only in-memory weather and invalidates prior result
 tokens; it does not delete preferences or browser storage. The underlying factory
 also has `destroy()` to cancel pending callers and prevent new work. Automatic
-application lifecycle wiring remains a later checkpoint.
+application lifecycle wiring is now implemented in 6D.
 
 ## Display consumer (updated by 6C)
 
@@ -127,9 +130,8 @@ checks also passed. The 6A contract still passed in Lisbon, Los Angeles and Toky
 
 ## Stop and remaining work
 
-6B and the subsequently authorized 6C are saved.
-The next checkpoint is 6D refresh/lifecycle (estimated 45–75 minutes), requiring approval.
-Automatic refresh/lifecycle notifications remain 6D, shared location/clock 6E,
+6B–6D are saved. Refresh/lifecycle is documented in [6D](weather-refresh-lifecycle.md).
+The next checkpoint is shared location/clock 6E (30–60 minutes), requiring approval, followed by
 live sky preview 6F and real-provider verification 6G. Physical iPhone/Safari
 review, global activation, deployment and publishing remain deferred.
 

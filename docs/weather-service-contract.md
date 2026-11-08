@@ -141,7 +141,7 @@ protections; they are implemented in the separate request owner.
 
 Unknown optional values now reach consumers as null. 6C implements unavailable-state
 presentation, including unknown lunar values and old reading/marker cleanup. 6B now evaluates condition/fetch age on reads; UI freshness
-notifications and automatic refresh remain 6D. Live weather smoke testing remains in 6G; cold
+notifications and automatic refresh are implemented in [6D](weather-refresh-lifecycle.md). Live weather smoke testing remains in 6G; cold
 offline readiness and new persistent caching are outside this work.
 
 Use [the integration plan](sky-live-integration-plan.md) for the remaining

@@ -59,8 +59,8 @@ establish physical iPhone/Safari acceptance; that review remains deferred.
 
 ## Stop boundary and reversal
 
-6C adds no weather scheduler. Age is rechecked when rendering; automatic boundary
-notifications and visibility/resume reconciliation belong to 6D (45–75 minutes).
+6C added no scheduler. The separately authorized [6D](weather-refresh-lifecycle.md)
+now supplies automatic boundary notifications and visibility/resume reconciliation.
 Marine transport has no new cancellation/deadline policy; its display publication
 is guarded, but a slow request can remain pending. Shared Lisbon celestial clock
 consistency remains 6E. Live sky preview remains 6F and live-provider review 6G.
@@ -68,5 +68,5 @@ consistency remains 6E. Live sky preview remains 6F and live-provider review 6G.
 The local 6C implementation commit is a separate rollback unit; reverting it
 restores the 6B implementation while retaining earlier checkpoints. Documentation
 is saved separately. No push, deployment, global sky activation or ipma-radar
-modification was performed. Continue only with an approved checkpoint 6D, using
+modification was performed. The current next checkpoint is 6E, requiring approval; use
 [the exact resume prompt](sky-live-integration-plan.md#exact-prompt-for-the-next-implementation-session).
