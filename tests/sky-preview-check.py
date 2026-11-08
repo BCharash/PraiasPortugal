@@ -25,6 +25,7 @@ CHROME = os.environ.get("CHROME_BIN", "/Applications/Google Chrome.app/Contents/
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--screenshot', help='Save a mobile preview screenshot to this PNG path')
 parser.add_argument('--review-dir', help='Write a fixed-scene acceptance gallery and layout measurements here')
+parser.add_argument('--service-only', action='store_true', help='Run only the deterministic weather-service contract checks')
 args = parser.parse_args()
 
 class Handler(http.server.SimpleHTTPRequestHandler):
@@ -135,6 +136,65 @@ try:
         addEventListener('unhandledrejection', event => previewErrors.push(String(event.reason)));
     '''})
     origin = f'http://127.0.0.1:{server.server_port}'
+
+    for zone in ['Europe/Lisbon','America/Los_Angeles','Asia/Tokyo']:
+        client.call('Emulation.setTimezoneOverride',{'timezoneId':zone})
+        query = '?zone=' + zone
+        client.call('Page.navigate',{'url':origin+'/tests/weather-service-contract.html'+query})
+        wait_for(client, f"location.search === {json.dumps(query)} && !!window.serviceContractResult")
+        result=client.evaluate('serviceContractResult')
+        assert result['ok'], result
+        assert client.evaluate('previewErrors.length===0')
+        print('SERVICE_CONTRACT',zone,result['results'],flush=True)
+    client.call('Emulation.setTimezoneOverride',{'timezoneId':'Europe/Lisbon'})
+    if args.service_only:
+        raise SystemExit(0)
+
+    # Run actual app/controller/data-manager/weather service with provider fixtures.
+    # The marine request is mocked too; no network weather is used in this smoke test.
+    weather_fixture=client.evaluate('weatherContractFixture')
+    marine_fixture={'current':{'sea_surface_temperature':17,'wave_height':1.2,'wave_direction':300,'wave_period':10},
+                    'hourly':{'time':weather_fixture['hourly']['time'],'sea_level_height_msl':[.1,.2]},'daily':{}}
+    bootstrap='''
+        window.serviceProbe={weatherRequests:0,marineRequests:0};
+        localStorage.setItem('praiasDePortugalSelectedBeach','praia-de-santa-rita-norte');
+        localStorage.removeItem('praiasDePortugalSettings');
+        localStorage.removeItem('praiasDePortugalFavorites');
+        const originalFetch=window.fetch.bind(window);
+        window.fetch=async(input,options)=>{
+            const url=new URL(input instanceof Request ? input.url : input,location.href);
+            if(url.origin==='https://api.open-meteo.com') {
+                serviceProbe.weatherRequests++;
+                return {ok:true,json:async()=>(WEATHER_FIXTURE)};
+            }
+            if(url.origin==='https://marine-api.open-meteo.com') {
+                serviceProbe.marineRequests++;
+                return {ok:true,json:async()=>(MARINE_FIXTURE)};
+            }
+            if(url.origin!==location.origin) throw new Error('External request forbidden in service smoke test');
+            return originalFetch(input,options);
+        };
+    '''.replace('WEATHER_FIXTURE',json.dumps(weather_fixture)).replace('MARINE_FIXTURE',json.dumps(marine_fixture))
+    probe=client.call('Page.addScriptToEvaluateOnNewDocument',{'source':bootstrap})['identifier']
+    client.call('Page.navigate',{'url':origin+'/index.html?service-probe'})
+    wait_for(client,"typeof currentDashboardData!=='undefined' && !!currentDashboardData")
+    smoke=client.evaluate('''(() => ({
+        oneWeatherRequest:serviceProbe.weatherRequests===1,
+        sharedData:currentDashboardData.weather===getDatasetData('weather'),
+        beachMetadata:currentDashboardData.weather.requestedBeachId===appState.selectedBeachId,
+        weatherValues:currentDashboardData.weather.relativeHumidity===70 && currentDashboardData.weather.uvIndex===3 && currentDashboardData.weather.windSpeed===15,
+        temperature:document.getElementById('dashboardAirTemp').textContent==='18°C',
+        noSky:!document.querySelector('.preview-sky') && document.body.classList.contains('background-sunny'),
+        noErrors:previewErrors.length===0
+    }))()''')
+    assert all(smoke.values()),smoke
+    client.evaluate("temperatureUnitSelect.value='fahrenheit'; temperatureUnitSelect.dispatchEvent(new Event('change'))")
+    wait_for(client,"currentDashboardData.weather && getDataStatus('weather').refreshing===false")
+    client.evaluate("showDashboard()")
+    assert client.evaluate("document.getElementById('dashboardAirTemp').textContent==='64°F' && previewErrors.length===0")
+    print('MAIN_APP_SERVICE',smoke,'Fahrenheit rerender passed',flush=True)
+    client.call('Page.removeScriptToEvaluateOnNewDocument',{'identifier':probe})
+    client.evaluate('localStorage.clear()')
 
     # Same-origin sentinel preferences must survive every preview action and reset.
     client.call('Page.navigate', {'url': origin + '/index.html'})
