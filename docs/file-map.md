@@ -28,8 +28,12 @@ with a temporary browser profile.
 `labs/README.md` is the authoritative experiment handoff, including saved commits,
 verification evidence, limitations and the remaining checkpoint plan.
 `labs/ACCEPTANCE.md` records checkpoint 5 evidence, interim Mac acceptance and deferred device review.
-`docs/sky-live-integration-plan.md` contains the source audit and proposed
-live-data checkpoints 6A–6G; implementation has not started.
+`docs/sky-live-integration-plan.md` contains the audit and remaining live-data
+checkpoints. 6A is implemented; 6B–6G have not started.
+`docs/weather-service-contract.md` records the implemented service contract and
+verification. `src/js/weatherTime.js` and `src/js/weatherState.js` are shared pure
+helpers loaded by the normal app. The contract page/scripts under `tests/` use
+mocked provider responses and do not fetch live weather.
 
 ```text
 PraiasPortugal/
@@ -88,7 +92,9 @@ PraiasPortugal/
 │   │   ├── tideFormatter.js
 │   │   ├── tideService.js
 │   │   ├── weatherFormatter.js
-│   │   └── weatherService.js
+│   │   ├── weatherService.js
+│   │   ├── weatherState.js
+│   │   └── weatherTime.js
 │   │
 │   └── ui/
 │       └── dashboard.html

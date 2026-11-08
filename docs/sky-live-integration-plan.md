@@ -1,14 +1,15 @@
 # Sky live-data integration plan
 
-Planned 8 November 2026. **Plan only; no implementation authorized or started.**
+Updated 8 November 2026. **Checkpoint 6A implemented and verified; 6B–6G not started.**
 Current branch: `preview/sky-background`. Planning baseline: `ff92eb3`.
 Accepted visual implementation: `ee8be74`, with the star-visibility correction
 and review checks in `22eed6f`. Mac interim appearance acceptance is recorded
 in `ff92eb3`; its scope is in [the acceptance record](../labs/ACCEPTANCE.md).
 
-The user authorized this plan after the completed fixture-preview checkpoints.
-Approval of the plan or a particular implementation checkpoint must come before
-changing application code. Global activation remains a separate later decision.
+The user approved checkpoint 6A after planning. Its implementation is saved as
+`fd6722a`, starting from `0976be3`; see [the service contract](weather-service-contract.md)
+for exact behavior, tests and limitations. Further checkpoints require approval.
+Global activation remains a separate later decision.
 
 ## Intended result and boundaries
 
@@ -29,9 +30,11 @@ selected beach's weather as current conditions for a new selection.
 Physical iPhone/Safari review remains deferred. Mac acceptance does not establish
 physical-device performance or readiness to activate the background globally.
 
-## Fresh source audit
+## Pre-6A source audit (baseline `0976be3`)
 
-These findings come from current source inspection, not new live weather calls:
+These baseline findings came from source inspection, not live weather calls.
+6A resolves the service/query items below; data-manager and display items remain
+for later checkpoints:
 
 | Existing file | Finding and implication |
 | --- | --- |
@@ -66,7 +69,8 @@ concern to document and test separately if it requires broader changes.
 
 ## Ownership and data contract
 
-The following is proposed, not an API that exists today:
+The service metadata below now exists. Downstream ownership is still the target
+for the remaining checkpoints:
 
 ```text
 weatherService
@@ -82,7 +86,7 @@ application controller
         └── opt-in sky renderer
 ```
 
-Add metadata without removing existing weather fields:
+Metadata added in 6A without removing existing valid weather fields:
 
 ```js
 {
@@ -123,7 +127,7 @@ with a verified local commit and updated handoff. Start only the authorized one.
 
 | Checkpoint | Estimate | Expected files and behavior | Stop criteria |
 | --- | --- | --- | --- |
-| 6A — service contract | 45–60 min | `src/js/weatherService.js`; proposed `src/js/weatherTime.js` and `src/js/weatherState.js`; focused service tests. Add requested identity, validated timestamps, optional signal, HTTP/schema checks and safe missing values. Repair query construction. No renderer or refresh changes. | Legacy civil fields, numbers, units and celestial inputs remain compatible; invalid responses are explicit; normal app and fixture suite pass. Stop and save. |
+| 6A — service contract (complete: `fd6722a`) | Verified | `src/js/weatherService.js`, `src/js/weatherTime.js`, `src/js/weatherState.js` and deterministic tests. Requested identity, timestamps, optional signal, HTTP/schema checks and safe values are implemented. Query repaired; no renderer or refresh changes. | Legacy-field, formatter/celestial and actual-main-app checks passed in addition to the fixture suite. Saved and stopped. |
 | 6B — weather request ownership | 60–90 min | `dataManager.js`, shared state helpers and request tests. Location-keyed memory, joined same-location requests, latest-location selection, generation guards, 10-second timeout and cancellation. Preserve an explicit result for existing callers. | A/B/A switches, ignored aborts, timeouts and retry isolation cannot publish wrong-beach data. Superseded callers settle; no stranded pending flags. Stop and save. |
 | 6C — safe display and unavailable data | 45–75 min | `display.js`, `conditions.js`, application call sites and display tests. Guard every asynchronous publication; read weather by identity; handle unavailable/expired weather without fixture substitution. Weather publication must survive marine delay/failure. Settings-only changes rerender loaded data. | Fresh, stale and unavailable Dashboard paths work; old marine/weather continuations cannot overwrite the selected beach; translations, units and selection still work. Stop and save. |
 | 6D — refresh and lifecycle | 45–75 min | `dataManager.js`, lifecycle wiring in `app.js` and scheduler tests. One weather scheduler, retry/backoff, freshness notifications and resume reconciliation. | No duplicate loops, request storms or accumulated timers after repeated hide/show; expiry occurs without a successful new fetch. Stop and save. |
@@ -132,9 +136,10 @@ with a verified local commit and updated handoff. Start only the authorized one.
 | 6G — live Mac verification | 30–60 min | Live-preview checks and acceptance evidence, with a small explicitly authorized live-weather smoke test. No activation change. | One weather owner, correct selected location, failure/expiry behavior and no duplicate fetch on navigation/settings; record actual provider evidence and remaining device checks. Stop for user review. |
 
 Estimated total: **5–8¼ hours**, split across independently stoppable sessions.
-Start with 6A only after approval; do not automatically run 6A–6G together.
+6A is complete and stopped. Continue with 6B only after approval; do not
+automatically run the remaining checkpoints together.
 
-### 6A details: add metadata without breaking consumers
+### 6A completed: compatible service metadata
 
 1. Capture current normalized shape and representative raw responses with fixed
    fixtures. Include missing current/daily fields, non-2xx responses, malformed
@@ -234,16 +239,17 @@ readability treatment and a decision about the inherited narrow navigation layou
 ## Exact prompt for the next implementation session
 
 ```text
-Implement checkpoint 6A only from docs/sky-live-integration-plan.md in
+Implement checkpoint 6B only from docs/sky-live-integration-plan.md in
 /Users/williamcharash/Documents/GitHub/PraiasPortugal.
 First inspect Git status, repository instructions, labs/README.md,
 labs/ACCEPTANCE.md and the current source; preserve user changes.
-Record the starting commit. Add and test the weather service's requested identity,
-timestamp metadata and safe response/query handling while preserving the current
-normalized weather, hourly and celestial civil-time contracts.
-Keep the normal background and cards unchanged. Do not connect the sky,
-add refresh loops, fetch live weather for testing, modify ipma-radar, deploy,
-publish, push or begin 6B. Use deterministic response fixtures and the relevant
-existing regression checks. Save a working local checkpoint, update the handoff,
-report results and stop for review.
+Read docs/weather-service-contract.md. Checkpoint 6A is implemented as fd6722a.
+Record the new starting commit. Implement weather request ownership in the
+existing data manager: location-keyed snapshots, same-location promise joining,
+latest-location supersession, cancellation/generation guards, ten-second timeout
+and retry isolation. Preserve the service contract and accepted fixture behavior.
+Keep the normal background/cards unchanged. Do not connect the sky, add the
+6D automatic refresh scheduler, modify ipma-radar, fetch live weather for tests,
+deploy, publish, push or begin 6C. Use deterministic transports and the existing
+regression checks. Save a working local checkpoint, update the handoff and stop.
 ```

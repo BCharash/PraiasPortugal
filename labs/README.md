@@ -1,24 +1,24 @@
 # Sky preview checkpoints
 
 This is an isolated lab for evaluating an eventual weather-driven background.
-Checkpoint 4 adds precipitation, freshness and delayed-response simulations to
-the actual-layout preview. Production `index.html`, services and styles remain
-unchanged. Live integration and global activation remain deferred.
+The fixture sky remains accepted on Mac. Checkpoint 6A now adds metadata and
+validation to the normal app weather service; its background, cards, display and
+refresh behavior remain unchanged. Sky connection and global activation are deferred.
 
 ## Current handoff
 
 Updated 8 November 2026. This is the authoritative guide for the sky experiment.
-The implementation remains isolated at checkpoint 4 plus visual follow-ups.
+The sky renderer remains isolated in the lab; the first shared-data foundation
+change is complete in checkpoint 6A (`fd6722a`).
 Checkpoint 5's local technical review is recorded in [ACCEPTANCE.md](ACCEPTANCE.md).
 The user accepted the interim Mac appearance on 8 November 2026 at 30% panel
 opacity, including the requested short motion review. Physical iPhone/Safari is deferred because
 the user has only a Mac browser available. No live-data or global integration is
 authorized yet.
 
-The next implementation sequence is proposed in
-[the live integration plan](../docs/sky-live-integration-plan.md). Planning is
-complete; no source changes or live weather calls were made for it. Start with
-checkpoint 6A only after approval, keeping the default background unchanged.
+The remaining sequence is in [the live integration plan](../docs/sky-live-integration-plan.md).
+6A is complete; see [the service contract](../docs/weather-service-contract.md).
+Continue with 6B only after approval. No live weather calls have been used for tests.
 
 - Branch: `preview/sky-background`.
 - Checkpoint 4 foundation commit: `8aa12bd`; irregular snow follow-up: `ee8be74`.
@@ -49,10 +49,12 @@ startup-GPS location policy.
 | 3 — motion | `d556b3d` | Independent drift, five-second coverage updates, immediate initial/beach display, pause/resume and reduced motion. |
 | 3 follow-up — placement | `6eef2aa` | Removed the repeated three-row vertical layout that made every cloud type look like three horizontal bands; retained artwork, coverage and motion. |
 | 4 — precipitation and freshness | `8aa12bd` | Rain/snow intensity, explicit status and expiry, missing/offline data, refresh success/failure, timeout and late-response protection; 36 weather fixtures and 13 data scenarios. |
+| 6A — weather service contract | `fd6722a` | Requested identity, valid/fetch instants, safe response/query normalization and optional cancellation; shared pure helpers and deterministic compatibility checks. |
 
-Checkpoint 0's baseline preservation was performed before implementation by
-recording the original commit and creating the preview branch. The normal app's
-`index.html`, `src/`, data and manifest have remained unchanged throughout.
+Checkpoint 0 preserved the baseline before implementation by recording its commit
+and creating the preview branch. Through Mac visual acceptance, normal app files
+were unchanged. In 6A, only its weather service and pure-helper script loading
+changed; the default background, cards and refresh behavior remain unchanged.
 
 To inspect history without changing files:
 
@@ -60,10 +62,12 @@ To inspect history without changing files:
 git status --short --branch
 git log --oneline -8
 git show --stat 8aa12bd
-git diff 476d190 HEAD -- index.html src data manifest.json
+git diff 476d190 ff92eb3 -- index.html src data manifest.json
+git diff 0976be3 HEAD -- index.html src
 ```
 
-The last command should show no production-file changes at this checkpoint.
+The first diff confirms the isolated visual checkpoints changed no production
+files. The second shows the intentionally limited 6A service/helper changes.
 
 ## File responsibilities and current data flow
 
@@ -73,7 +77,9 @@ The last command should show no production-file changes at this checkpoint.
 | `labs/sky-preview.js` | Fetches current app markup, sets base URLs, inserts lab assets before startup, removes the embedded Live Server reload client and coordinates toolbar changes. |
 | `labs/sky-preview.css` | Styles only the outer toolbar and frame. |
 | `labs/sky-fixtures.js` | Synthetic weather/marine results, metadata envelopes, 36 weather fixtures and 13 data scenarios. |
-| `labs/sky-weather-state.js` | Shared WMO mapping, pure timestamp/location evaluation and a cancellable fixture request controller with injected time/scheduling. No provider calls. |
+| `labs/sky-weather-state.js` | Lab request simulation; delegates pure condition/freshness rules to the shared production helper. No provider calls. |
+| `src/js/weatherTime.js`, `src/js/weatherState.js` | Pure timestamp conversion and shared condition/freshness rules; no requests, DOM or timers. |
+| `docs/weather-service-contract.md` | Implemented 6A service interface, metadata, compatibility checks and remaining limits. |
 | `labs/sky-preview-adapter.js` | Replaces services and storage inside the frame, freezes its clock, coordinates fixture state, updates sky/status/cards and owns simulated requests and cleanup. |
 | `labs/sky-background.js` | Instance-scoped SVG sky, palette selection, independent patch coverage, solar-service reuse, update/visibility/motion methods and cleanup. |
 | `labs/sky-background.css` | Scoped drift/transitions, reduced motion, panel transparency and contrast support. |
@@ -302,7 +308,8 @@ This also writes desktop/mobile Dashboard and Settings variants next to the
 named PNG. Those screenshots are temporary artifacts, not committed project files.
 
 These checks do not validate live provider responses or physical iPhone/Safari.
-The normal app's current weather-fetch and refresh behavior is unchanged.
+The normal app's refresh behavior is unchanged. Its 6A weather contract is tested
+with deterministic responses; live provider verification remains a later checkpoint.
 
 For the fixed-scene acceptance gallery and all-view/text-size measurements:
 
@@ -376,7 +383,8 @@ calling the checkpoint complete.
 | Next step | Estimate | Scope and completion criteria |
 | --- | --- | --- |
 | 5 — preview acceptance | Local technical review complete; interim Mac appearance accepted | See ACCEPTANCE.md for scope. Physical iPhone/Safari deferred. No global activation. |
-| 6A–6G — live integration | Proposed 5–8¼ hours total; 6A is 45–60 min | See docs/sky-live-integration-plan.md. Planning complete; implementation awaits checkpoint approval. The default background remains unchanged. |
+| 6A — service contract | Complete: `fd6722a` | Metadata, safe normalization and signal support verified with fixed responses; no sky connection or refresh changes. |
+| 6B–6G — remaining integration | Next 6B: 60–90 min | See docs/sky-live-integration-plan.md. Continue one approved checkpoint at a time; default background remains unchanged. |
 | Later — global activation | Estimate after integration review | Explicit visual/device acceptance and approval before changing the normal app's background. Preserve a reversible fallback. |
 
 ### Checkpoint 4 completed verification
@@ -431,41 +439,23 @@ to that later approved integration.
 
 ## Copy-paste resume prompt
 
-For an approved implementation session, use the exact **checkpoint 6A only**
+For an approved implementation session, use the exact **checkpoint 6B only**
 prompt in [the live integration plan](../docs/sky-live-integration-plan.md).
-The earlier preview-review scope below remains the boundary until approval:
-
-```text
-Resume PraiasPortugal's isolated sky lab on branch preview/sky-background.
-First read labs/README.md and the repository development rules, inspect Git
-status and current code, and preserve existing user changes. The completed
-implementation foundation is 8aa12bd (checkpoint 4); retain ee8be74's snow
-follow-up and the current branch HEAD's acceptance-review correction/checks.
-Read labs/ACCEPTANCE.md. Local technical review is complete, and the user accepted
-the interim Mac appearance on 8 November 2026 at 30% panel opacity with a short
-motion review. Preserve that checkpoint. Physical iPhone/Safari is deferred;
-live integration and global activation still require explicit approval.
-Make only fixes separately authorized by the user.
-Read ipma-radar/docs/sky-header-architecture.md as a reference, but do not modify
-ipma-radar. Keep production index.html, src/, data and manifest unchanged.
-Do not fetch live weather, activate the sky globally, deploy or publish.
-Verify each meaningful increment, run the expanded isolated browser checks,
-document results/limitations and save a clean local checkpoint. Stop before
-live integration and report outstanding user/device acceptance.
-```
+The next checkpoint is 6B. Preserve the completed 6A contract and accepted fixture
+appearance; do not repeat 6A or activate the sky globally when resuming.
 
 ## Durable stop / resume
 
 - Branch: `preview/sky-background`.
 - Original app baseline: `476d190922870a39bc76cc91c68e9c9ba0bc20a7`.
-- Current stop: checkpoint 5 local technical review completed; interim Mac
-  appearance accepted. No global changes.
+- Current stop: checkpoint 6A complete (`fd6722a`); interim Mac appearance
+  remains accepted. No sky activation or refresh changes.
 - Checkpoint 2's original opaque-panel version is saved as `9eec0ce`. The follow-up
   adds adjustable panel transparency for sky evaluation (`b77d714`), preserved here.
 - Live integration planning is complete in `docs/sky-live-integration-plan.md`.
-  Next action, after approval: checkpoint 6A only (45–60 minutes), or separately
-  requested lab fixes. Physical iPhone/Safari stays deferred. No implementation
-  or activation is authorized by the planning checkpoint.
+  Next action, after approval: checkpoint 6B only (60–90 minutes). Physical
+  iPhone/Safari stays deferred. No later checkpoint or global activation is
+  authorized by completing 6A.
 - Live-data integration and global activation require later approval.
 
 To run the normal app, simply use `index.html`. To remove this experiment,
