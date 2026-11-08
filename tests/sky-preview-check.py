@@ -179,6 +179,7 @@ try:
             if(url.origin==='https://api.open-meteo.com') {
                 serviceProbe.weatherRequests++;
                 const payload=WEATHER_FIXTURE;
+                if(serviceProbe.followClock) payload.current.time=new Date(serviceProbe.now).toISOString().slice(0,16);
                 if(serviceProbe.missingFields) {
                     payload.current.temperature_2m=null;payload.current.uv_index=null;
                     payload.daily.uv_index_max=[null];payload.daily.moon_phase=[null];
@@ -282,6 +283,49 @@ try:
     if args.screenshot:
         shot=pathlib.Path(args.screenshot);capture=client.call('Page.captureScreenshot',{'format':'png'})
         shot.with_name(shot.stem+'-main-expired-pt.png').write_bytes(base64.b64decode(capture['data']))
+    # Exercise the actual app lifecycle wiring with deterministic manager timers.
+    marine_before=client.evaluate('serviceProbe.marineRequests')
+    client.evaluate('''(() => {
+        shutdownDataManager();
+        serviceProbe.followClock=true;
+        window.weatherTimers=new Map();window.weatherTimerId=0;
+        window.advanceWeatherClock=ms=>{
+            serviceProbe.now+=ms;
+            for(const [id,t] of [...weatherTimers]) if(t.at<=serviceProbe.now){weatherTimers.delete(id);t.fn();}
+        };
+        initializeDataManager({now:()=>serviceProbe.now,
+            setTimer:(fn,ms)=>{const id=++weatherTimerId;weatherTimers.set(id,{at:serviceProbe.now+ms,fn});return id;},
+            clearTimer:id=>weatherTimers.delete(id)});
+        window.lifecycleWork=refreshWeatherDataset(currentDashboardData.beach);
+    })()''')
+    client.evaluate('lifecycleWork')
+    assert client.evaluate("currentDashboardData.weather && weatherTimers.size===1")
+    count=client.evaluate('serviceProbe.weatherRequests')
+    client.evaluate("showSettings();serviceProbe.weatherFailure=true;advanceWeatherClock(15*60000)")
+    wait_for(client,"!getDataStatus('weather').refreshing")
+    assert client.evaluate("serviceProbe.weatherRequests")==count+1
+    client.evaluate("showDashboard()")
+    assert client.evaluate("serviceProbe.weatherRequests")==count+1
+    assert client.evaluate("currentDashboardData.weatherStatus.freshness==='stale' && currentDashboardData.weather && document.getElementById('dashboardWeatherCondition').textContent.includes(translate('weatherStale'))")
+    client.evaluate("window.lifecycleHidden=true;Object.defineProperty(document,'hidden',{configurable:true,get:()=>lifecycleHidden});document.dispatchEvent(new Event('visibilitychange'));advanceWeatherClock(2*60*60000)")
+    assert client.evaluate("weatherTimers.size===0")
+    assert client.evaluate("serviceProbe.weatherRequests")==count+1
+    # Do not collect missed ticks: resume attempts exactly once; hold its transport.
+    client.evaluate("serviceProbe.weatherFailure=false;serviceProbe.deferWeather=true;serviceProbe.pendingWeather=[];lifecycleHidden=false;document.dispatchEvent(new Event('visibilitychange'))")
+    wait_for(client,"serviceProbe.pendingWeather.length===1")
+    assert client.evaluate("currentDashboardData.weather===null && document.getElementById('dashboardAirTemp').textContent==='--'")
+    for _ in range(5):
+        client.evaluate("window.dispatchEvent(new PageTransitionEvent('pagehide',{persisted:true}));window.dispatchEvent(new PageTransitionEvent('pageshow',{persisted:true}))")
+    assert client.evaluate("serviceProbe.weatherRequests")==count+2
+    assert client.evaluate("weatherTimers.size===1")  # Only the request deadline remains.
+    client.evaluate("serviceProbe.pendingWeather[0]()")
+    wait_for(client,"!getDataStatus('weather').refreshing && !!currentDashboardData.weather")
+    assert client.evaluate('weatherTimers.size===1')
+    assert client.evaluate('serviceProbe.marineRequests')==marine_before
+    client.evaluate("window.dispatchEvent(new PageTransitionEvent('pagehide',{persisted:false}));delete document.hidden")
+    assert client.evaluate("weatherTimers.size===0 && !dataManagerState.initialized")
+    assert client.evaluate('previewErrors.length===0')
+    print('PASS: real app lifecycle, stale notification, hidden pause, one resume fetch, persisted restore and shutdown; no marine requests',flush=True)
     print('PASS: independent weather/marine failure and delay, same-beach display generations, missing values, translated no-fetch settings and expiry rerender',flush=True)
     print('MAIN_APP_SERVICE',smoke,'Fahrenheit rerender passed',flush=True)
     client.call('Page.navigate',{'url':origin+'/index.html?hold-marine&alternate-startup'})

@@ -1676,6 +1676,31 @@ function showSettings() {
 // Initialize Application
 //--------------------------------------------------
 
+// The data manager owns weather timing; UI subscription only publishes the
+// currently selected identity and never starts a marine or weather request.
+subscribeWeatherUpdates(({beach, weather, status}) => {
+    const data = currentDashboardData;
+    if (!data || appState.selectedBeachId !== beach.id || data.beach.id !== beach.id ||
+        data.beach.latitude !== beach.latitude || data.beach.longitude !== beach.longitude) return;
+    data.weather = weather;
+    data.weatherStatus = status;
+    data.weatherPending = status.refreshing;
+    renderCurrentDashboard();
+});
+
+document.addEventListener("visibilitychange", () => {
+    if (document.hidden) pauseDataUpdates();
+    else resumeDataUpdates();
+});
+window.addEventListener("pagehide", event => {
+    if (event.persisted) pauseDataUpdates();
+    else shutdownDataManager();
+});
+window.addEventListener("pageshow", () => {
+    if (document.hidden) pauseDataUpdates();
+    else resumeDataUpdates();
+});
+
 async function initializeApplication() {
 
     //--------------------------------------------------
@@ -1751,6 +1776,7 @@ async function initializeApplication() {
     // Restore Saved Beach
     //--------------------------------------------------
 
+    if (document.hidden) pauseDataUpdates();
     const savedBeachRestoration = restoreSavedBeach();
 
 

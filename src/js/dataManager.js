@@ -89,6 +89,13 @@ const dataManagerState = {
 
 };
 let weatherRequestManager = null;
+let weatherScheduler = null;
+const weatherSubscribers = new Set();
+
+function subscribeWeatherUpdates(listener) {
+    weatherSubscribers.add(listener);
+    return () => weatherSubscribers.delete(listener);
+}
 
 
 //--------------------------------------------------
@@ -134,7 +141,7 @@ function createDatasetStatus() {
 // Initialization
 //--------------------------------------------------
 
-function initializeDataManager() {
+function initializeDataManager({now, setTimer, clearTimer} = {}) {
 
     if (dataManagerState.initialized)
         return;
@@ -143,10 +150,17 @@ function initializeDataManager() {
         createDatasetStatus();
 
     weatherRequestManager = createWeatherRequestManager({
+        now, setTimer, clearTimer,
         service: (beach, options) => DATASETS.weather.service(beach, options),
         retryDelay:getRetryDelay
     });
     weatherRequestManager.setPaused(dataManagerState.paused);
+    weatherScheduler = createWeatherScheduler({
+        now, setTimer, clearTimer,
+        manager:weatherRequestManager,
+        onChange:update => weatherSubscribers.forEach(listener => listener(update))
+    });
+    weatherScheduler.setPaused(dataManagerState.paused);
     // Keep private legacy reads consistent with the single weather owner.
     Object.defineProperty(dataManagerState.datasets, "weather", {
         enumerable:true, get:() => weatherRequestManager.getStatus()
@@ -530,7 +544,7 @@ function pauseDataUpdates() {
 
     dataManagerState.paused =
         true;
-    weatherRequestManager?.setPaused(true);
+    weatherScheduler?.setPaused(true);
 
 }
 
@@ -539,14 +553,14 @@ function resumeDataUpdates() {
 
     dataManagerState.paused =
         false;
-    weatherRequestManager?.setPaused(false);
+    weatherScheduler?.setPaused(false);
 
 }
 
 // Detailed location-bound result for display callers; no global-slot reread.
 function refreshWeatherDataset(beach, options) {
     if (!dataManagerState.initialized) initializeDataManager();
-    return weatherRequestManager.request(beach, options);
+    return weatherScheduler.request(beach, options);
 }
 
 function isWeatherResultCurrent(result) {
@@ -558,5 +572,12 @@ function isWeatherResultActive(result) {
 }
 
 function clearWeatherDataset() {
-    weatherRequestManager?.clear();
+    weatherScheduler?.clear();
+}
+
+function shutdownDataManager() {
+    weatherScheduler?.destroy();
+    weatherScheduler = null;
+    weatherRequestManager = null;
+    dataManagerState.initialized = false;
 }

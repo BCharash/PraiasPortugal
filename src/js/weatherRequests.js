@@ -71,12 +71,17 @@ function createWeatherRequestManager({service, now = () => Date.now(), setTimer 
                 } else {
                     entry.snapshot = snapshot;
                     entry.failureCount = 0; entry.retryAt = null; entry.error = null;
+                    entry.nextUpdate = now() + 15 * 60000;
                 }
             }
             if (current && ["error", "timeout"].includes(kind)) {
                 entry.failureCount += 1;
                 entry.retryAt = now() + retryDelay(entry.failureCount);
                 entry.error = error;
+            }
+            if (current && kind === "aborted") {
+                entry.retryAt = null;
+                entry.nextUpdate = now() + retryDelay(1);
             }
             if (inFlight === flight) inFlight = null;
             resolveResult(outcome(current ? kind : destroyed ? "destroyed" : "superseded", key, token, error));
@@ -101,7 +106,7 @@ function createWeatherRequestManager({service, now = () => Date.now(), setTimer 
         return {key, requestedBeachId:entry?.beach.id ?? null,
             requestedLatitude:entry?.beach.latitude ?? null, requestedLongitude:entry?.beach.longitude ?? null,
             lastUpdated:entry?.snapshot?.fetchedAtMs ?? null, conditionTimeMs:entry?.snapshot?.conditionTimeMs ?? null,
-            nextUpdate:null, retryAt:entry?.retryAt ?? null, failureCount:entry?.failureCount ?? 0,
+            nextUpdate:entry?.nextUpdate ?? null, retryAt:entry?.retryAt ?? null, failureCount:entry?.failureCount ?? 0,
             error:entry?.error ?? null, refreshing, pendingRefresh:false,
             refreshStatus:refreshing ? "loading" : entry?.error ? "error" : "idle",
             freshness:state.status, ageMs:state.ageMs,
