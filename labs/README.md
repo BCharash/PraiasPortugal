@@ -10,6 +10,13 @@ Updated 8 November 2026. This is the authoritative guide for the sky experiment.
 6F is complete; see [the live preview guide](../docs/sky-live-preview.md) for files,
 request ownership, checks, limits and rollback. The renderer is shared under src/,
 but only the two preview entries load it. Global activation remains deferred.
+Both previews now include a **Sky inputs** disclosure below the weather-status
+row. Its summary shows low/mid/high cover; expand it for total cover, weather code
+and effect, actual solar elevation, selected palette, source and freshness/age.
+Values come from the renderer's normalized inputs, so invalid coverage is shown
+as unknown and finite values reflect clamping. Cloud tiers overlap; percentages
+are not added. Wind does not drive the decorative drift.
+
 Checkpoint 5's local technical review is recorded in [ACCEPTANCE.md](ACCEPTANCE.md).
 The user accepted the interim Mac appearance on 8 November 2026 at 30% panel
 opacity, including the requested short motion review. Physical iPhone/Safari is deferred because
@@ -58,6 +65,7 @@ startup-GPS location policy.
 | 6D — refresh/lifecycle | `55f3577` | One weather scheduler, cadence/retries, freshness notifications and hidden/history resume handling. |
 | 6E — shared location/clock | `1d52a93` | Selected-beach/Lisbon clock boundary, immutable model times and cross-zone celestial/date checks. |
 | 6F — opt-in live sky preview | `cfa1be8` | Shared accepted artwork and actual app environment subscription; temporary-preference live entry, no global activation. |
+| 6F follow-up — appearance inputs | `0ba97d1` | Collapsible readout of normalized cloud coverage, condition/effect, solar elevation/palette and freshness in both previews. |
 
 Checkpoint 0 preserved the baseline before implementation by recording its commit
 and creating the preview branch. Through Mac visual acceptance, normal app files
@@ -104,6 +112,7 @@ the default body background and card stylesheet remain unchanged.
 | `labs/sky-preview-adapter.js` | Replaces services and storage inside the frame, freezes its clock, coordinates fixture state, updates sky/status/cards and owns simulated requests and cleanup. |
 | `src/js/skyBackground.js` | Instance-scoped SVG sky, palette selection, independent patch coverage, solar-service reuse, update/visibility/motion methods and cleanup. |
 | `src/css/sky-background.css` | Shared decorative artwork, drift/transitions, precipitation and reduced motion; no panel opacity changes. |
+| `labs/sky-inputs.js` | Shared preview-only, collapsible readout of actual renderer inputs; no requests or timers. |
 | `labs/sky-background.css` | Preview-only panel transparency, contrast support and status styles. |
 | `tests/sky-preview-check.py`, `tests/sky_live_preview_check.py` | Isolated Chrome verification of normal app and both previews, using mocked providers, temporary profiles and optional screenshots. |
 | `labs/ACCEPTANCE.md` | Checkpoint 5 evidence, interim Mac acceptance, inherited layout findings and deferred device review. |
@@ -485,7 +494,7 @@ The next checkpoint is 6G. Preserve the completed 6A contract, 6B request owner,
 
 - Branch: `preview/sky-background`.
 - Original app baseline: `476d190922870a39bc76cc91c68e9c9ba0bc20a7`.
-- Current stop: checkpoint 6F complete (`cfa1be8`); see docs/sky-live-preview.md; interim Mac appearance
+- Current stop: checkpoint 6F complete (`cfa1be8`), inputs-readout follow-up `0ba97d1`; see docs/sky-live-preview.md; interim Mac appearance
   remains accepted. Live preview is opt-in; the normal app sky is not activated.
 - Checkpoint 2's original opaque-panel version is saved as `9eec0ce`. The follow-up
   adds adjustable panel transparency for sky evaluation (`b77d714`), preserved here.

@@ -26,11 +26,23 @@ Panel opacity starts at the accepted 30%, with 0–100% comparison available onl
 in previews. Reduced-motion preferences disable sky animation/transitions even
 when Animate sky is selected. No new controls were added to the normal app.
 
+The **Sky inputs** disclosure below the in-frame weather-status row reports what
+actually drives the appearance. Its compact summary shows independent low/mid/high
+cover. Expand for total cover, weather code/condition, rain/snow effect and intensity,
+solar elevation, selected palette, and data source/freshness/age. It updates with the
+same state as the sky across views, without additional requests. Expired/missing
+weather explicitly clears reported effects and shows unknown coverage. The fixture
+preview has the same readout, labeled Synthetic fixture. Values are normalized
+renderer inputs, not a reconstruction of measured pixel coverage. Decorative
+movement does not follow the wind reading.
+
 6F automated testing uses mocked providers only. Actual provider response quality,
 Mac live appearance and physical-device performance are separate acceptance work.
 
 ## Files and data flow
 
+- `labs/sky-inputs.js` is the preview-only readout, using the renderer's read-only
+  `getInputs()` snapshot. It adds no weather acquisition, solar timer or artwork.
 - `src/js/skyBackground.js` is the promoted renderer from `labs/sky-background.js`.
   It preserves SVG clouds, independent low/mid/high coverage/drift, five-second
   updates, immediate first/beach-change appearance, rain/snow, irregular snow
@@ -107,6 +119,15 @@ resizing; its existing SVG can stretch until the next redraw after a resize.
 Chrome viewport emulation does not establish physical iPhone/Safari acceptance.
 The inherited narrow navigation overflow remains unchanged. The softer cloud
 artwork is still the accepted interim Mac baseline, not a final realism approval.
+
+## Appearance-input readout follow-up
+
+Saved as `0ba97d1` on 8 November 2026. Passed the full mocked suite with
+`python3 tests/sky-preview-check.py --screenshot /private/tmp/praias-sky-inputs.png`.
+Checks cover readout values across all 36 fixtures, clamping/unknown cover, live
+source labels, WMO/effect reporting, stale/expired changes and unchanged request
+counts. The narrow collapsed readout screenshot was inspected. No artwork,
+normal-entry activation or live-provider verification was added.
 
 ## Stop and next checkpoint
 
