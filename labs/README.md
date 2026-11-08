@@ -15,6 +15,11 @@ opacity, including the requested short motion review. Physical iPhone/Safari is 
 the user has only a Mac browser available. No live-data or global integration is
 authorized yet.
 
+The next implementation sequence is proposed in
+[the live integration plan](../docs/sky-live-integration-plan.md). Planning is
+complete; no source changes or live weather calls were made for it. Start with
+checkpoint 6A only after approval, keeping the default background unchanged.
+
 - Branch: `preview/sky-background`.
 - Checkpoint 4 foundation commit: `8aa12bd`; irregular snow follow-up: `ee8be74`.
   Retain the subsequent acceptance-review star-visibility correction and checks
@@ -74,6 +79,7 @@ The last command should show no production-file changes at this checkpoint.
 | `labs/sky-background.css` | Scoped drift/transitions, reduced motion, panel transparency and contrast support. |
 | `tests/sky-preview-check.py` | Dependency-free isolated Chrome verification, local server, temporary profile and optional screenshots. |
 | `labs/ACCEPTANCE.md` | Checkpoint 5 evidence, interim Mac acceptance, inherited layout findings and deferred device review. |
+| `docs/sky-live-integration-plan.md` | Fresh source audit and proposed 6A–6G implementation checkpoints, estimates, checks and stop points. |
 | `docs/file-map.md` | Repository navigation entry pointing to this guide. |
 
 The app still starts through its real controller and data manager. The frame's
@@ -370,7 +376,7 @@ calling the checkpoint complete.
 | Next step | Estimate | Scope and completion criteria |
 | --- | --- | --- |
 | 5 — preview acceptance | Local technical review complete; interim Mac appearance accepted | See ACCEPTANCE.md for scope. Physical iPhone/Safari deferred. No global activation. |
-| Later — live integration design and implementation | Estimate after audit | Strengthen the existing weather/data-manager lifecycle, adapt its shared snapshots and preserve current app function through separate small checkpoints. Requires approval after preview review. |
+| 6A–6G — live integration | Proposed 5–8¼ hours total; 6A is 45–60 min | See docs/sky-live-integration-plan.md. Planning complete; implementation awaits checkpoint approval. The default background remains unchanged. |
 | Later — global activation | Estimate after integration review | Explicit visual/device acceptance and approval before changing the normal app's background. Preserve a reversible fallback. |
 
 ### Checkpoint 4 completed verification
@@ -425,6 +431,10 @@ to that later approved integration.
 
 ## Copy-paste resume prompt
 
+For an approved implementation session, use the exact **checkpoint 6A only**
+prompt in [the live integration plan](../docs/sky-live-integration-plan.md).
+The earlier preview-review scope below remains the boundary until approval:
+
 ```text
 Resume PraiasPortugal's isolated sky lab on branch preview/sky-background.
 First read labs/README.md and the repository development rules, inspect Git
@@ -452,9 +462,10 @@ live integration and report outstanding user/device acceptance.
   appearance accepted. No global changes.
 - Checkpoint 2's original opaque-panel version is saved as `9eec0ce`. The follow-up
   adds adjustable panel transparency for sky evaluation (`b77d714`), preserved here.
-- Next action, when authorized: plan live integration or make separately requested
-  lab fixes. Physical iPhone/Safari stays deferred. Live integration is a separate
-  later task requiring approval.
+- Live integration planning is complete in `docs/sky-live-integration-plan.md`.
+  Next action, after approval: checkpoint 6A only (45–60 minutes), or separately
+  requested lab fixes. Physical iPhone/Safari stays deferred. No implementation
+  or activation is authorized by the planning checkpoint.
 - Live-data integration and global activation require later approval.
 
 To run the normal app, simply use `index.html`. To remove this experiment,

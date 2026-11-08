@@ -28,6 +28,8 @@ with a temporary browser profile.
 `labs/README.md` is the authoritative experiment handoff, including saved commits,
 verification evidence, limitations and the remaining checkpoint plan.
 `labs/ACCEPTANCE.md` records checkpoint 5 evidence, interim Mac acceptance and deferred device review.
+`docs/sky-live-integration-plan.md` contains the source audit and proposed
+live-data checkpoints 6A–6G; implementation has not started.
 
 ```text
 PraiasPortugal/
