@@ -29,7 +29,10 @@ with a temporary browser profile.
 verification evidence, limitations and the remaining checkpoint plan.
 `labs/ACCEPTANCE.md` records checkpoint 5 evidence, interim Mac acceptance and deferred device review.
 `docs/sky-live-integration-plan.md` contains the audit and remaining live-data
-checkpoints. 6A–6D are implemented; 6E–6G have not started.
+checkpoints. 6A–6E are implemented; 6F–6G have not started.
+`src/js/environmentContext.js` supplies the selected-beach/Lisbon clock boundary
+and civil arithmetic for Conditions and celestial rendering.
+`docs/environment-context.md` records its 6E interface and cross-zone/DST tests.
 `src/js/weatherScheduler.js` owns the data manager's weather wake-up and refresh/
 freshness reconciliation. `docs/weather-refresh-lifecycle.md` documents 6D behavior
 and deterministic lifecycle verification.
@@ -100,6 +103,7 @@ PraiasPortugal/
 │   │   ├── tideFormatter.js
 │   │   ├── tideService.js
 │   │   ├── weatherFormatter.js
+│   │   ├── environmentContext.js
 │   │   ├── weatherScheduler.js
 │   │   ├── weatherRequests.js
 │   │   ├── weatherService.js

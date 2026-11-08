@@ -130,9 +130,10 @@ checks also passed. The 6A contract still passed in Lisbon, Los Angeles and Toky
 
 ## Stop and remaining work
 
-6B–6D are saved. Refresh/lifecycle is documented in [6D](weather-refresh-lifecycle.md).
-The next checkpoint is shared location/clock 6E (30–60 minutes), requiring approval, followed by
-live sky preview 6F and real-provider verification 6G. Physical iPhone/Safari
+6B–6E are saved. Refresh/lifecycle is documented in [6D](weather-refresh-lifecycle.md).
+Shared location/clock is documented in [6E](environment-context.md).
+The next checkpoint is live sky preview 6F (45–75 minutes), requiring approval,
+followed by real-provider verification 6G. Physical iPhone/Safari
 review, global activation, deployment and publishing remain deferred.
 
 See [the integration plan](sky-live-integration-plan.md) and
