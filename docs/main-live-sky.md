@@ -103,3 +103,20 @@ All cloud types and sheet openings drift rightward, without the former reverse/
 alternating tier motion or vertical wandering. Clouds recycle beyond the view.
 Per-cloud speed/shape variation remains. Clock fixes are unchanged. No browser
 or lab suite was run for this follow-up; the user will test before any commit.
+
+## Phone composition/smoothness candidate (uncommitted)
+
+Narrow screens and touch layouts up to 1100px now use aspect-preserving cloud
+image tiles sized from viewport width, repeated vertically. This replaces the
+portrait crop of the wide scene, giving smaller clouds and more visible cloud
+shapes. Each tile is a cached snapshot of the same tier's selected shapes, masks,
+colour and coverage; it rebuilds on changed inputs or width, not each frame or
+Safari address-bar height change.
+
+On this path, three HTML image layers move rightward using 3D transforms instead
+of individually animating SVG shapes inside blur filters/masks. This trades
+individual per-cloud drift on phones for lighter layer compositing; Mac's
+individual-cloud renderer remains unchanged. Speed, pause, Reduce Motion and
+freshness clearing still use existing controls/state. No weather requests were
+added. Actual iPhone smoothness and composition are pending user testing; no lab
+or browser suite was run. Clock/celestial files remain untouched. No commit yet.

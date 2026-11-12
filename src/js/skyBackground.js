@@ -246,6 +246,35 @@ function createCloudDeck(svg,tier,id,width) {
     return {deck,openings};
 }
 
+// Phone clouds are painted once into image tiles. Only the HTML image layers
+// move, avoiding per-frame SVG blur/mask work and desktop-scene cropping.
+function cloudTile(svg,fill,mode) {
+    const tile=svg.cloneNode(true), width=svg.viewBox.baseVal.width, height=900;
+    tile.setAttribute("xmlns","http://www.w3.org/2000/svg");
+    tile.setAttribute("width",width);tile.setAttribute("height",height);
+    tile.setAttribute("preserveAspectRatio","xMidYMid meet");
+    tile.removeAttribute("class");
+    tile.querySelectorAll(mode === "revised" ? ".sky-shape-baseline" : ".sky-shape-revised,.sky-cloud-deck").forEach(node=>node.remove());
+    tile.querySelectorAll(".sky-cloud-motion").forEach(node=>node.removeAttribute("style"));
+    for (const node of tile.querySelectorAll(".sky-cloud-patch,.sky-deck-hole,.sky-cloud-deck")) {
+        if (node.style.opacity) node.setAttribute("opacity",node.style.opacity);
+        if (node.style.transform) node.setAttribute("transform",node.style.transform);
+        node.removeAttribute("style");
+    }
+    // Wrap edge-crossing clouds/openings, so repeated tiles do not cut shapes.
+    for (const original of [tile.querySelector(".preview-sky-tier"),tile.querySelector(".sky-deck-openings")]) {
+        if (!original) continue;
+        for (const x of [-width,0,width]) for (const y of [-height,0,height]) {
+            if (!x && !y) continue;
+            const copy=original.cloneNode(true);
+            copy.setAttribute("transform",`translate(${x} ${y})`);
+            original.parentNode.append(copy);
+        }
+    }
+    const xml=new XMLSerializer().serializeToString(tile).replace(/var\(--cloud-(?:high|mid|low)-fill\)/g,fill);
+    return `url("data:image/svg+xml,${encodeURIComponent(xml)}")`;
+}
+
     window.createSkyBackground = function ({creditLabel = "Illustrative sky · Weather data:"} = {}) {
         const id = `preview-sky-${++nextInstance}`;
         const root = document.createElement("div");
@@ -313,6 +342,37 @@ function createCloudDeck(svg,tier,id,width) {
         document.body.prepend(root);
         document.body.append(credits);
         let destroyed = false, inputs = null, lastUpdate = null, animationSpeed = 1;
+        const mobileClouds=document.createElement("div");
+        mobileClouds.className="sky-mobile-clouds";
+        const mobileLayers=["high","mid","low"].map(tier=>{
+            const layer=document.createElement("div");layer.className="sky-mobile-layer";
+            mobileClouds.append(layer);return {tier,layer};
+        });
+        root.insertBefore(mobileClouds,rain);
+        let mobileKey="";
+        function refreshPhoneClouds() {
+            if (destroyed) return;
+            const width=root.clientWidth || document.documentElement.clientWidth;
+            const phone=width>0 && (width<=600 || (width<=1100 && window.matchMedia("(pointer: coarse)").matches));
+            root.dataset.skyLayout=phone ? "phone" : "wide";
+            if (!phone || !inputs) return;
+            mobileClouds.hidden=!inputs.hasWeather || ![inputs.low,inputs.mid,inputs.high].some(value=>Number.isFinite(value) && value>0);
+            if (mobileClouds.hidden) return;
+            const fill=root.style.getPropertyValue("--cloud-high-fill");
+            const key=JSON.stringify([width,inputs.total,inputs.low,inputs.mid,inputs.high,inputs.rendering,fill]);
+            if (key===mobileKey) return;
+            mobileKey=key;
+            const tileWidth=Math.round(width*1.4);
+            root.style.setProperty("--mobile-tile-width",`${tileWidth}px`);
+            root.style.setProperty("--mobile-cloud-duration",`${tileWidth/1.5}s`);
+            for (const {tier,layer} of mobileLayers) {
+                const svg=root.querySelector(`svg.preview-sky-clouds[data-tier="${tier}"]`);
+                layer.style.backgroundImage=cloudTile(svg,fill,inputs.rendering);
+                layer.style.backgroundSize=`${tileWidth}px ${tileWidth*900/svg.viewBox.baseVal.width}px`;
+            }
+        }
+        const sizeObserver=new ResizeObserver(()=>{refreshPhoneClouds();applyAnimationSpeed();});
+        sizeObserver.observe(root);
         function applyAnimationSpeed() {
             for (const animation of root.getAnimations({subtree:true})) {
                 // Keep weather transitions at five seconds regardless of drift speed.
@@ -375,6 +435,7 @@ function createCloudDeck(svg,tier,id,width) {
                     void root.offsetWidth;
                     root.setAttribute("data-clouds-ready", "");
                 }
+                refreshPhoneClouds();
                 applyAnimationSpeed();
             },
             setAnimationSpeed(value) {
@@ -400,6 +461,7 @@ function createCloudDeck(svg,tier,id,width) {
             },
             destroy() {
                 destroyed = true;
+                sizeObserver.disconnect();
                 root.remove();
                 credits.remove();
                 delete document.body.dataset.skyPreview;

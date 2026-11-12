@@ -113,3 +113,20 @@ body[data-sky-preview] { isolation: isolate; }
 .preview-sky[data-motion="off"] .sky-cloud-motion { animation-play-state: paused; }
 .preview-sky[data-rendering="baseline"] .sky-shape-revised,
 .preview-sky[data-rendering="revised"] .sky-shape-baseline { display: none; }
+
+/* Width-scaled, aspect-preserving cached cloud tiles for narrow screens. */
+.sky-mobile-clouds { display: none; position: absolute; inset: 0; overflow: hidden; }
+.preview-sky[data-sky-layout="phone"] > .preview-sky-clouds { display: none; }
+.preview-sky[data-sky-layout="phone"] > .sky-mobile-clouds { display: block; }
+.sky-mobile-layer {
+    position: absolute;
+    top: 0; bottom: 0; left: calc(-1 * var(--mobile-tile-width)); right: 0;
+    background-repeat: repeat;
+    will-change: transform;
+    animation: mobileCloudDrift var(--mobile-cloud-duration) linear infinite;
+}
+@keyframes mobileCloudDrift {
+    from { transform: translate3d(0,0,0); }
+    to { transform: translate3d(var(--mobile-tile-width),0,0); }
+}
+.preview-sky[data-motion="off"] .sky-mobile-layer { animation-play-state: paused; }
