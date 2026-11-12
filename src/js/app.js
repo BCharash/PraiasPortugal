@@ -27,7 +27,7 @@ const appState = {
         fontSize: "normal",
         skyEnabled: false,
         skyAnimation: true,
-        skyAnimationSpeed: 1,
+        skyAnimationSpeed: .2,
         skyPanelOpacity: 45,
         skyRendering: "revised"
 
@@ -68,7 +68,7 @@ function normalizeSkySettings() {
     const settings=appState.settings;
     settings.skyEnabled=settings.skyEnabled === true;
     settings.skyAnimation=typeof settings.skyAnimation === "boolean" ? settings.skyAnimation : true;
-    settings.skyAnimationSpeed=Number.isFinite(settings.skyAnimationSpeed) ? Math.max(.25,Math.min(3,settings.skyAnimationSpeed)) : 1;
+    settings.skyAnimationSpeed=Number.isFinite(settings.skyAnimationSpeed) ? Math.max(0,Math.min(1,settings.skyAnimationSpeed)) : .2;
     settings.skyPanelOpacity=Number.isFinite(settings.skyPanelOpacity) ? Math.max(0,Math.min(100,settings.skyPanelOpacity)) : 45;
     if (!["revised","baseline"].includes(settings.skyRendering)) settings.skyRendering="revised";
 }
@@ -79,7 +79,7 @@ function syncSkyControls() {
         if (node) node[type === "checked" ? "checked" : "value"]=appState.settings[key];
     }
     const speed=document.getElementById("skySpeedValue"), opacity=document.getElementById("skyOpacityValue");
-    if (speed) speed.value=`${appState.settings.skyAnimationSpeed}×`;
+    if (speed) speed.value=String(appState.settings.skyAnimationSpeed);
     if (opacity) opacity.value=`${appState.settings.skyPanelOpacity}%`;
 }
 function updateLiveSkyDetails(state,inputs) {
@@ -270,7 +270,7 @@ const translations = {
         skySun: "Sun elevation",
         skyFreshness: "Data status",
         skyAnimation: "Animate clouds",
-        skySpeed: "Animation speed",
+        skySpeed: "Animation speed (0–1)",
         skyOpacity: "Panel opacity",
         skyStyle: "Cloud style",
         skyComposite: "Composite",
@@ -420,7 +420,7 @@ const translations = {
         skySun: "Elevação solar",
         skyFreshness: "Estado dos dados",
         skyAnimation: "Animar nuvens",
-        skySpeed: "Velocidade da animação",
+        skySpeed: "Velocidade da animação (0–1)",
         skyOpacity: "Opacidade dos painéis",
         skyStyle: "Estilo das nuvens",
         skyComposite: "Composto",

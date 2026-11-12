@@ -108,17 +108,19 @@ function getSkyPalette(elevation, weather, revised) {
   };
 }
 
-// Give every cloud its own stable speed/phase without touching coverage scaling.
-function setCloudDrift(node,index,seed,tier) {
+// One-way horizontal drift for every cloud/type. Wrap only beyond the view;
+// varied per-cloud speeds remain, without opposing or alternating directions.
+function setCloudDrift(node,index,seed,originX,sceneWidth) {
     node.classList.add("sky-cloud-motion");
-    const direction=tier === "low" ? -1 : 1;
-    const distance=(80+(index*31+seed)%170)*direction;
-    node.style.setProperty("--cloud-from-x",`${-distance/2}px`);
-    node.style.setProperty("--cloud-to-x",`${distance/2}px`);
-    node.style.setProperty("--cloud-from-y",`${-4-(index*7+seed)%12}px`);
-    node.style.setProperty("--cloud-to-y",`${3+(index*11+seed)%16}px`);
-    node.style.setProperty("--cloud-duration",`${(tier === "high" ? 60 : tier === "mid" ? 40 : 24)+(index*17+seed)%90}s`);
-    node.style.setProperty("--cloud-phase",`${-(index*19+seed)%100}s`);
+    const margin=400, travel=sceneWidth+2*margin;
+    const duration=(35+(index*17+seed)%75)*travel/150;
+    node.style.setProperty("--cloud-from-x",`${-originX-margin}px`);
+    node.style.setProperty("--cloud-to-x",`${sceneWidth-originX+margin}px`);
+    node.style.setProperty("--cloud-from-y","0px");
+    node.style.setProperty("--cloud-to-y","0px");
+    node.style.setProperty("--cloud-duration",`${duration}s`);
+    // Start at the existing position instead of queuing every cloud offscreen.
+    node.style.setProperty("--cloud-phase",`${-duration*(originX+margin)/travel}s`);
 }
 
 function renderSkyClouds(group,tier,cover,opacity,id){
@@ -167,7 +169,7 @@ function renderSkyClouds(group,tier,cover,opacity,id){
         </g>`;
       }
       const motion=document.createElementNS(ns,"g");
-      setCloudDrift(motion,i,layout.seed,tier);
+      setCloudDrift(motion,i,layout.seed,x,widths[tier]);
       const baseline=document.createElementNS(ns,"g");
       baseline.classList.add("sky-shape-baseline");
       while(patch.firstChild) baseline.append(patch.firstChild);
@@ -229,9 +231,10 @@ function createCloudDeck(svg,tier,id,width) {
         const midpoint=(a,b)=>`${(a[0]+b[0])/2} ${(a[1]+b[1])/2}`;
         hole.setAttribute("d",`M ${midpoint(points[11],points[0])} `+points.map((p,j)=>`Q ${p.join(" ")} ${midpoint(p,points[(j+1)%12])}`).join(" ")+" Z");
         hole.classList.add("sky-deck-hole");
-        outer.setAttribute("transform",`translate(${-100+((i*.754877666+seed*.137)%1)*(width+200)} ${-80+((i*.569840296+seed*.193)%1)*1060})`);
+        const x=-100+((i*.754877666+seed*.137)%1)*(width+200);
+        outer.setAttribute("transform",`translate(${x} ${-80+((i*.569840296+seed*.193)%1)*1060})`);
         const motion=document.createElementNS(ns,"g");
-        setCloudDrift(motion,i,seed,tier);
+        setCloudDrift(motion,i,seed,x,width);
         motion.append(hole);outer.append(motion);openings.append(outer);
     }
     const deck = document.createElementNS(ns,"g");
@@ -376,7 +379,7 @@ function createCloudDeck(svg,tier,id,width) {
             },
             setAnimationSpeed(value) {
                 if (destroyed || !Number.isFinite(value)) return;
-                animationSpeed = Math.max(.25,Math.min(3,value));
+                animationSpeed = Math.max(0,Math.min(1,value));
                 applyAnimationSpeed();
             },
             setRendering(value) {

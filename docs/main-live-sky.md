@@ -19,14 +19,14 @@ the original background and opaque panels. The preference is saved locally.
 In Settings → Live sky:
 
 - Animate clouds: on/off. System Reduce Motion remains authoritative.
-- Animation speed: 0.25×–3×, independently of five-second weather transitions.
+- Animation speed: 0–1 (default 0.2; 0 freezes movement, 1 is the earlier full speed), independently of five-second weather transitions.
 - Panel opacity: 0–100%, default 45%, with text shadows to retain readability.
 - Cloud style: revised Composite or previous Individual patches.
 
 Dashboard also has a collapsible Sky conditions readout for total cloud,
 independent low/mid/high cover, weather condition, solar elevation and freshness.
 Controls/readout support English and Portuguese. Sky defaults off, animation on,
-speed 1× and Composite style. Invalid stored new settings fall back to safe values.
+speed 0.2 and Composite style. Invalid stored new settings fall back to safe values.
 
 The sky persists across Dashboard, Beaches and Settings. It represents the selected
 beach, uses the existing manager snapshot and solar-minute publication, and never
@@ -94,3 +94,12 @@ local implementation commit on top of the retained branch checkpoints. Do not us
 a broad reset that drops the earlier data/clock fixes. Further cloud refinement
 can now happen in the main development checkout, as explicitly authorized, with
 focused verification and user visual review. No automatic push/deploy is implied.
+
+## Pending user review (uncommitted)
+
+Live sky Settings now sits immediately below Units. Speed range is now 0–1 with plain numeric labels,
+with 0.2 as the default; 0 freezes movement and 1 restores the earlier full speed.
+All cloud types and sheet openings drift rightward, without the former reverse/
+alternating tier motion or vertical wandering. Clouds recycle beyond the view.
+Per-cloud speed/shape variation remains. Clock fixes are unchanged. No browser
+or lab suite was run for this follow-up; the user will test before any commit.

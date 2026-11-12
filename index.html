@@ -669,23 +669,7 @@
         </h2>
 
 
-        <section id="liveSkySettings" class="settings-section">
-            <h3 data-i18n="liveSky">Live sky</h3>
-            <div><label for="skyAnimationToggle" data-i18n="skyAnimation">Animate clouds</label>
-                <input id="skyAnimationToggle" type="checkbox" checked></div>
-            <div><label for="skySpeedSlider" data-i18n="skySpeed">Animation speed</label>
-                <input id="skySpeedSlider" type="range" min="0.25" max="3" step="0.25" value="1">
-                <output id="skySpeedValue" for="skySpeedSlider">1×</output></div>
-            <div><label for="skyOpacitySlider" data-i18n="skyOpacity">Panel opacity</label>
-                <input id="skyOpacitySlider" type="range" min="0" max="100" step="5" value="45">
-                <output id="skyOpacityValue" for="skyOpacitySlider">45%</output></div>
-            <div><label for="skyRenderingSelect" data-i18n="skyStyle">Cloud style</label>
-                <select id="skyRenderingSelect">
-                    <option value="revised" data-i18n="skyComposite">Composite</option>
-                    <option value="baseline" data-i18n="skyPatches">Individual patches</option>
-                </select></div>
-            <p data-i18n="skyMotionNote">System Reduce Motion disables sky animation.</p>
-        </section>
+
 
         <!-- ======================================================
              Units
@@ -774,6 +758,24 @@
 
             </div>
 
+        </section>
+
+        <section id="liveSkySettings" class="settings-section">
+            <h3 data-i18n="liveSky">Live sky</h3>
+            <div><label for="skyAnimationToggle" data-i18n="skyAnimation">Animate clouds</label>
+                <input id="skyAnimationToggle" type="checkbox" checked></div>
+            <div><label for="skySpeedSlider" data-i18n="skySpeed">Animation speed (0–1)</label>
+                <input id="skySpeedSlider" type="range" min="0" max="1" step="0.05" value="0.2">
+                <output id="skySpeedValue" for="skySpeedSlider">0.2</output></div>
+            <div><label for="skyOpacitySlider" data-i18n="skyOpacity">Panel opacity</label>
+                <input id="skyOpacitySlider" type="range" min="0" max="100" step="5" value="45">
+                <output id="skyOpacityValue" for="skyOpacitySlider">45%</output></div>
+            <div><label for="skyRenderingSelect" data-i18n="skyStyle">Cloud style</label>
+                <select id="skyRenderingSelect">
+                    <option value="revised" data-i18n="skyComposite">Composite</option>
+                    <option value="baseline" data-i18n="skyPatches">Individual patches</option>
+                </select></div>
+            <p data-i18n="skyMotionNote">System Reduce Motion disables sky animation.</p>
         </section>
 
 
