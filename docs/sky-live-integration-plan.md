@@ -1,5 +1,13 @@
 # Sky live-data integration plan
 
+**12 November update:** the user explicitly authorized main-app integration and
+local merge before formal 6G provider review. The main app now offers a saved Live
+sky checkbox and Settings controls; see [the integration record](main-live-sky.md).
+All 6A–6F changes, especially the four 6E clock/horizon fixes, are retained. Older
+no-main-activation instructions in this plan are historical and superseded for
+this development integration. No push/deployment or provider/device acceptance
+is implied.
+
 Updated 8 November 2026. **Checkpoints 6A–6F implemented and verified; 6G not started.**
 Current branch: `preview/sky-background`. Planning baseline: `ff92eb3`.
 Accepted visual implementation: `ee8be74`, with the star-visibility correction

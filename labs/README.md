@@ -1,5 +1,19 @@
 # Sky preview checkpoints
 
+## Main-app development — 12 November 2026
+
+The user authorized integrating this branch into local **main**. Open `index.html`
+(the normal root URL) and check **Live sky** on Dashboard. Settings provides
+animation, speed, opacity and cloud style. All four Lisbon clock/sunrise/sunset
+fixes are retained. The sky is a saved opt-in choice; unchecking restores the
+original appearance. Implementation: `a1f9dbd`. See [main integration](../docs/main-live-sky.md).
+
+Earlier lab-only/global-approval boundaries below are historical and are superseded
+by this explicit authorization for main-app development. No push/deployment is
+implied. Formal live-provider and physical-device acceptance remain unclaimed.
+The two preview pages remain comparisons; their loader removes main-app sky
+controls/controller before installing its own adapter, preventing duplicate skies.
+
 The accepted interim fixture sky now also has an opt-in live-data preview.
 Checkpoints 6A–6F provide the shared data, refresh and clock foundations plus
 preview integration. The normal app background and opaque cards are unchanged.
@@ -54,7 +68,7 @@ After the user confirmed the normal app worked, a pre-existing temperature-graph
 bug was corrected: its low/high labels now follow Celsius/Fahrenheit preferences.
 This small display follow-up is separate from 6B; refresh behavior is unchanged.
 
-- Branch: `preview/sky-background`.
+- Development branch after integration: `main`; retained checkpoint branch: `preview/sky-background`.
 - Checkpoint 4 foundation commit: `8aa12bd`; irregular snow follow-up: `ee8be74`.
   Retain the subsequent acceptance-review star-visibility correction and checks
   at the current branch HEAD when resuming.
@@ -524,7 +538,7 @@ The next checkpoint is 6G. Preserve the completed 6A contract, 6B request owner,
 
 ## Durable stop / resume
 
-- Branch: `preview/sky-background`.
+- Development branch after integration: `main`; retained checkpoint branch: `preview/sky-background`.
 - Original app baseline: `476d190922870a39bc76cc91c68e9c9ba0bc20a7`.
 - Current stop: checkpoint 6F complete (`cfa1be8`), inputs-readout follow-up `0ba97d1`, dense-cloud candidate `0be01fb`; see docs/sky-live-preview.md; interim Mac appearance
   remains accepted. Live preview is opt-in; the normal app sky is not activated.

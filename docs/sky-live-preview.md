@@ -1,5 +1,11 @@
 # Opt-in live sky preview — checkpoint 6F
 
+**12 November:** the user subsequently authorized integrating Live sky into the
+normal main development app. Open `index.html` and use the Dashboard checkbox;
+see [main integration](main-live-sky.md). Earlier preview-only/no-main-activation
+limits below describe the original checkpoint and are superseded for this
+explicitly authorized integration. Previews remain available as comparisons.
+
 Branch: `preview/sky-background`. Starting commit: `a95757a` (completed 6E handoff).
 Completed and verified 8 November 2026. Implementation commit: `cfa1be8`.
 

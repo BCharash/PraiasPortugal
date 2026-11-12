@@ -18,11 +18,19 @@ This file should be updated whenever the project structure changes or an existin
 
 # Project Structure
 
+The main app now has a saved Dashboard Live sky checkbox and Settings controls.
+`src/js/liveSky.js` consumes existing app-published environment state, while
+`src/css/live-sky.css` scopes readable panels to enabled sky. Shared artwork remains
+in `src/js/skyBackground.js` / `src/css/sky-background.css`.
+`docs/main-live-sky.md` documents the 12 November main-app authorization, integration,
+retained clock fixes, focused checks and manual review. This supersedes the
+historical lab-only boundaries described below.
+
 The opt-in sky experiment has fixed-fixture and live-data entries:
 `labs/sky-preview.html` and `labs/sky-live-preview.html`; see `labs/README.md`.
 Both load shared artwork from `src/js/skyBackground.js` and
 `src/css/sky-background.css`, with preview-only panel opacity/contrast styles in
-`labs/sky-background.css`. The normal entry loads none of those sky assets.
+`labs/sky-background.css`. The normal entry also loads shared sky assets; it creates a sky only when enabled.
 `labs/preview-frame.js` loads actual app markup for both entries. Fixture services,
 clock and scenario simulation stay in the fixture adapter/state module; the live
 adapter only isolates preferences and subscribes to published app environment.
