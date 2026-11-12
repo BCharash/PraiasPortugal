@@ -78,3 +78,19 @@ SVG masks/textures.
 Reversal: select Previous patches immediately, or revert the separate visual
 implementation commit to remove this candidate while retaining earlier checkpoints.
 No ipma-radar edits, live-provider testing, deployment or push are part of this work.
+
+## 12 November manual-review follow-up
+
+Per user instruction, no lab/browser testing was run for this follow-up. Each
+cloud now has a separate animated inner wrapper with deterministic per-cloud
+speed, phase and horizontal/vertical travel, independent of coverage scaling.
+Dense sheet openings also get individual drift. Existing pause and reduced-motion
+rules apply to these new animations.
+
+Revised mode displays per-cloud variations of the type's outline, proportions,
+rotation and translucency at every nonzero coverage. Baseline retains the older
+outlines. The 60% threshold now governs only dense sheets, rather than whether
+any visible shape differences exist. The readout description is updated. Reset
+cache-busts injected preview assets; normal app assets/entry are unchanged.
+
+Earlier test results above predate this follow-up. User visual testing is pending.

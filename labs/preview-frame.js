@@ -12,15 +12,22 @@ window.loadSkyPreviewFrame = async function ({frame, styles, scripts, dataset = 
     base.href = appBase.href;
     doc.head.prepend(base);
     doc.querySelector('link[rel="manifest"]')?.remove();
+    // Reset must reload changed preview artwork rather than reuse cached assets.
+    const previewVersion = String(Date.now());
+    const previewAsset = path => {
+        const url = new URL(path,appBase);
+        url.searchParams.set("preview",previewVersion);
+        return url.href;
+    };
     for (const href of styles) {
         const link = doc.createElement("link");
-        link.rel = "stylesheet"; link.href = href; doc.head.append(link);
+        link.rel = "stylesheet"; link.href = previewAsset(href); doc.head.append(link);
     }
     Object.assign(doc.documentElement.dataset, dataset);
     const appScript = doc.querySelector('script[src="src/js/app.js"]');
     if (!appScript) throw new Error("App startup script was not found");
     for (const src of scripts) {
-        const script = doc.createElement("script"); script.src = src; appScript.before(script);
+        const script = doc.createElement("script"); script.src = previewAsset(src); appScript.before(script);
     }
     await new Promise(resolve => {
         frame.addEventListener("load", resolve, {once:true});

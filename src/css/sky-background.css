@@ -122,3 +122,15 @@ body[data-sky-preview] { isolation: isolate; }
 .preview-sky:not([data-clouds-ready]) :is(.sky-cloud-deck,.sky-deck-hole),
 .preview-sky[data-motion="off"] :is(.sky-cloud-deck,.sky-deck-hole) { transition: none; }
 .preview-sky[data-rendering="baseline"] .sky-cloud-deck { display: none; }
+
+/* Individual drift is separate from tier drift and coverage/growth transitions. */
+.preview-sky .sky-cloud-motion {
+    animation: individualCloudDrift var(--cloud-duration) linear var(--cloud-phase) infinite alternate;
+}
+@keyframes individualCloudDrift {
+    from { transform: translate(var(--cloud-from-x), var(--cloud-from-y)); }
+    to { transform: translate(var(--cloud-to-x), var(--cloud-to-y)); }
+}
+.preview-sky[data-motion="off"] .sky-cloud-motion { animation-play-state: paused; }
+.preview-sky[data-rendering="baseline"] .sky-shape-revised,
+.preview-sky[data-rendering="revised"] .sky-shape-baseline { display: none; }

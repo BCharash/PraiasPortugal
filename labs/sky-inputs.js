@@ -21,7 +21,7 @@ window.createSkyInputsReadout = function (anchor, source) {
             put("rendering",inputs?.rendering === "revised"
                 ? !inputs.hasWeather ? "Revised composite · no usable weather to render"
                     : inputs.low > 60 || inputs.mid > 60 ? "Revised composite · dense low/mid cloud active"
-                    : "Revised composite · same cloud shapes here: dense cloud requires low OR mid above 60%"
+                    : "Revised composite · varied individual shapes; dense sheets require low OR mid above 60%"
                 : inputs ? "Previous patches" : "Unavailable");
             put("motion",!inputs ? "Unavailable" : inputs.reducedMotion ? "Disabled by system Reduce Motion setting"
                 : !inputs.motionEnabled ? "Paused" : !inputs.hasWeather ? "No usable cloud data to animate"

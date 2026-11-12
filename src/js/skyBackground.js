@@ -108,6 +108,19 @@ function getSkyPalette(elevation, weather, revised) {
   };
 }
 
+// Give every cloud its own stable speed/phase without touching coverage scaling.
+function setCloudDrift(node,index,seed,tier) {
+    node.classList.add("sky-cloud-motion");
+    const direction=tier === "low" ? -1 : 1;
+    const distance=(50+(index*31+seed)%100)*direction;
+    node.style.setProperty("--cloud-from-x",`${-distance/2}px`);
+    node.style.setProperty("--cloud-to-x",`${distance/2}px`);
+    node.style.setProperty("--cloud-from-y",`${-4-(index*7+seed)%12}px`);
+    node.style.setProperty("--cloud-to-y",`${3+(index*11+seed)%16}px`);
+    node.style.setProperty("--cloud-duration",`${35+(index*17+seed)%75}s`);
+    node.style.setProperty("--cloud-phase",`${-(index*19+seed)%100}s`);
+}
+
 function renderSkyClouds(group,tier,cover,opacity,id){
   if(!group) return;
   const count=24;
@@ -153,6 +166,26 @@ function renderSkyClouds(group,tier,cover,opacity,id){
           <path d="${outline}" fill="url(#${id}-low-volume)"/>
         </g>`;
       }
+      const motion=document.createElementNS(ns,"g");
+      setCloudDrift(motion,i,layout.seed,tier);
+      const baseline=document.createElementNS(ns,"g");
+      baseline.classList.add("sky-shape-baseline");
+      while(patch.firstChild) baseline.append(patch.firstChild);
+      const revised=baseline.cloneNode(true);
+      revised.setAttribute("class","sky-shape-revised");
+      let seed=layout.seed*997+i*131;
+      const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
+      const outlines=new Map();
+      for(const path of revised.querySelectorAll("path")) {
+        const original=path.getAttribute("d");
+        if(!outlines.has(original)) outlines.set(original,original.replace(/-?\d+(?:\.\d+)?/g,value=>(Number(value)*(.78+random()*.44)).toFixed(2)));
+        path.setAttribute("d",outlines.get(original));
+      }
+      const breadth=tier === "high" ? .7+random()*1.1 : .7+random()*.85;
+      const depth=tier === "high" ? .45+random()*.9 : .65+random()*.85;
+      revised.setAttribute("transform",`rotate(${-6+random()*12}) scale(${breadth} ${depth})`);
+      revised.setAttribute("opacity",String(.72+random()*.28));
+      motion.append(baseline,revised);patch.append(motion);
       outer.appendChild(patch);group.appendChild(outer);
     }
   }
@@ -197,7 +230,9 @@ function createCloudDeck(svg,tier,id,width) {
         hole.setAttribute("d",`M ${midpoint(points[11],points[0])} `+points.map((p,j)=>`Q ${p.join(" ")} ${midpoint(p,points[(j+1)%12])}`).join(" ")+" Z");
         hole.classList.add("sky-deck-hole");
         outer.setAttribute("transform",`translate(${-100+((i*.754877666+seed*.137)%1)*(width+200)} ${-80+((i*.569840296+seed*.193)%1)*1060})`);
-        outer.append(hole);openings.append(outer);
+        const motion=document.createElementNS(ns,"g");
+        setCloudDrift(motion,i,seed,tier);
+        motion.append(hole);outer.append(motion);openings.append(outer);
     }
     const deck = document.createElementNS(ns,"g");
     deck.classList.add("sky-cloud-deck");deck.style.opacity="0";

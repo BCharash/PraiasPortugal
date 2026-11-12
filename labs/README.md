@@ -19,10 +19,18 @@ See [the comparison checkpoint](../docs/cloud-composite-comparison.md). This vis
 candidate is awaiting user review; the previous Mac acceptance applies to the
 baseline, not this new treatment. The normal app remains unchanged.
 
+12 November visual follow-up: clouds now have individual drift speeds, phases
+and distances inside each tier; sheet openings also drift independently. Revised
+mode varies each cloud's outline, width, depth and translucency within its type,
+including coverage below the dense-sheet threshold. Previous patches retains the
+older outlines. Reset reloads preview-injected renderer/styles with fresh URLs
+so cached preview assets do not hide changes. This candidate has **not** been run
+through lab/browser tests, at the user's request; visual review is pending.
+
 12 November follow-up: cloud drift is four times faster in previews (high/mid/low
 80/60/40 seconds per pass). Expand Sky inputs for **Animation** (running, paused,
 system Reduce Motion, or no cloud data) and **Rendering** (including when coverage
-is too low for the revised dense-cloud treatment). These lines update when the
+is too low for dense sheets; revised individual shapes still differ). These lines update when the
 controls change. This small follow-up received a diff/whitespace check only;
 visual testing is left to the user as requested. Normal app appearance is unchanged.
 
