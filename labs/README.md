@@ -19,6 +19,13 @@ See [the comparison checkpoint](../docs/cloud-composite-comparison.md). This vis
 candidate is awaiting user review; the previous Mac acceptance applies to the
 baseline, not this new treatment. The normal app remains unchanged.
 
+12 November follow-up: cloud drift is four times faster in previews (high/mid/low
+80/60/40 seconds per pass). Expand Sky inputs for **Animation** (running, paused,
+system Reduce Motion, or no cloud data) and **Rendering** (including when coverage
+is too low for the revised dense-cloud treatment). These lines update when the
+controls change. This small follow-up received a diff/whitespace check only;
+visual testing is left to the user as requested. Normal app appearance is unchanged.
+
 Both previews now include a **Sky inputs** disclosure below the weather-status
 row. Its summary shows low/mid/high cover; expand it for total cover, weather code
 and effect, actual solar elevation, selected palette, source and freshness/age.

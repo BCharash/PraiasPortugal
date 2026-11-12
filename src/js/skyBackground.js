@@ -278,7 +278,8 @@ function createCloudDeck(svg,tier,id,width) {
 
         return {
             root,
-            getInputs: () => inputs,
+            getInputs: () => inputs && Object.freeze({...inputs,motionEnabled:root.dataset.motion === "on",
+                reducedMotion:window.matchMedia("(prefers-reduced-motion: reduce)").matches}),
             update(beach, weather, options = {}) {
                 if (destroyed) return;
                 lastUpdate = {beach,weather,options};

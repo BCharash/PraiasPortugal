@@ -47,7 +47,10 @@
             setSkyEnabled(value) {
                 enabled = !!value; sky.setEnabled(enabled && !!snapshot?.beach);
             },
-            setMotionEnabled:value=>sky.setMotionEnabled(value),
+            setMotionEnabled(value) {
+                sky.setMotionEnabled(value);
+                inputsReadout.update(snapshot?.beach ? sky.getInputs() : null,snapshot?.status?.freshness,snapshot?.status?.ageMs);
+            },
             setRendering(value) {
                 sky.setRendering(value);
                 inputsReadout.update(snapshot?.beach ? sky.getInputs() : null,snapshot?.status?.freshness,snapshot?.status?.ageMs);

@@ -18,13 +18,13 @@ body[data-sky-preview] { isolation: isolate; }
 /* Drift and patch growth use different elements so updates never restart drift. */
 .preview-sky .preview-sky-drift { transform-box: view-box; }
 .preview-sky [data-tier="high"] .preview-sky-drift {
-    animation: previewSkyDriftHigh 320s linear -117s infinite alternate;
+    animation: previewSkyDriftHigh 80s linear -29.25s infinite alternate;
 }
 .preview-sky [data-tier="mid"] .preview-sky-drift {
-    animation: previewSkyDriftMid 240s linear -83s infinite alternate;
+    animation: previewSkyDriftMid 60s linear -20.75s infinite alternate;
 }
 .preview-sky [data-tier="low"] .preview-sky-drift {
-    animation: previewSkyDriftLow 160s linear -41s infinite alternate;
+    animation: previewSkyDriftLow 40s linear -10.25s infinite alternate;
 }
 @keyframes previewSkyDriftHigh {
     from { transform: translate(-4%, 0); }

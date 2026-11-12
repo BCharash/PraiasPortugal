@@ -445,8 +445,8 @@ try:
             return delta;
         });
         result.independentMotion = deltas[0] > 0 && deltas[1] > deltas[0] && deltas[2] < 0;
-        result.timings = animations.every((a, i) => a.effect.getTiming().duration === [320000,240000,160000][i] &&
-            a.effect.getTiming().delay === [-117000,-83000,-41000][i] && a.effect.getTiming().direction === 'alternate');
+        result.timings = animations.every((a, i) => a.effect.getTiming().duration === [80000,60000,40000][i] &&
+            a.effect.getTiming().delay === [-29250,-20750,-10250][i] && a.effect.getTiming().direction === 'alternate');
         const first = sky.querySelector('[data-tier="low"] .sky-cloud-patch');
         await lab.skyPreview.setFixture('low20');
         sky.getAnimations({subtree:true}).filter(a => a instanceof lab.CSSTransition).forEach(a => a.finish());

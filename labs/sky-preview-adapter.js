@@ -147,7 +147,10 @@
         get weatherRequests() { return weatherRequests; },
         get fixtureKey() { return fixtureKey; },
         setSkyEnabled: enabled => sky.setEnabled(enabled),
-        setMotionEnabled: enabled => sky.setMotionEnabled(enabled),
+        setMotionEnabled(enabled) {
+            sky.setMotionEnabled(enabled);
+            if (controller.state) inputsReadout.update(sky.getInputs(),controller.state.status,controller.state.ageMs);
+        },
         setRendering(value) {
             sky.setRendering(value);
             if (controller.state) inputsReadout.update(sky.getInputs(),controller.state.status,controller.state.ageMs);
