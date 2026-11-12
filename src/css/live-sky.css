@@ -1,0 +1,23 @@
+/* Production controls and readable surfaces, applied only when Live sky is on. */
+.live-sky-toggle { display: flex; justify-content: flex-end; margin: 8px 0; }
+.live-sky-toggle label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+#liveSkyDetails { margin: 8px 0; padding: 8px; background: #1b2747; border-radius: 5px; }
+#liveSkyDetails summary { cursor: pointer; }
+#liveSkyDetails dl { display: grid; grid-template-columns: minmax(0, 130px) minmax(0, 1fr); gap: 5px 12px; }
+#liveSkyDetails dd { margin: 0; overflow-wrap: anywhere; }
+#liveSkySettings input[type="range"] { max-width: 160px; width: 100%; }
+#liveSkySettings output { min-width: 3em; display: inline-block; }
+body[data-live-sky="enabled"] :is(.dashboard-widget,.settings-section,#liveSkyDetails) {
+    background: rgba(27,39,71,var(--live-sky-panel-opacity,.45));
+}
+body[data-live-sky="enabled"] :is(#applicationHeader,#dashboardPage,#beachesPage,#settingsPage) {
+    text-shadow: 0 1px 3px #000, 0 0 4px #000;
+}
+body[data-live-sky="enabled"] :is(#applicationHeader,#dashboardStatus,#dashboardDataCards,#beachSelection) {
+    background: rgba(11,21,48,var(--live-sky-panel-opacity,.45));
+    border-radius: 5px;
+}
+body[data-live-sky="enabled"] .preview-sky-credits {
+    background: rgba(11,21,48,var(--live-sky-panel-opacity,.45));
+    text-shadow: 0 1px 3px #000;
+}

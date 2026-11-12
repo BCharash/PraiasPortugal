@@ -112,12 +112,12 @@ function getSkyPalette(elevation, weather, revised) {
 function setCloudDrift(node,index,seed,tier) {
     node.classList.add("sky-cloud-motion");
     const direction=tier === "low" ? -1 : 1;
-    const distance=(50+(index*31+seed)%100)*direction;
+    const distance=(80+(index*31+seed)%170)*direction;
     node.style.setProperty("--cloud-from-x",`${-distance/2}px`);
     node.style.setProperty("--cloud-to-x",`${distance/2}px`);
     node.style.setProperty("--cloud-from-y",`${-4-(index*7+seed)%12}px`);
     node.style.setProperty("--cloud-to-y",`${3+(index*11+seed)%16}px`);
-    node.style.setProperty("--cloud-duration",`${35+(index*17+seed)%75}s`);
+    node.style.setProperty("--cloud-duration",`${(tier === "high" ? 60 : tier === "mid" ? 40 : 24)+(index*17+seed)%90}s`);
     node.style.setProperty("--cloud-phase",`${-(index*19+seed)%100}s`);
 }
 
@@ -178,11 +178,11 @@ function renderSkyClouds(group,tier,cover,opacity,id){
       const outlines=new Map();
       for(const path of revised.querySelectorAll("path")) {
         const original=path.getAttribute("d");
-        if(!outlines.has(original)) outlines.set(original,original.replace(/-?\d+(?:\.\d+)?/g,value=>(Number(value)*(.78+random()*.44)).toFixed(2)));
+        if(!outlines.has(original)) outlines.set(original,original.replace(/-?\d+(?:\.\d+)?/g,value=>(Number(value)*(.65+random()*.7)).toFixed(2)));
         path.setAttribute("d",outlines.get(original));
       }
-      const breadth=tier === "high" ? .7+random()*1.1 : .7+random()*.85;
-      const depth=tier === "high" ? .45+random()*.9 : .65+random()*.85;
+      const breadth=tier === "high" ? .55+random()*1.5 : .6+random()*1.15;
+      const depth=tier === "high" ? .3+random()*1.1 : .55+random()*1.05;
       revised.setAttribute("transform",`rotate(${-6+random()*12}) scale(${breadth} ${depth})`);
       revised.setAttribute("opacity",String(.72+random()*.28));
       motion.append(baseline,revised);patch.append(motion);
@@ -309,10 +309,17 @@ function createCloudDeck(svg,tier,id,width) {
             (<a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>)`);
         document.body.prepend(root);
         document.body.append(credits);
-        let destroyed = false, inputs = null, lastUpdate = null;
+        let destroyed = false, inputs = null, lastUpdate = null, animationSpeed = 1;
+        function applyAnimationSpeed() {
+            for (const animation of root.getAnimations({subtree:true})) {
+                // Keep weather transitions at five seconds regardless of drift speed.
+                if (animation instanceof CSSAnimation) animation.updatePlaybackRate(animationSpeed);
+            }
+        }
 
         return {
             root,
+            credits,
             getInputs: () => inputs && Object.freeze({...inputs,motionEnabled:root.dataset.motion === "on",
                 reducedMotion:window.matchMedia("(prefers-reduced-motion: reduce)").matches}),
             update(beach, weather, options = {}) {
@@ -365,6 +372,12 @@ function createCloudDeck(svg,tier,id,width) {
                     void root.offsetWidth;
                     root.setAttribute("data-clouds-ready", "");
                 }
+                applyAnimationSpeed();
+            },
+            setAnimationSpeed(value) {
+                if (destroyed || !Number.isFinite(value)) return;
+                animationSpeed = Math.max(.25,Math.min(3,value));
+                applyAnimationSpeed();
             },
             setRendering(value) {
                 if (destroyed || !["revised","baseline"].includes(value) || value === root.dataset.rendering) return;
@@ -380,6 +393,7 @@ function createCloudDeck(svg,tier,id,width) {
                 if (destroyed) return;
                 root.hidden = !enabled;
                 document.body.dataset.skyPreview = enabled ? "enabled" : "disabled";
+                applyAnimationSpeed();
             },
             destroy() {
                 destroyed = true;

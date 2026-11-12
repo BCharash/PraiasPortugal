@@ -50,6 +50,8 @@
     <link rel="stylesheet"
           href="src/css/styles.css">
 
+    <link rel="stylesheet" href="src/css/sky-background.css">
+    <link rel="stylesheet" href="src/css/live-sky.css">
 </head>
 
 
@@ -135,6 +137,20 @@
 
             </div>
 
+
+            <div id="liveSkyToggleRow" class="live-sky-toggle">
+                <label><input id="liveSkyToggle" type="checkbox"><span data-i18n="liveSky">Live sky</span></label>
+            </div>
+            <details id="liveSkyDetails" hidden>
+                <summary data-i18n="skyConditions">Sky conditions</summary>
+                <dl>
+                    <dt data-i18n="skyCloudTotal">Total cloud</dt><dd id="liveSkyTotal">--</dd>
+                    <dt data-i18n="skyCloudLayers">Low / mid / high</dt><dd id="liveSkyLayers">--</dd>
+                    <dt data-i18n="skyWeather">Conditions</dt><dd id="liveSkyWeather">--</dd>
+                    <dt data-i18n="skySun">Sun elevation</dt><dd id="liveSkySun">--</dd>
+                    <dt data-i18n="skyFreshness">Data status</dt><dd id="liveSkyFreshness">--</dd>
+                </dl>
+            </details>
 
             <!-- ==================================================
                  Alert Widget
@@ -653,6 +669,24 @@
         </h2>
 
 
+        <section id="liveSkySettings" class="settings-section">
+            <h3 data-i18n="liveSky">Live sky</h3>
+            <div><label for="skyAnimationToggle" data-i18n="skyAnimation">Animate clouds</label>
+                <input id="skyAnimationToggle" type="checkbox" checked></div>
+            <div><label for="skySpeedSlider" data-i18n="skySpeed">Animation speed</label>
+                <input id="skySpeedSlider" type="range" min="0.25" max="3" step="0.25" value="1">
+                <output id="skySpeedValue" for="skySpeedSlider">1×</output></div>
+            <div><label for="skyOpacitySlider" data-i18n="skyOpacity">Panel opacity</label>
+                <input id="skyOpacitySlider" type="range" min="0" max="100" step="5" value="45">
+                <output id="skyOpacityValue" for="skyOpacitySlider">45%</output></div>
+            <div><label for="skyRenderingSelect" data-i18n="skyStyle">Cloud style</label>
+                <select id="skyRenderingSelect">
+                    <option value="revised" data-i18n="skyComposite">Composite</option>
+                    <option value="baseline" data-i18n="skyPatches">Individual patches</option>
+                </select></div>
+            <p data-i18n="skyMotionNote">System Reduce Motion disables sky animation.</p>
+        </section>
+
         <!-- ======================================================
              Units
         ======================================================= -->
@@ -912,6 +946,8 @@
 
     <script src="src/js/background.js"></script>
 
+    <script src="src/js/skyBackground.js"></script>
+    <script src="src/js/liveSky.js"></script>
     <script src="src/js/app.js"></script>
 
 

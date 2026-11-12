@@ -12,6 +12,8 @@ window.loadSkyPreviewFrame = async function ({frame, styles, scripts, dataset = 
     base.href = appBase.href;
     doc.head.prepend(base);
     doc.querySelector('link[rel="manifest"]')?.remove();
+    // Previews own their renderer/controls; do not start the main-app sky too.
+    for (const node of doc.querySelectorAll('script[src="src/js/skyBackground.js"],script[src="src/js/liveSky.js"],link[href="src/css/sky-background.css"],link[href="src/css/live-sky.css"],#liveSkyToggleRow,#liveSkyDetails,#liveSkySettings')) node.remove();
     // Reset must reload changed preview artwork rather than reuse cached assets.
     const previewVersion = String(Date.now());
     const previewAsset = path => {

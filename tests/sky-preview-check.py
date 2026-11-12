@@ -823,7 +823,7 @@ try:
     for page in ['settings', 'dashboard', 'beaches']:
         client.evaluate(f"document.getElementById('{page}NavButton').click()")
         assert client.evaluate(f"!document.getElementById('{page}Page').hidden")
-    assert client.evaluate("typeof skyPreview === 'undefined' && typeof createSkyBackground === 'undefined' && !document.querySelector('.preview-sky,link[href*=sky-background]') && !document.body.hasAttribute('data-sky-preview') && previewErrors.length === 0")
+    assert client.evaluate("typeof skyPreview === 'undefined' && !document.querySelector('.preview-sky') && !document.body.hasAttribute('data-sky-preview') && previewErrors.length === 0")
     if args.review_dir:
         baseline = []
         for width,height in [(1280,900),(768,1024),(390,844),(320,740)]:

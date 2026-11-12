@@ -24,7 +24,12 @@ const appState = {
         startupBeach: "last",
         
         language: "en",
-        fontSize: "normal"
+        fontSize: "normal",
+        skyEnabled: false,
+        skyAnimation: true,
+        skyAnimationSpeed: 1,
+        skyPanelOpacity: 45,
+        skyRendering: "revised"
 
     }
 
@@ -50,6 +55,66 @@ function subscribeApplicationEnvironment(listener) {
     environmentSubscribers.add(listener);
     listener(getApplicationEnvironment());
     return () => environmentSubscribers.delete(listener);
+}
+
+// Main-app sky options are persisted with existing settings; no lab adapter.
+let liveSkyController = null;
+const skyControlMap = {
+    liveSkyToggle:["skyEnabled","checked"],skyAnimationToggle:["skyAnimation","checked"],
+    skySpeedSlider:["skyAnimationSpeed","number"],skyOpacitySlider:["skyPanelOpacity","number"],
+    skyRenderingSelect:["skyRendering","value"]
+};
+function normalizeSkySettings() {
+    const settings=appState.settings;
+    settings.skyEnabled=settings.skyEnabled === true;
+    settings.skyAnimation=typeof settings.skyAnimation === "boolean" ? settings.skyAnimation : true;
+    settings.skyAnimationSpeed=Number.isFinite(settings.skyAnimationSpeed) ? Math.max(.25,Math.min(3,settings.skyAnimationSpeed)) : 1;
+    settings.skyPanelOpacity=Number.isFinite(settings.skyPanelOpacity) ? Math.max(0,Math.min(100,settings.skyPanelOpacity)) : 45;
+    if (!["revised","baseline"].includes(settings.skyRendering)) settings.skyRendering="revised";
+}
+function syncSkyControls() {
+    normalizeSkySettings();
+    for (const [id,[key,type]] of Object.entries(skyControlMap)) {
+        const node=document.getElementById(id);
+        if (node) node[type === "checked" ? "checked" : "value"]=appState.settings[key];
+    }
+    const speed=document.getElementById("skySpeedValue"), opacity=document.getElementById("skyOpacityValue");
+    if (speed) speed.value=`${appState.settings.skyAnimationSpeed}×`;
+    if (opacity) opacity.value=`${appState.settings.skyPanelOpacity}%`;
+}
+function updateLiveSkyDetails(state,inputs) {
+    const details=document.getElementById("liveSkyDetails");
+    if (!details) return;
+    details.hidden=!appState.settings.skyEnabled;
+    const put=(id,value)=>{document.getElementById(id).textContent=value;};
+    const percent=value=>Number.isFinite(value) ? `${Math.round(Math.max(0,Math.min(100,value)))}%` : "--";
+    put("liveSkyTotal",percent(state?.weather?.cloudCover));
+    put("liveSkyLayers",["cloudCoverLow","cloudCoverMid","cloudCoverHigh"].map(key=>percent(state?.weather?.[key])).join(" / "));
+    put("liveSkyWeather",state?.weather ? formatConditions(state.weather) : translate("weatherUnavailable"));
+    put("liveSkySun",Number.isFinite(inputs?.solarElevation) ? `${inputs.solarElevation.toFixed(1)}°` : "--");
+    const freshness=state?.status?.freshness;
+    const label=state?.status?.refreshing && !state.weather ? "weatherLoading" : freshness === "fresh" ? "weatherFresh"
+        : freshness === "stale" ? "weatherStale" : freshness === "expired" ? "weatherExpired" : "weatherUnavailable";
+    const age=Number.isFinite(state?.status?.ageMs) ? ` · ${Math.floor(state.status.ageMs/60000)} ${translate("skyMinutesOld")}` : "";
+    put("liveSkyFreshness",translate(label)+age);
+}
+function applyLiveSkySettings() {
+    syncSkyControls();
+    liveSkyController?.setOptions({...appState.settings});
+}
+function initializeLiveSky() {
+    // Preview documents remove the main controller and supply their own adapter.
+    if (typeof createLiveSkyController !== "function") return;
+    liveSkyController=createLiveSkyController({subscribe:subscribeApplicationEnvironment,onState:updateLiveSkyDetails});
+    for (const [id,[key,type]] of Object.entries(skyControlMap)) {
+        const node=document.getElementById(id);
+        if (!node) continue;
+        node.addEventListener(node.type === "range" ? "input" : "change",()=>{
+            appState.settings[key]=type === "checked" ? node.checked : type === "number" ? Number(node.value) : node.value;
+            normalizeSkySettings();saveSettings();applyLiveSkySettings();
+        });
+    }
+    applyLiveSkySettings();
 }
 
 //--------------------------------------------------
@@ -197,6 +262,23 @@ const translations = {
     //--------------------------------------------------
 
     en: {
+        liveSky: "Live sky",
+        skyConditions: "Sky conditions",
+        skyCloudTotal: "Total cloud",
+        skyCloudLayers: "Low / mid / high",
+        skyWeather: "Conditions",
+        skySun: "Sun elevation",
+        skyFreshness: "Data status",
+        skyAnimation: "Animate clouds",
+        skySpeed: "Animation speed",
+        skyOpacity: "Panel opacity",
+        skyStyle: "Cloud style",
+        skyComposite: "Composite",
+        skyPatches: "Individual patches",
+        skyMotionNote: "System Reduce Motion disables sky animation.",
+        weatherFresh: "Fresh",
+        skyMinutesOld: "min old",
+
 
         // Navigation
 
@@ -330,6 +412,23 @@ const translations = {
     //--------------------------------------------------
 
     pt: {
+        liveSky: "Céu em tempo real",
+        skyConditions: "Condições do céu",
+        skyCloudTotal: "Nebulosidade total",
+        skyCloudLayers: "Baixas / médias / altas",
+        skyWeather: "Condições",
+        skySun: "Elevação solar",
+        skyFreshness: "Estado dos dados",
+        skyAnimation: "Animar nuvens",
+        skySpeed: "Velocidade da animação",
+        skyOpacity: "Opacidade dos painéis",
+        skyStyle: "Estilo das nuvens",
+        skyComposite: "Composto",
+        skyPatches: "Nuvens individuais",
+        skyMotionNote: "A opção Reduzir movimento do sistema desativa a animação do céu.",
+        weatherFresh: "Atual",
+        skyMinutesOld: "min de idade",
+
 
         // Navegação
 
@@ -1493,6 +1592,8 @@ function populateStartupBeachOptions() {
 
 function updateSettingsControls() {
 
+    syncSkyControls();
+
     temperatureUnitSelect.value =
         appState.settings.temperatureUnit;
 
@@ -1597,6 +1698,7 @@ async function handleSettingsChange() {
     //--------------------------------------------------
 
     applyLanguage();
+    applyLiveSkySettings();
 
 
     //--------------------------------------------------
@@ -1715,7 +1817,7 @@ document.addEventListener("visibilitychange", () => {
 });
 window.addEventListener("pagehide", event => {
     if (event.persisted) pauseDataUpdates();
-    else shutdownDataManager();
+    else {shutdownDataManager();liveSkyController?.destroy();}
 });
 window.addEventListener("pageshow", () => {
     if (document.hidden) pauseDataUpdates();
@@ -1770,6 +1872,7 @@ async function initializeApplication() {
     //--------------------------------------------------
 
     applyLanguage();
+    initializeLiveSky();
 
 
     //--------------------------------------------------
